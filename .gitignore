@@ -1,0 +1,17 @@
+# Output directory
+/target/
+/build/
+
+# Generated files
+*.class
+*.jar
+[Cc]onfig.java
+
+# Temporary and core files
+~*
+core
+
+# NetBeans project directories and files
+dist/
+private/
+nbproject/
