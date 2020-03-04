@@ -15,7 +15,7 @@ mvn clean install -DskipTests
 ```
 
 After that, the service can be built as usual. The resulting `*.jar`-file is located in the 
-`target`-directory as `task-launcher-exec.jar`.
+`target`-directory as `sila-orchestrator-exec.jar`.
 
 
 ### Usage
