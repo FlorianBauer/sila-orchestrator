@@ -8,16 +8,15 @@ import sila_java.library.server_base.identification.ServerInformation;
 import sila_java.library.server_base.utils.ArgumentHelper;
 import java.io.IOException;
 import static sila_java.library.core.utils.FileUtils.getResourceContent;
-import static sila_java.library.core.utils.Utils.blockUntilStop;
 
 /**
  * SiLA Server which can launch programs and scripts on the local host.
  */
 @Slf4j
-public class TaskLaunchServer implements AutoCloseable {
+public class OrchTester implements AutoCloseable {
 
     // Every SiLA Server needs to define a type
-    public static final String SERVER_TYPE = "Task Launch Control Server";
+    public static final String SERVER_TYPE = "Orchestrator Client";
 
     // SiLA Server constructed in constructor
     private final SiLAServer server;
@@ -27,7 +26,7 @@ public class TaskLaunchServer implements AutoCloseable {
      *
      * @param argumentHelper Custom Argument Helper
      */
-    TaskLaunchServer(@NonNull final ArgumentHelper argumentHelper) {
+    OrchTester(@NonNull final ArgumentHelper argumentHelper) {
         final ServerInformation serverInfo = new ServerInformation(
                 SERVER_TYPE,
                 "A Task Launch Server",
@@ -59,10 +58,6 @@ public class TaskLaunchServer implements AutoCloseable {
             argumentHelper.getPort().ifPresent(builder::withPort);
             argumentHelper.getInterface().ifPresent(builder::withDiscovery);
 
-            builder.addFeature(
-                    getResourceContent("TaskLaunchController.sila.xml"),
-                    new TaskLaunchController()
-            );
 
             this.server = builder.start();
         } catch (IOException | SelfSignedCertificate.CertificateGenerationException ex) {
@@ -89,13 +84,16 @@ public class TaskLaunchServer implements AutoCloseable {
      * <li> Display server version: `-v`, `--version`</li>
      * </ul>
      */
-    public static void main(final String[] args) {
+    public static void main(final String[] args) throws InterruptedException {
         final ArgumentHelper argumentHelper = new ArgumentHelper(args, SERVER_TYPE);
 
-        try (final TaskLaunchServer launcherServer = new TaskLaunchServer(argumentHelper)) {
-            Runtime.getRuntime().addShutdownHook(new Thread(launcherServer::close));
-            blockUntilStop();
-        }
+        final OrchClient client = new OrchClient();
+        client.findServer();
+
+//        try (final OrchTester launcherServer = new OrchTester(argumentHelper)) {
+//            Runtime.getRuntime().addShutdownHook(new Thread(launcherServer::close));
+//            blockUntilStop();
+//        }
         log.info("Termination complete.");
     }
 }

@@ -93,7 +93,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>de.fau.clients.orchestrator.TaskLaunchServer</mainClass>
+                    <mainClass>de.fau.clients.orchestrator.OrchTester</mainClass>
                 </configuration>
             </plugin>
         </plugins>
