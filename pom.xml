@@ -62,32 +62,6 @@
 
     <build>
         <plugins>
-            <!--
-            The Maven Plugin is used to generate proto files from the Feature Definitions, these should be located
-            in the resources folder of the package (by default src/main/resources). You can add as many
-            feature definitions as you want to implement.
-            -->
-            <plugin>
-                <groupId>org.sila-standard.sila_java.library</groupId>
-                <artifactId>maven_plugin</artifactId>
-                <version>0.0.3-SNAPSHOT</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <protobufVersion>${protobuf.version}</protobufVersion>
-                            <grpcVersion>${grpc.version}</grpcVersion>
-                            <features>
-                                <param>src/main/resources/TaskLaunchController.sila.xml</param>
-                            </features>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- Wrapping a stand-alone executable for ease of distribution for testing -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
