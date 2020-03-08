@@ -53,67 +53,69 @@ public class OrchClient {
     }
 
     public void findServer() throws InterruptedException {
-        try (final ServerManager serverManager = ServerManager.getInstance()) {
-            serverManager.getDiscovery().scanNetwork();
+        final ServerManager serverManager = ServerManager.getInstance();
+        serverManager.getDiscovery().scanNetwork();
 
-            ArrayList<Server> serverList = new ArrayList<>(serverManager.getServers().values());
-            log.info(serverList.size() + " server found.");
+        ArrayList<Server> serverList = new ArrayList<>(serverManager.getServers().values());
+        log.info(serverList.size() + " server found.");
 
-            for (final Server server : serverList) {
-                final ManagedChannel serviceChannel = ChannelFactory.withEncryption(server.getHost(), server.getPort());
-                try {
-                    final SiLAServiceGrpc.SiLAServiceBlockingStub serviceStub = SiLAServiceGrpc.newBlockingStub(serviceChannel);
+        for (final Server server : serverList) {
+            final ManagedChannel serviceChannel = ChannelFactory.withEncryption(server.getHost(), server.getPort());
+            try {
+                final SiLAServiceGrpc.SiLAServiceBlockingStub serviceStub = SiLAServiceGrpc.newBlockingStub(serviceChannel);
 
-                    System.out.println("Found Features:");
-                    final List<SiLAFramework.String> featureIdentifierList = serviceStub
-                            .getImplementedFeatures(SiLAServiceOuterClass.Get_ImplementedFeatures_Parameters.newBuilder().build())
-                            .getImplementedFeaturesList();
+                System.out.println("Found Features:");
+                final List<SiLAFramework.String> featureIdentifierList = serviceStub
+                        .getImplementedFeatures(SiLAServiceOuterClass.Get_ImplementedFeatures_Parameters
+                                .newBuilder()
+                                .build())
+                        .getImplementedFeaturesList();
 
-                    featureIdentifierList.forEach(featureIdentifier
-                            -> System.out.println("\t" + featureIdentifier.getValue())
-                    );
-                } finally {
-                    serviceChannel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+                featureIdentifierList.forEach(featureIdentifier
+                        -> System.out.println("\t" + featureIdentifier.getValue())
+                );
+            } finally {
+                serviceChannel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+            }
+
+            for (final Feature feat : server.getFeatures()) {
+                log.info("Feature Category: " + feat.getCategory()
+                        + "\n\t* DisplayName: " + feat.getDisplayName()
+                        + "\n\t* Description: " + feat.getDescription()
+                        + "\n\t* FeatureVersion: " + feat.getFeatureVersion()
+                        + "\n\t* Identifier: " + feat.getIdentifier()
+                        + "\n\t* Locale: " + feat.getLocale()
+                        + "\n\t* MaturityLevel: " + feat.getMaturityLevel()
+                        + "\n\t* Originator: " + feat.getOriginator()
+                        + "\n\t* SiLA2Version: " + feat.getSiLA2Version());
+
+                for (final Command com : feat.getCommand()) {
+                    log.info("Command DisplayName: " + com.getDisplayName()
+                            + "\n\t* Description: " + com.getDescription()
+                            + "\n\t* Identifier: " + com.getIdentifier()
+                            + "\n\t* Observable: " + com.getObservable());
+
+                    OrchClient.logSilaElementList(com.getParameter());
+                    OrchClient.logSilaElementList(com.getIntermediateResponse());
+                    OrchClient.logSilaElementList(com.getResponse());
                 }
 
-                for (final Feature feat : server.getFeatures()) {
-                    log.info("Feature Category: " + feat.getCategory()
-                            + "\n\t* DisplayName: " + feat.getDisplayName()
-                            + "\n\t* Description: " + feat.getDescription()
-                            + "\n\t* FeatureVersion: " + feat.getFeatureVersion()
-                            + "\n\t* Identifier: " + feat.getIdentifier()
-                            + "\n\t* Locale: " + feat.getLocale()
-                            + "\n\t* MaturityLevel: " + feat.getMaturityLevel()
-                            + "\n\t* Originator: " + feat.getOriginator()
-                            + "\n\t* SiLA2Version: " + feat.getSiLA2Version());
+                OrchClient.logSilaElementList(feat.getDataTypeDefinition());
 
-                    for (final Command com : feat.getCommand()) {
-                        log.info("Command DisplayName: " + com.getDisplayName()
-                                + "\n\t* Description: " + com.getDescription()
-                                + "\n\t* Identifier: " + com.getIdentifier()
-                                + "\n\t* Observable: " + com.getObservable());
+                for (final Property prop : feat.getProperty()) {
+                    log.info("Property DisplayName: " + prop.getDisplayName()
+                            + "\n\t* Description: " + prop.getDescription()
+                            + "\n\t* Identifier: " + prop.getIdentifier()
+                            + "\n\t* Observable: " + prop.getObservable());
+                }
 
-                        OrchClient.logSilaElementList(com.getParameter());
-                        OrchClient.logSilaElementList(com.getIntermediateResponse());
-                        OrchClient.logSilaElementList(com.getResponse());
-                    }
-
-                    OrchClient.logSilaElementList(feat.getDataTypeDefinition());
-
-                    for (final Property prop : feat.getProperty()) {
-                        log.info("Property DisplayName: " + prop.getDisplayName()
-                                + "\n\t* Description: " + prop.getDescription()
-                                + "\n\t* Identifier: " + prop.getIdentifier()
-                                + "\n\t* Observable: " + prop.getObservable());
-                    }
-
-                    for (final Metadata meta : feat.getMetadata()) {
-                        log.info("DisplayName: " + meta.getDisplayName()
-                                + "\n\t* Description: " + meta.getDescription()
-                                + "\n\t* Identifier: " + meta.getIdentifier());
-                    }
+                for (final Metadata meta : feat.getMetadata()) {
+                    log.info("DisplayName: " + meta.getDisplayName()
+                            + "\n\t* Description: " + meta.getDescription()
+                            + "\n\t* Identifier: " + meta.getIdentifier());
                 }
             }
         }
+
     }
 }
