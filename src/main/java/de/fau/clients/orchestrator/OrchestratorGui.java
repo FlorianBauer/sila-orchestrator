@@ -1,7 +1,6 @@
 package de.fau.clients.orchestrator;
 
 import lombok.extern.slf4j.Slf4j;
-import java.util.ArrayList;
 import javax.swing.DefaultListModel;
 import sila_java.library.manager.ServerAdditionException;
 import sila_java.library.manager.ServerManager;
@@ -11,6 +10,46 @@ import sila_java.library.manager.models.Server;
 public class OrchestratorGui extends javax.swing.JFrame {
 
     static ServerManager serverManager;
+
+    private void addSpecificServer() {
+        String addr = serverAddressTextField.getText();
+        int port = -1;
+        try {
+            port = Integer.parseUnsignedInt(serverPortFormattedTextField.getText());
+        } catch (NumberFormatException ex) {
+            // do not accept invalid input
+            return;
+        } catch (Exception ex) {
+            log.warn(OrchestratorGui.class.getName(), ex);
+            return;
+        }
+
+        if (port < 0) {
+            return;
+        }
+
+        try {
+            serverManager.addServer(addr, port);
+        } catch (ServerAdditionException ex) {
+            log.warn(OrchestratorGui.class.getName(), ex);
+            return;
+        }
+
+        DefaultListModel model = (DefaultListModel) serverEntryList.getModel();
+        for (final Server server : serverManager.getServers().values()) {
+            if (server.getHost().equals(addr) && server.getPort() == port) {
+                model.addElement("<html>"
+                        + "<h3>" + server.getConfiguration().getName() + "</h3>"
+                        + "<p>UUID: " + server.getConfiguration().getUuid().toString() + "</p>"
+                        + "<p>Addr: " + server.getHostAndPort().toString() + "</p>"
+                        + "</html>");
+                break;
+            }
+        }
+
+        addServerDialog.setVisible(false);
+        addServerDialog.dispose();
+    }
 
     /**
      * Creates new form OrchestratorGui
@@ -43,14 +82,14 @@ public class OrchestratorGui extends javax.swing.JFrame {
         serverPortFormattedTextField = new javax.swing.JFormattedTextField();
         aboutDialog = new javax.swing.JDialog();
         aboutLabel = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        serverPanel = new javax.swing.JPanel();
+        serverScrollPane = new javax.swing.JScrollPane();
         serverEntryList = new javax.swing.JList<>();
         addServerBtn = new javax.swing.JButton();
         removeServerBtn = new javax.swing.JButton();
         scanServerBtn = new javax.swing.JButton();
-        jScrollPane3 = new javax.swing.JScrollPane();
         jToolBar1 = new javax.swing.JToolBar();
+        mainPanel = new javax.swing.JPanel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         openMenuItem = new javax.swing.JMenuItem();
@@ -71,7 +110,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addServerDialog.setLocationByPlatform(true);
         addServerDialog.setMaximumSize(new java.awt.Dimension(2147483647, 1024));
         addServerDialog.setModal(true);
-        addServerDialog.setName(""); // NOI18N
+        addServerDialog.setName("addServerDialog"); // NOI18N
         addServerDialog.setPreferredSize(new java.awt.Dimension(300, 200));
         addServerDialog.setSize(new java.awt.Dimension(300, 200));
         java.awt.GridBagLayout addServerDialogLayout = new java.awt.GridBagLayout();
@@ -89,6 +128,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
         addServerDialog.getContentPane().add(serverAddressLabel, gridBagConstraints);
+
+        serverAddressTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                serverAddressTextFieldActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -148,6 +193,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
         } catch (java.text.ParseException ex) {
             ex.printStackTrace();
         }
+        serverPortFormattedTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                serverPortFormattedTextFieldActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -164,7 +214,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         aboutDialog.setLocationByPlatform(true);
         aboutDialog.setMinimumSize(new java.awt.Dimension(300, 256));
         aboutDialog.setModal(true);
-        aboutDialog.setName(""); // NOI18N
+        aboutDialog.setName("aboutDialog"); // NOI18N
 
         aboutLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         aboutLabel.setText("<html>\n<center>\n<h1>sila-orchestrator</h1>\n<p>Copyright © 2020 Florian Bauer</p>\n</center>\n<p></p>\n<p>E-Mail: florian.bauer.dev@gmail.com</p>\n<p>License: Apache-2.0</p>\n<html>");
@@ -177,73 +227,98 @@ public class OrchestratorGui extends javax.swing.JFrame {
         setTitle("SiLA Orchestrator");
         setLocationByPlatform(true);
         setSize(new java.awt.Dimension(0, 0));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
+
+        java.awt.GridBagLayout jPanel1Layout = new java.awt.GridBagLayout();
+        jPanel1Layout.columnWidths = new int[] {3};
+        jPanel1Layout.rowHeights = new int[] {2};
+        jPanel1Layout.columnWeights = new double[] {0.333, 0.333, 0.333};
+        jPanel1Layout.rowWeights = new double[] {1.0};
+        serverPanel.setLayout(jPanel1Layout);
 
         serverEntryList.setModel(new javax.swing.DefaultListModel<String>());
-        serverEntryList.setToolTipText("");
         serverEntryList.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
                 serverEntryListComponentShown(evt);
             }
         });
-        jScrollPane2.setViewportView(serverEntryList);
+        serverScrollPane.setViewportView(serverEntryList);
 
-        addServerBtn.setText("add");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 2);
+        serverPanel.add(serverScrollPane, gridBagConstraints);
+
+        addServerBtn.setMnemonic('a');
+        addServerBtn.setText("Add");
+        addServerBtn.setPreferredSize(new java.awt.Dimension(80, 30));
         addServerBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addServerBtnActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        serverPanel.add(addServerBtn, gridBagConstraints);
 
-        removeServerBtn.setText("remove");
+        removeServerBtn.setMnemonic('r');
+        removeServerBtn.setText("Remove");
         removeServerBtn.setEnabled(false);
+        removeServerBtn.setPreferredSize(new java.awt.Dimension(80, 30));
         removeServerBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeServerBtnActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        serverPanel.add(removeServerBtn, gridBagConstraints);
 
-        scanServerBtn.setText("scan");
+        scanServerBtn.setMnemonic('s');
+        scanServerBtn.setText("Scan");
+        scanServerBtn.setPreferredSize(new java.awt.Dimension(80, 30));
         scanServerBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 scanServerBtnActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        serverPanel.add(scanServerBtn, gridBagConstraints);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(addServerBtn)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeServerBtn)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(scanServerBtn)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2))
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(addServerBtn)
-                    .addComponent(removeServerBtn)
-                    .addComponent(scanServerBtn))
-                .addContainerGap())
-        );
-
-        getContentPane().add(jPanel1, java.awt.BorderLayout.LINE_START);
-        getContentPane().add(jScrollPane3, java.awt.BorderLayout.LINE_END);
+        getContentPane().add(serverPanel, java.awt.BorderLayout.LINE_START);
 
         jToolBar1.setRollover(true);
         getContentPane().add(jToolBar1, java.awt.BorderLayout.PAGE_START);
+
+        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+        mainPanel.setLayout(mainPanelLayout);
+        mainPanelLayout.setHorizontalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 439, Short.MAX_VALUE)
+        );
+        mainPanelLayout.setVerticalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 460, Short.MAX_VALUE)
+        );
+
+        getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
 
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
@@ -317,6 +392,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
+        serverManager.close();
         System.exit(0);
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
@@ -336,46 +412,33 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_serverDialogCancelBtnActionPerformed
 
     private void serverDialogOkBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverDialogOkBtnActionPerformed
-        String addr = serverAddressTextField.getText();
-        int port = -1;
-        try {
-            port = Integer.parseUnsignedInt(serverPortFormattedTextField.getText());
-        } catch (NumberFormatException ex) {
-            // do not accept invalid input
-            return;
-        } catch (Exception ex) {
-            log.warn(OrchestratorGui.class.getName(), ex);
-            return;
-        }
-
-        if (port < 0) {
-            // TODO: check port range
-            return;
-        }
-
-        log.info(OrchestratorGui.class.getName(), "addr: " + addr + ", port: " + port);
-
-        try {
-            serverManager.addServer(addr, port);
-            DefaultListModel model = (DefaultListModel) serverEntryList.getModel();
-            model.addElement(addr + ":" + String.valueOf(port));
-        } catch (ServerAdditionException ex) {
-            log.error(OrchestratorGui.class.getName(), ex);
-        }
-        addServerDialog.setVisible(false);
-        addServerDialog.dispose();
+        addSpecificServer();
     }//GEN-LAST:event_serverDialogOkBtnActionPerformed
 
     private void scanServerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanServerBtnActionPerformed
         serverManager.getDiscovery().scanNetwork();
 
-        ArrayList<Server> serverList = new ArrayList<>(serverManager.getServers().values());
-        log.info(serverList.size() + " server found");
         DefaultListModel model = (DefaultListModel) serverEntryList.getModel();
         model.clear();
-        for (Server server : serverList) {
-            model.addElement(server.getHostAndPort().toString());
-
+        for (final Server server : serverManager.getServers().values()) {
+            model.addElement("<html>"
+                    + "<h3>" + server.getConfiguration().getName() + "</h3>"
+                    + "<p>UUID: " + server.getConfiguration().getUuid().toString() + "</p>"
+                    + "<p>Addr: " + server.getHostAndPort().toString() + "</p>"
+                    + "</html>");
+            log.info(server.toString()
+                    + "\n ConfName: " + server.getConfiguration().getName()
+                    + "\n ConfUuid: " + server.getConfiguration().getUuid()
+                    + "\n InfDesc: " + server.getInformation().getDescription()
+                    + "\n InfType: " + server.getInformation().getType()
+                    + "\n InfVedor: " + server.getInformation().getVendorURL()
+                    + "\n InfVersion: " + server.getInformation().getVersion()
+                    + "\n Host: " + server.getHost()
+                    + "\n Port: " + server.getPort()
+                    + "\n Joined: " + server.getJoined().toString()
+                    + "\n Status: " + server.getStatus().name()
+                    + "\n NegType: " + server.getNegotiationType().name()
+            );
         }
     }//GEN-LAST:event_scanServerBtnActionPerformed
 
@@ -386,6 +449,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private void serverEntryListComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_serverEntryListComponentShown
         // TODO add your handling code here:
     }//GEN-LAST:event_serverEntryListComponentShown
+
+    private void serverPortFormattedTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverPortFormattedTextFieldActionPerformed
+        addSpecificServer();
+    }//GEN-LAST:event_serverPortFormattedTextFieldActionPerformed
+
+    private void serverAddressTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverAddressTextFieldActionPerformed
+        // set cursor to the next text field when enter was pressed
+        serverPortFormattedTextField.requestFocusInWindow();
+    }//GEN-LAST:event_serverAddressTextFieldActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        serverManager.close();
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * @param args the command line arguments
@@ -433,10 +509,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenuItem pasteMenuItem;
@@ -449,8 +523,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JButton serverDialogCancelBtn;
     private javax.swing.JButton serverDialogOkBtn;
     private javax.swing.JList<String> serverEntryList;
+    private javax.swing.JPanel serverPanel;
     private javax.swing.JFormattedTextField serverPortFormattedTextField;
     private javax.swing.JLabel serverPortLabel;
+    private javax.swing.JScrollPane serverScrollPane;
     // End of variables declaration//GEN-END:variables
 
 }
