@@ -116,6 +116,6 @@ public class OrchClient {
                 }
             }
         }
-
+        serverManager.close();
     }
 }
