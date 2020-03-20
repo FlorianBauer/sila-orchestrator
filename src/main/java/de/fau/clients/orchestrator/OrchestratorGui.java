@@ -12,6 +12,7 @@ import sila_java.library.manager.ServerAdditionException;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 import javax.swing.tree.TreeSelectionModel;
+import sila_java.library.manager.ServerFinder;
 
 @Slf4j
 public class OrchestratorGui extends javax.swing.JFrame {
@@ -459,7 +460,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
     private void scanServerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanServerBtnActionPerformed
         serverManager.getDiscovery().scanNetwork();
-        addFeaturesToTree(serverManager.getServers().values());
+        addFeaturesToTree(ServerFinder.filterBy(ServerFinder.Filter.status(Server.Status.ONLINE)).find());
     }//GEN-LAST:event_scanServerBtnActionPerformed
 
     private void removeServerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeServerBtnActionPerformed
