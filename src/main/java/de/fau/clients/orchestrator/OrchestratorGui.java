@@ -99,7 +99,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
             System.exit(1);
         }
         initComponents();
-        featureTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     }
 
     /**
@@ -274,13 +273,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
         java.awt.GridBagLayout jPanel1Layout = new java.awt.GridBagLayout();
         jPanel1Layout.columnWidths = new int[] {3};
         jPanel1Layout.rowHeights = new int[] {2};
-        jPanel1Layout.columnWeights = new double[] {0.333, 0.333, 0.333};
-        jPanel1Layout.rowWeights = new double[] {1.0};
         serverPanel.setLayout(jPanel1Layout);
 
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("Server");
         featureTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         featureTree.setRootVisible(false);
+        featureTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         featureTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
                 featureTreeValueChanged(evt);
@@ -293,6 +291,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         serverPanel.add(featureScrollPane, gridBagConstraints);
 
@@ -308,6 +307,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         serverPanel.add(addServerBtn, gridBagConstraints);
 
@@ -324,6 +324,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         serverPanel.add(removeServerBtn, gridBagConstraints);
 
@@ -339,12 +340,15 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         serverPanel.add(scanServerBtn, gridBagConstraints);
 
         getContentPane().add(serverPanel, java.awt.BorderLayout.LINE_START);
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
+
+        commandScrollPane.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
 
         commandPanel.setLayout(new javax.swing.BoxLayout(commandPanel, javax.swing.BoxLayout.PAGE_AXIS));
         commandScrollPane.setViewportView(commandPanel);
@@ -492,14 +496,15 @@ public class OrchestratorGui extends javax.swing.JFrame {
         } else {
             commandPanel.removeAll();
         }
-        this.pack();
+        commandPanel.revalidate();
+        commandPanel.repaint();
     }//GEN-LAST:event_featureTreeValueChanged
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
+        // Set the GTK+ look and feel
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
@@ -519,11 +524,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
         //</editor-fold>
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new OrchestratorGui().setVisible(true);
-            }
+        // Create and display the form
+        java.awt.EventQueue.invokeLater(() -> {
+            new OrchestratorGui().setVisible(true);
         });
     }
 
@@ -561,5 +564,4 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JFormattedTextField serverPortFormattedTextField;
     private javax.swing.JLabel serverPortLabel;
     // End of variables declaration//GEN-END:variables
-
 }
