@@ -72,7 +72,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
                     featureNode.add(commandNode);
                     for (final Command command : feature.getCommand()) {
-                        commandNode.add(new CommandTreeNode(commandPanel, command));
+                        commandNode.add(new CommandTreeNode(commandPanel,
+                                server.getConfiguration().getUuid(),
+                                feature.getIdentifier(),
+                                command));
                     }
                 }
 
