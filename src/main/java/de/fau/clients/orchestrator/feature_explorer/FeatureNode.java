@@ -69,7 +69,7 @@ public final class FeatureNode {
         if (jsonElem.isEmpty()) {
             return "";
         }
-        return jsonElem.substring(0, jsonElem.length() - 2);
+        return "{" + jsonElem.substring(0, jsonElem.length() - 2) + "}";
     }
 
     /**

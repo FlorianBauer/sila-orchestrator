@@ -32,6 +32,14 @@ final class ListNode implements SilaNode {
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.PAGE_AXIS));
         listPanel.setBorder(BorderFactory.createEtchedBorder());
         nodeList.add(this.prototype.cloneNode());
+
+        removeBtn.addActionListener((ActionEvent evt) -> {
+            removeBtnActionPerformed();
+        });
+
+        addBtn.addActionListener((ActionEvent evt) -> {
+            addBtnActionPerformed();
+        });
     }
 
     private ListNode(@NonNull final SilaNode prototype, final Constraints constraints) {
@@ -51,6 +59,14 @@ final class ListNode implements SilaNode {
         } else {
             nodeList.add(this.prototype.cloneNode());
         }
+
+        removeBtn.addActionListener((ActionEvent evt) -> {
+            removeBtnActionPerformed();
+        });
+
+        addBtn.addActionListener((ActionEvent evt) -> {
+            addBtnActionPerformed();
+        });
     }
 
     protected static ListNode create(@NonNull final ListType type) {
@@ -98,16 +114,9 @@ final class ListNode implements SilaNode {
         }
 
         if (constraints == null || constraints.getElementCount() == null) {
-            // Creating a "Remove"-button if no fixed element count constraint was given.
-            removeBtn.addActionListener((ActionEvent evt) -> {
-                removeBtnActionPerformed();
-            });
+            // Adding the "Remove"-button if no fixed element count constraint was given.
             listPanel.add(removeBtn);
-
-            // Creating a "Add"-button if no fixed element count constraint was given.
-            addBtn.addActionListener((ActionEvent evt) -> {
-                addBtnActionPerformed();
-            });
+            // Adding the "Add"-button if no fixed element count constraint was given.
             listPanel.add(addBtn);
         }
         return this.listPanel;
