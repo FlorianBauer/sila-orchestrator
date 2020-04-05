@@ -2,6 +2,8 @@ package de.fau.clients.orchestrator;
 
 import java.util.Collection;
 import java.util.List;
+import javax.swing.ImageIcon;
+import javax.swing.ToolTipManager;
 import javax.swing.table.DefaultTableModel;
 import lombok.extern.slf4j.Slf4j;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -13,6 +15,7 @@ import sila_java.library.manager.ServerAdditionException;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 import javax.swing.tree.TreeSelectionModel;
+import sila_java.library.core.models.Feature.Metadata;
 import sila_java.library.manager.ServerFinder;
 
 @Slf4j
@@ -57,26 +60,25 @@ public class OrchestratorGui extends javax.swing.JFrame {
         rootNode.removeAllChildren();
 
         for (final Server server : serverList) {
-            DefaultMutableTreeNode serverNode = new DefaultMutableTreeNode("<html>"
-                    + "<p>" + server.getConfiguration().getName() + "</p>"
-                    + "<p>UUID: " + server.getConfiguration().getUuid().toString() + "</p>"
-                    + "<p>Addr: " + server.getHostAndPort().toString() + "</p>"
-                    + "</html>");
+            DefaultMutableTreeNode serverNode = new DefaultMutableTreeNode();
+            serverNode.setUserObject(new FeatureTreeType(server));
             rootNode.add(serverNode);
 
             for (final Feature feature : server.getFeatures()) {
-                DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode(
-                        "<html><b>" + feature.getDisplayName() + "</b></html>");
+                DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode();
+                featureNode.setUserObject(new FeatureTreeType(feature));
                 serverNode.add(featureNode);
 
                 if (feature.getCommand() != null && !feature.getCommand().isEmpty()) {
                     DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
                     featureNode.add(commandNode);
                     for (final Command command : feature.getCommand()) {
-                        commandNode.add(new CommandTreeNode(commandPanel,
+                        final CommandTreeNode ctn = new CommandTreeNode(commandPanel,
                                 server.getConfiguration().getUuid(),
                                 feature.getIdentifier(),
-                                command));
+                                command);
+                        ctn.setUserObject(new FeatureTreeType(command));
+                        commandNode.add(ctn);
                     }
                 }
 
@@ -84,7 +86,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode("Properties");
                     featureNode.add(propertyNode);
                     for (final Property prop : feature.getProperty()) {
-                        propertyNode.add(new DefaultMutableTreeNode(prop.getDisplayName()));
+                        DefaultMutableTreeNode ptn = new DefaultMutableTreeNode();
+                        ptn.setUserObject(new FeatureTreeType(prop));
+                        propertyNode.add(ptn);
+                    }
+                }
+
+                if (feature.getMetadata() != null && !feature.getMetadata().isEmpty()) {
+                    DefaultMutableTreeNode metaNode = new DefaultMutableTreeNode("Metadata");
+                    featureNode.add(metaNode);
+                    for (final Metadata meta : feature.getMetadata()) {
+                        DefaultMutableTreeNode mtn = new DefaultMutableTreeNode();
+                        mtn.setUserObject(new FeatureTreeType(meta));
+                        metaNode.add(mtn);
                     }
                 }
             }
@@ -127,6 +141,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         serverPortFormattedTextField = new javax.swing.JFormattedTextField();
         aboutDialog = new javax.swing.JDialog();
         aboutLabel = new javax.swing.JLabel();
+        serverSplitPane = new javax.swing.JSplitPane();
         serverPanel = new javax.swing.JPanel();
         featureScrollPane = new javax.swing.JScrollPane();
         featureTree = new javax.swing.JTree();
@@ -139,6 +154,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addTaskToQueueBtn = new javax.swing.JButton();
         taskQueueScrollPane = new javax.swing.JScrollPane();
         taskQueueTable = new javax.swing.JTable();
+        executeAllBtn = new javax.swing.JButton();
         commandScrollPane = new javax.swing.JScrollPane();
         commandPanel = new javax.swing.JPanel();
         menuBar = new javax.swing.JMenuBar();
@@ -276,6 +292,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SiLA Orchestrator");
         setLocationByPlatform(true);
+        setPreferredSize(new java.awt.Dimension(1024, 512));
         setSize(new java.awt.Dimension(0, 0));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -283,13 +300,16 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
 
+        serverPanel.setPreferredSize(new java.awt.Dimension(384, 220));
         java.awt.GridBagLayout jPanel1Layout = new java.awt.GridBagLayout();
         jPanel1Layout.columnWidths = new int[] {3};
         jPanel1Layout.rowHeights = new int[] {2};
         serverPanel.setLayout(jPanel1Layout);
 
+        ToolTipManager.sharedInstance().registerComponent(featureTree);
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("No Server Available");
         featureTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+        featureTree.setCellRenderer(new FeatureTreeRenderer());
         featureTree.setVisibleRowCount(10);
         featureTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         featureTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
@@ -357,14 +377,15 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         serverPanel.add(scanServerBtn, gridBagConstraints);
 
-        getContentPane().add(serverPanel, java.awt.BorderLayout.LINE_START);
+        serverSplitPane.setLeftComponent(serverPanel);
 
+        mainPanel.setPreferredSize(new java.awt.Dimension(512, 409));
         mainPanel.setLayout(new javax.swing.BoxLayout(mainPanel, javax.swing.BoxLayout.PAGE_AXIS));
 
         mainPanelSplitPane.setDividerLocation(200);
         mainPanelSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
-        taskQueuePanel.setLayout(new javax.swing.BoxLayout(taskQueuePanel, javax.swing.BoxLayout.LINE_AXIS));
+        taskQueuePanel.setLayout(new java.awt.BorderLayout());
 
         addTaskToQueueBtn.setText("->");
         addTaskToQueueBtn.setEnabled(false);
@@ -373,7 +394,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 addTaskToQueueBtnActionPerformed(evt);
             }
         });
-        taskQueuePanel.add(addTaskToQueueBtn);
+        taskQueuePanel.add(addTaskToQueueBtn, java.awt.BorderLayout.WEST);
 
         taskQueueTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -408,7 +429,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         taskQueueScrollPane.setViewportView(taskQueueTable);
 
-        taskQueuePanel.add(taskQueueScrollPane);
+        taskQueuePanel.add(taskQueueScrollPane, java.awt.BorderLayout.CENTER);
+
+        executeAllBtn.setText("Execute All");
+        executeAllBtn.setEnabled(false);
+        taskQueuePanel.add(executeAllBtn, java.awt.BorderLayout.PAGE_END);
 
         mainPanelSplitPane.setLeftComponent(taskQueuePanel);
 
@@ -419,7 +444,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         mainPanel.add(mainPanelSplitPane);
 
-        getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
+        serverSplitPane.setRightComponent(mainPanel);
+
+        getContentPane().add(serverSplitPane, java.awt.BorderLayout.CENTER);
 
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
@@ -646,6 +673,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JMenuItem cutMenuItem;
     private javax.swing.JMenuItem deleteMenuItem;
     private javax.swing.JMenu editMenu;
+    private javax.swing.JButton executeAllBtn;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JScrollPane featureScrollPane;
     private javax.swing.JTree featureTree;
@@ -667,6 +695,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JPanel serverPanel;
     private javax.swing.JFormattedTextField serverPortFormattedTextField;
     private javax.swing.JLabel serverPortLabel;
+    private javax.swing.JSplitPane serverSplitPane;
     private javax.swing.JPanel taskQueuePanel;
     private javax.swing.JScrollPane taskQueueScrollPane;
     private javax.swing.JTable taskQueueTable;

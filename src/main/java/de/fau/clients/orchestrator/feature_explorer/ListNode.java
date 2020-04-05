@@ -52,8 +52,11 @@ final class ListNode implements SilaNode {
             for (int i = 0; i < constraints.getElementCount().intValue(); i++) {
                 nodeList.add(this.prototype.cloneNode());
             }
+            // everything is fixed, so registering button-listeners can be omitted
+            return;
         } else if (constraints.getMinimalElementCount() != null) {
             for (int i = 0; i < constraints.getMinimalElementCount().intValue(); i++) {
+                removeBtn.setEnabled(false);
                 nodeList.add(this.prototype.cloneNode());
             }
         } else {
@@ -131,13 +134,13 @@ final class ListNode implements SilaNode {
 
             if (constraints.getMinimalElementCount() != null) {
                 final int minElemCount = constraints.getMinimalElementCount().intValue();
-                if (minElemCount < nodeList.size()) {
+                if (nodeList.size() > minElemCount) {
                     listPanel.remove(nodeList.size() - 1);
                     listPanel.revalidate();
                     listPanel.repaint();
                     nodeList.remove(nodeList.size() - 1);
 
-                    if (minElemCount <= nodeList.size()) {
+                    if (nodeList.size() <= minElemCount) {
                         removeBtn.setEnabled(false);
                     }
                     // re-enable the "Add"-button

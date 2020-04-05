@@ -2,6 +2,7 @@ package de.fau.clients.orchestrator;
 
 import de.fau.clients.orchestrator.feature_explorer.FeatureNode;
 import java.awt.event.ActionEvent;
+import java.util.List;
 import java.util.UUID;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -9,6 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Feature;
+import sila_java.library.core.models.SiLAElement;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.SiLACall;
 
@@ -24,11 +26,15 @@ public class CommandTableEntry {
     private boolean isNodeBuild = false;
     private FeatureNode featNode = null;
 
-    public CommandTableEntry(final UUID serverId, final String featureId, final Feature.Command command) {
+    public CommandTableEntry(
+            final UUID serverId,
+            final String featureId,
+            final Feature.Command command) {
+
         this.serverId = serverId;
         this.featureId = featureId;
         this.command = command;
-        this.panel.setLayout(new BoxLayout(this.panel, BoxLayout.PAGE_AXIS));
+        this.panel.setLayout(new BoxLayout(this.panel, BoxLayout.Y_AXIS));
     }
 
     @Override
@@ -41,10 +47,14 @@ public class CommandTableEntry {
             isNodeBuild = true;
 
             if (featNode == null) {
-                featNode = new FeatureNode(command.getParameter());
+                final List<SiLAElement> params = command.getParameter();
+                if (params.isEmpty()) {
+                    return;
+                }
+                featNode = new FeatureNode(params);
+                featNode.populatePanel(panel);
             }
 
-            featNode.populatePanel(panel);
             execBtn.addActionListener((ActionEvent evt) -> {
                 executeCommandBtnActionPerformed(evt);
             });

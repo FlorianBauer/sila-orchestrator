@@ -32,8 +32,8 @@ public final class FeatureNode {
                 final DataTypeType conType = type.getConstrained().getDataType();
                 if (conType != null) {
                     if (conType.getBasic() != null) {
-                        // TODO: add constaint
-                        return BasicNode.create(conType.getBasic());
+                        return BasicNode.createWithConstraint(conType.getBasic(),
+                                type.getConstrained().getConstraints());
                     } else if (type.getConstrained().getDataType().getList() != null) {
                         return ListNode.createWithConstraint(conType.getList(),
                                 type.getConstrained().getConstraints());

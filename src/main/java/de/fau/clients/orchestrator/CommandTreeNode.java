@@ -11,7 +11,12 @@ public class CommandTreeNode extends DefaultMutableTreeNode {
     private final String featureId;
     private final Command command;
 
-    public CommandTreeNode(final JPanel panel, final UUID serverId, final String featureId, final Command command) {
+    public CommandTreeNode(
+            final JPanel panel,
+            final UUID serverId,
+            final String featureId,
+            final Command command) {
+        
         super();
         this.serverId = serverId;
         this.featureId = featureId;

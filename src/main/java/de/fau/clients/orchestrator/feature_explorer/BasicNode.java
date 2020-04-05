@@ -2,21 +2,27 @@ package de.fau.clients.orchestrator.feature_explorer;
 
 import java.awt.Dimension;
 import java.util.function.Supplier;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerNumberModel;
 import lombok.NonNull;
 import sila_java.library.core.models.BasicType;
+import sila_java.library.core.models.Constraints;
 
 final class BasicNode implements SilaNode {
 
     public static final Dimension MAX_SIZE = new Dimension(4096, 32);
-    public static final Dimension PREFERRED_SIZE = new Dimension(256, 32);
+    public static final Dimension PREFERRED_SIZE_TEXT_FIELD = new Dimension(256, 32);
+    public static final Dimension PREFERRED_SIZE_SPINNER = new Dimension(48, 32);
 
-    private JComponent component = null;
     private BasicType type = null;
+    private Constraints constraints;
     private Supplier<String> valueSupplier;
+    private JComponent component = null;
 
     private BasicNode() {
     }
@@ -27,41 +33,126 @@ final class BasicNode implements SilaNode {
         switch (type) {
             case BINARY:
                 // TODO: implement
+                node.component = new JLabel("placeholder 01");
+                node.valueSupplier = () -> ("not implemented 01");
                 break;
             case BOOLEAN:
-                // TODO: implement
+                JCheckBox checkBox = new JCheckBox();
+                checkBox.setMaximumSize(MAX_SIZE);
+                node.valueSupplier = () -> (checkBox.isSelected() ? "true" : "false");
+                node.component = checkBox;
                 break;
             case DATE:
-                // TODO: implement
+                JSpinner dateSpinner = new JSpinner(new SpinnerDateModel());
+                dateSpinner.setMaximumSize(MAX_SIZE);
+                dateSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
+                node.valueSupplier = () -> (dateSpinner.getValue().toString());
+                node.component = dateSpinner;
                 break;
             case INTEGER:
-                JSpinner intSpinner = new JSpinner();
+                JSpinner intSpinner = new JSpinner(new SpinnerNumberModel());
                 intSpinner.setMaximumSize(MAX_SIZE);
-                intSpinner.setPreferredSize(PREFERRED_SIZE);
-                intSpinner.setModel(new SpinnerNumberModel());
+                intSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
                 node.valueSupplier = () -> (intSpinner.getValue().toString());
                 node.component = intSpinner;
-//                return node;
+                break;
             case REAL:
-                JSpinner realSpinner = new JSpinner();
+                JSpinner realSpinner = new JSpinner(new SpinnerNumberModel());
                 realSpinner.setMaximumSize(MAX_SIZE);
-                realSpinner.setPreferredSize(PREFERRED_SIZE);
-                realSpinner.setModel(new SpinnerNumberModel());
+                realSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
                 node.valueSupplier = () -> (realSpinner.getValue().toString());
                 node.component = realSpinner;
+                break;
             case STRING:
                 JTextField strField = new JTextField();
                 strField.setMaximumSize(MAX_SIZE);
-                strField.setPreferredSize(PREFERRED_SIZE);
+                strField.setPreferredSize(PREFERRED_SIZE_TEXT_FIELD);
                 node.valueSupplier = () -> (strField.getText());
                 node.component = strField;
+                break;
             case TIME:
                 // TODO: implement
+                node.component = new JLabel("placeholder 02");
+                node.valueSupplier = () -> ("not implemented 02");
                 break;
             case TIMESTAMP:
                 // TODO: implement
+                node.component = new JLabel("placeholder 03");
+                node.valueSupplier = () -> ("not implemented 03");
                 break;
             case ANY:
+                // TODO: implement
+                node.component = new JLabel("placeholder 04");
+                node.valueSupplier = () -> ("not implemented 04");
+                break;
+            default:
+                // TODO: implement
+                return null;
+        }
+        return node;
+    }
+
+    protected static BasicNode createWithConstraint(
+            @NonNull final BasicType type,
+            final Constraints constraints) {
+
+        BasicNode node = new BasicNode();
+        node.type = type;
+        switch (type) {
+            case BINARY:
+                // TODO: implement
+                node.component = new JLabel("placeholder 01");
+                node.valueSupplier = () -> ("not implemented 01");
+                break;
+            case BOOLEAN:
+                JCheckBox checkBox = new JCheckBox();
+                checkBox.setMaximumSize(MAX_SIZE);
+                node.valueSupplier = () -> (checkBox.isSelected() ? "true" : "false");
+                node.component = checkBox;
+                break;
+            case DATE:
+                JSpinner dateSpinner = new JSpinner(new SpinnerDateModel());
+                dateSpinner.setMaximumSize(MAX_SIZE);
+                dateSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
+                node.valueSupplier = () -> (dateSpinner.getValue().toString());
+                node.component = dateSpinner;
+                break;
+            case INTEGER:
+                JSpinner intSpinner = new JSpinner(new SpinnerNumberModel());
+                intSpinner.setMaximumSize(MAX_SIZE);
+                intSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
+                node.valueSupplier = () -> (intSpinner.getValue().toString());
+                node.component = intSpinner;
+                break;
+            case REAL:
+                JSpinner realSpinner = new JSpinner(new SpinnerNumberModel());
+                realSpinner.setMaximumSize(MAX_SIZE);
+                realSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
+                node.valueSupplier = () -> (realSpinner.getValue().toString());
+                node.component = realSpinner;
+                break;
+            case STRING:
+                JTextField strField = new JTextField();
+                strField.setMaximumSize(MAX_SIZE);
+                strField.setPreferredSize(PREFERRED_SIZE_TEXT_FIELD);
+                node.valueSupplier = () -> (strField.getText());
+                node.component = strField;
+                break;
+            case TIME:
+                // TODO: implement
+                node.component = new JLabel("placeholder 02");
+                node.valueSupplier = () -> ("not implemented 02");
+                break;
+            case TIMESTAMP:
+                // TODO: implement
+                node.component = new JLabel("placeholder 03");
+                node.valueSupplier = () -> ("not implemented 03");
+                break;
+            case ANY:
+                // TODO: implement
+                node.component = new JLabel("placeholder 04");
+                node.valueSupplier = () -> ("not implemented 04");
+                break;
             default:
                 // TODO: implement
                 return null;
@@ -71,7 +162,11 @@ final class BasicNode implements SilaNode {
 
     @Override
     public BasicNode cloneNode() {
-        return create(this.type);
+        if (this.constraints == null) {
+            return create(this.type);
+        } else {
+            return createWithConstraint(this.type, this.constraints);
+        }
     }
 
     @Override
