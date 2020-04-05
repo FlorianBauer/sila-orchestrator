@@ -614,10 +614,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_addTaskToQueueBtnActionPerformed
 
     private void taskQueueTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_taskQueueTableMouseClicked
-        DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
-
         int selectedRowIdx = taskQueueTable.getSelectedRow();
-        // get payload
+        if (selectedRowIdx < 0) {
+            return;
+        }
+
+        DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
         CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, 2);
         if (entry == null) {
             return;
