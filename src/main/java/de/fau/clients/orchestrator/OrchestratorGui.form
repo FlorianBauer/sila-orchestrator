@@ -1586,7 +1586,10 @@
                   <SubComponents>
                     <Component class="javax.swing.JButton" name="addTaskToQueueBtn">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="-&gt;"/>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="new ImageIcon(&quot;src/main/resources/icons/add-entry.png&quot;)" type="code"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" value="Add Entry to Table"/>
                         <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
                       <Events>

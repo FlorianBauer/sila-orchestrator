@@ -387,7 +387,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         taskQueuePanel.setLayout(new java.awt.BorderLayout());
 
-        addTaskToQueueBtn.setText("->");
+        addTaskToQueueBtn.setIcon(new ImageIcon("src/main/resources/icons/add-entry.png"));
+        addTaskToQueueBtn.setToolTipText("Add Entry to Table");
         addTaskToQueueBtn.setEnabled(false);
         addTaskToQueueBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
