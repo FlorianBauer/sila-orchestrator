@@ -2,6 +2,9 @@ package de.fau.clients.orchestrator;
 
 import de.fau.clients.orchestrator.feature_explorer.FeatureNode;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import javax.swing.BoxLayout;
@@ -17,6 +20,8 @@ import sila_java.library.manager.models.SiLACall;
 @Slf4j
 public class CommandTableEntry {
 
+    /// Use a "ISO 8601-ish" date-time representation.
+    private static final DateTimeFormatter timeStampFromat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final JPanel panel = new JPanel();
     private final JButton execBtn = new JButton("Execute");
 
@@ -25,6 +30,9 @@ public class CommandTableEntry {
     private final Feature.Command command;
     private boolean isNodeBuild = false;
     private FeatureNode featNode = null;
+    private OffsetDateTime startTimeStamp = null;
+    private OffsetDateTime endTimeStamp = null;
+    private String execResult = "-";
 
     public CommandTableEntry(
             final UUID serverId,
@@ -84,16 +92,42 @@ public class CommandTableEntry {
                 jsonMsg
         );
 
+        startTimeStamp = OffsetDateTime.now();
         try {
-            ServerManager.getInstance().newCallExecutor(call).execute();
+            execResult = ServerManager.getInstance().newCallExecutor(call).execute();
         } catch (RuntimeException ex) {
             log.error(ex.getMessage());
+            execResult = ex.getMessage();
         } catch (Exception ex) {
             log.error(ex.getMessage());
+            execResult = ex.getMessage();
         }
+        endTimeStamp = OffsetDateTime.now();
     }
 
     public boolean isNodeBuild() {
         return isNodeBuild;
+    }
+
+    public void registerActionListener(ActionListener listener) {
+        execBtn.addActionListener(listener);
+    }
+
+    public String getStartTimeStamp() {
+        if (startTimeStamp != null) {
+            return startTimeStamp.format(timeStampFromat);
+        }
+        return "-";
+    }
+
+    public String getEndTimeStamp() {
+        if (endTimeStamp != null) {
+            return endTimeStamp.format(timeStampFromat);
+        }
+        return "-";
+    }
+
+    public String getExecResult() {
+        return execResult;
     }
 }

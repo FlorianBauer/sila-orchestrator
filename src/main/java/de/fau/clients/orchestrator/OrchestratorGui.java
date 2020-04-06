@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator;
 
+import java.awt.event.ActionEvent;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.ImageIcon;
@@ -598,13 +599,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
             // use the selected node to create a new table entry.
             CommandTableEntry cmdEntry = cmdNode.createTableEntry();
             DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+            final int row = taskQueueTable.getRowCount();
             model.addRow(new Object[]{
-                taskQueueTable.getRowCount() + 1,
+                row + 1,
                 new ImageIcon("src/main/resources/icons/32px/command.png"),
                 cmdEntry,
-                null,
-                null,
-                null
+                "-",
+                "-",
+                "-"
+            });
+
+            cmdEntry.registerActionListener((ActionEvent execEvt) -> {
+                model.setValueAt(cmdEntry.getStartTimeStamp(), row, 4);
+                model.setValueAt(cmdEntry.getExecResult(), row, 5);
             });
 
         } else {
