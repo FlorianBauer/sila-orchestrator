@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.ImageIcon;
@@ -604,16 +605,27 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 row + 1,
                 new ImageIcon("src/main/resources/icons/32px/command.png"),
                 cmdEntry,
-                "-",
-                "-",
+                cmdEntry.getState(),
+                cmdEntry.getStartTimeStamp(),
                 "-"
             });
 
-            cmdEntry.registerActionListener((ActionEvent execEvt) -> {
-                model.setValueAt(cmdEntry.getStartTimeStamp(), row, 4);
-                model.setValueAt(cmdEntry.getExecResult(), row, 5);
+            cmdEntry.addStatusChangeListener((PropertyChangeEvent pcEvt) -> {
+                if (pcEvt.getPropertyName().equals("taskState")) {
+                    final TaskState state = (TaskState) pcEvt.getNewValue();
+                    model.setValueAt(state, row, 3);
+                    switch (state) {
+                        case RUNNING:
+                            model.setValueAt(cmdEntry.getStartTimeStamp(), row, 4);
+                            break;
+                        case FINISHED_SUCCESS:
+                        case FINISHED_ERROR:
+                            model.setValueAt(cmdEntry.getLastExecResult(), row, 5);
+                            break;
+                        default:
+                    }
+                }
             });
-
         } else {
             commandPanel.removeAll();
         }

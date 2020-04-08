@@ -3,6 +3,8 @@ package de.fau.clients.orchestrator;
 import de.fau.clients.orchestrator.feature_explorer.FeatureNode;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -24,15 +26,17 @@ public class CommandTableEntry {
     private static final DateTimeFormatter timeStampFromat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final JPanel panel = new JPanel();
     private final JButton execBtn = new JButton("Execute");
-
     private final UUID serverId;
     private final String featureId;
     private final Feature.Command command;
+    private final PropertyChangeSupport stateChanges = new PropertyChangeSupport(this);
     private boolean isNodeBuild = false;
     private FeatureNode featNode = null;
     private OffsetDateTime startTimeStamp = null;
     private OffsetDateTime endTimeStamp = null;
-    private String execResult = "-";
+    private String execResult = "";
+    private TaskState state = TaskState.NEUTRAL;
+    
 
     public CommandTableEntry(
             final UUID serverId,
@@ -79,12 +83,19 @@ public class CommandTableEntry {
     }
 
     private void executeCommandBtnActionPerformed(ActionEvent evt) {
+        execBtn.setEnabled(false);
         final SiLACall.Type callType = command.getObservable().equalsIgnoreCase("yes")
                 ? SiLACall.Type.OBSERVABLE_COMMAND
                 : SiLACall.Type.UNOBSERVABLE_COMMAND;
 
         final String jsonMsg = featNode.toJsonMessage();
         log.info("jsonMsg: " + jsonMsg);
+
+        startTimeStamp = OffsetDateTime.now();
+        final TaskState tmpState = state;
+        state = TaskState.RUNNING;
+        stateChanges.firePropertyChange("taskState", tmpState, state);
+
         SiLACall call = new SiLACall(serverId,
                 featureId,
                 command.getIdentifier(),
@@ -92,25 +103,30 @@ public class CommandTableEntry {
                 jsonMsg
         );
 
-        startTimeStamp = OffsetDateTime.now();
-        try {
-            execResult = ServerManager.getInstance().newCallExecutor(call).execute();
-        } catch (RuntimeException ex) {
-            log.error(ex.getMessage());
-            execResult = ex.getMessage();
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-            execResult = ex.getMessage();
-        }
-        endTimeStamp = OffsetDateTime.now();
+        // run in dedicated thread to avoid blocking the GUI during execution
+        Runnable task = () -> {
+            final TaskState oldState = state;
+            try {
+                execResult = ServerManager.getInstance().newCallExecutor(call).execute();
+                state = TaskState.FINISHED_SUCCESS;
+            } catch (RuntimeException ex) {
+                log.error(ex.getMessage());
+                execResult = ex.getMessage();
+                state = TaskState.FINISHED_ERROR;
+            } catch (Exception ex) {
+                log.error(ex.getMessage());
+                execResult = ex.getMessage();
+                state = TaskState.FINISHED_ERROR;
+            }
+            endTimeStamp = OffsetDateTime.now();
+            execBtn.setEnabled(true);
+            stateChanges.firePropertyChange("taskState", oldState, state);
+        };
+        new Thread(task).start();
     }
 
     public boolean isNodeBuild() {
         return isNodeBuild;
-    }
-
-    public void registerActionListener(ActionListener listener) {
-        execBtn.addActionListener(listener);
     }
 
     public String getStartTimeStamp() {
@@ -127,7 +143,15 @@ public class CommandTableEntry {
         return "-";
     }
 
-    public String getExecResult() {
+    public String getLastExecResult() {
         return execResult;
+    }
+
+    public TaskState getState() {
+        return state;
+    }
+
+    public void addStatusChangeListener(PropertyChangeListener listener) {
+        stateChanges.addPropertyChangeListener(listener);
     }
 }
