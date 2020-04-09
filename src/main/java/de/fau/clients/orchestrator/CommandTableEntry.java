@@ -1,8 +1,14 @@
+/**
+ * Class which represents a SiLA-Command entry in the JTable of the task-queue.
+ *
+ * This class implements the `Runnable`-interface which allows the execution of the corresponding
+ * SiLA-Command in a dedicated thread. Due to its GUI-Components however, thread-safety
+ * for parallel usage is not given.
+ */
 package de.fau.clients.orchestrator;
 
 import de.fau.clients.orchestrator.feature_explorer.FeatureNode;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.time.OffsetDateTime;
@@ -20,7 +26,7 @@ import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.SiLACall;
 
 @Slf4j
-public class CommandTableEntry {
+public class CommandTableEntry implements Runnable {
 
     /// Use a "ISO 8601-ish" date-time representation.
     private static final DateTimeFormatter timeStampFromat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -36,7 +42,6 @@ public class CommandTableEntry {
     private OffsetDateTime endTimeStamp = null;
     private String execResult = "";
     private TaskState state = TaskState.NEUTRAL;
-    
 
     public CommandTableEntry(
             final UUID serverId,
@@ -49,11 +54,19 @@ public class CommandTableEntry {
         this.panel.setLayout(new BoxLayout(this.panel, BoxLayout.Y_AXIS));
     }
 
+    /**
+     * Overwritten `toString()` function to use the SiLA display name to label this component.
+     *
+     * @return The SiLA display name
+     */
     @Override
     public String toString() {
         return command.getDisplayName();
     }
 
+    /**
+     * Build all GUI components in the Panel to allow user-interaction with the commands parameter.
+     */
     public void buildCommandPanel() {
         if (isNodeBuild == false) {
             isNodeBuild = true;
@@ -68,7 +81,7 @@ public class CommandTableEntry {
             }
 
             execBtn.addActionListener((ActionEvent evt) -> {
-                executeCommandBtnActionPerformed(evt);
+                executeCommandBtnActionPerformed();
             });
             panel.add(execBtn);
         } else {
@@ -76,13 +89,73 @@ public class CommandTableEntry {
         }
     }
 
+    /**
+     * Embeds the build-up Panel in the given ScrollPane and draws its contents.
+     *
+     * @param scrollPane The ScrollPane to embed the Panel.
+     */
     public void showCommandPanel(final JScrollPane scrollPane) {
         scrollPane.setViewportView(panel);
         panel.revalidate();
         panel.repaint();
     }
 
-    private void executeCommandBtnActionPerformed(ActionEvent evt) {
+    /**
+     * Returns wether the Node was previously build or not.
+     *
+     * @return true if the Node is already build-up, otherwise false.
+     */
+    public boolean isNodeBuild() {
+        return isNodeBuild;
+    }
+
+    public String getStartTimeStamp() {
+        if (startTimeStamp != null) {
+            return startTimeStamp.format(timeStampFromat);
+        }
+        return "-";
+    }
+
+    public String getEndTimeStamp() {
+        if (endTimeStamp != null) {
+            return endTimeStamp.format(timeStampFromat);
+        }
+        return "-";
+    }
+
+    /**
+     * Gets the result of the last execution. The result-value gets overwritten on each execution.
+     *
+     * @return The last result as String.
+     */
+    public String getLastExecResult() {
+        return execResult;
+    }
+
+    public TaskState getState() {
+        return state;
+    }
+
+    /**
+     * Adds a listener which gets notified when the TaskState changes.
+     *
+     * @param listener The listener which gets notified when the TaskeState changes.
+     */
+    public void addStatusChangeListener(PropertyChangeListener listener) {
+        stateChanges.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * The actual action which is performed on execution. The overwritten Runnable interface allows
+     * the execution routine to be run in its own, dedicated thread without blocking the entire GUI.
+     * Multiple instances of this routine shall not be executed at the same time, since the parallel
+     * usage of the involved GUI-components is not synchronized and therefore not thread-safe.
+     *
+     * To start the routine in the current Thread use `this.run()`. To create a separate process use
+     * `new Thread(this).start`.
+     */
+    @Override
+    public void run() {
         execBtn.setEnabled(false);
         final SiLACall.Type callType = command.getObservable().equalsIgnoreCase("yes")
                 ? SiLACall.Type.OBSERVABLE_COMMAND
@@ -103,55 +176,31 @@ public class CommandTableEntry {
                 jsonMsg
         );
 
-        // run in dedicated thread to avoid blocking the GUI during execution
-        Runnable task = () -> {
-            final TaskState oldState = state;
-            try {
-                execResult = ServerManager.getInstance().newCallExecutor(call).execute();
-                state = TaskState.FINISHED_SUCCESS;
-            } catch (RuntimeException ex) {
-                log.error(ex.getMessage());
-                execResult = ex.getMessage();
-                state = TaskState.FINISHED_ERROR;
-            } catch (Exception ex) {
-                log.error(ex.getMessage());
-                execResult = ex.getMessage();
-                state = TaskState.FINISHED_ERROR;
-            }
-            endTimeStamp = OffsetDateTime.now();
-            execBtn.setEnabled(true);
-            stateChanges.firePropertyChange("taskState", oldState, state);
-        };
-        new Thread(task).start();
-    }
-
-    public boolean isNodeBuild() {
-        return isNodeBuild;
-    }
-
-    public String getStartTimeStamp() {
-        if (startTimeStamp != null) {
-            return startTimeStamp.format(timeStampFromat);
+        final TaskState oldState = state;
+        try {
+            execResult = ServerManager.getInstance().newCallExecutor(call).execute();
+            state = TaskState.FINISHED_SUCCESS;
+        } catch (RuntimeException ex) {
+            log.error(ex.getMessage());
+            execResult = ex.getMessage();
+            state = TaskState.FINISHED_ERROR;
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            execResult = ex.getMessage();
+            state = TaskState.FINISHED_ERROR;
         }
-        return "-";
+        endTimeStamp = OffsetDateTime.now();
+        execBtn.setEnabled(true);
+        stateChanges.firePropertyChange("taskState", oldState, state);
     }
 
-    public String getEndTimeStamp() {
-        if (endTimeStamp != null) {
-            return endTimeStamp.format(timeStampFromat);
-        }
-        return "-";
-    }
-
-    public String getLastExecResult() {
-        return execResult;
-    }
-
-    public TaskState getState() {
-        return state;
-    }
-
-    public void addStatusChangeListener(PropertyChangeListener listener) {
-        stateChanges.addPropertyChangeListener(listener);
+    /**
+     * Action which gets performed when the "Execute"-Button in the command-panel gets triggered.
+     * The actual executed routine is located in the overwritten `run()`-method and is executed in a
+     * dedicated thread.
+     */
+    public void executeCommandBtnActionPerformed() {
+        // instead of `this.run()`, start in new thread to avoid blocking the GUI
+        new Thread(this).start();
     }
 }

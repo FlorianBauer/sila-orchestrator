@@ -1,6 +1,5 @@
 package de.fau.clients.orchestrator;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.List;
@@ -436,6 +435,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         executeAllBtn.setText("Execute All");
         executeAllBtn.setEnabled(false);
+        executeAllBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                executeAllBtnActionPerformed(evt);
+            }
+        });
         taskQueuePanel.add(executeAllBtn, java.awt.BorderLayout.PAGE_END);
 
         mainPanelSplitPane.setLeftComponent(taskQueuePanel);
@@ -626,6 +630,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     }
                 }
             });
+            executeAllBtn.setEnabled(true);
         } else {
             commandPanel.removeAll();
         }
@@ -650,6 +655,35 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
         entry.showCommandPanel(commandScrollPane);
     }//GEN-LAST:event_taskQueueTableMouseClicked
+
+    private void executeAllBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeAllBtnActionPerformed
+        executeAllBtn.setEnabled(false);
+
+        Runnable queueRunner = () -> {
+            Thread entryThread;
+            CommandTableEntry entry;
+            final DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+            for (int i = 0; i < taskQueueTable.getRowCount(); i++) {
+                entry = (CommandTableEntry) model.getValueAt(i, 2);
+
+                if (!entry.isNodeBuild()) {
+                    // create entry with default values, if not done so far by the user
+                    entry.buildCommandPanel();
+                }
+                entryThread = new Thread(entry);
+                entryThread.start();
+                try {
+                    entryThread.join();
+                } catch (InterruptedException ex) {
+                    log.error(ex.getMessage());
+                }
+            }
+            executeAllBtn.setEnabled(true);
+        };
+        new Thread(queueRunner).start();
+
+
+    }//GEN-LAST:event_executeAllBtnActionPerformed
 
     /**
      * @param args the command line arguments
