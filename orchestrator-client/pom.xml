@@ -1,0 +1,74 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>de.fau.clients.sila-orchestrator</groupId>
+        <artifactId>sila-orchestrator</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>de.fau.clients.sila-orchestrator</groupId>
+    <artifactId>orchestrator-client</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>orchestrator-client</name>
+    <description>A dynamic SiLA 2 client for coordinating various SiLA 2 services to a continuous workflow.</description>
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+    <developers>
+        <developer>
+            <name>Florian Bauer</name>
+            <email>florian.bauer.dev@gmail.com</email>
+            <organization>Friedrich-Alexander-Universität Erlangen-Nürnberg</organization>
+            <organizationUrl>http://www.cs7.tf.fau.de/</organizationUrl>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>Apache-2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <!-- Common Dependencies for Server and Client side -->
+    <dependencies>
+        <!-- Argument Parser -->
+        <dependency>
+            <groupId>net.sourceforge.argparse4j</groupId>
+            <artifactId>argparse4j</artifactId>
+            <version>0.8.1</version>
+        </dependency>
+
+        <!-- SiLA Dependencies -->
+        <dependency>
+            <groupId>org.sila-standard.sila_java.library</groupId>
+            <artifactId>server_base</artifactId>
+            <version>0.0.3-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.sila-standard.sila_java.library</groupId>
+            <artifactId>manager</artifactId>
+            <version>0.0.3-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Wrapping a stand-alone executable for ease of distribution for testing -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>de.fau.clients.orchestrator.OrchTester</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

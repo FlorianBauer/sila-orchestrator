@@ -15,3 +15,6 @@ core
 dist/
 private/
 nbproject/
+/src/target/
+/orchestrator/target/
+/orchestrator-client/target/
