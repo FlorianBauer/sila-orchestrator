@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator;
 
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.List;
@@ -22,7 +23,7 @@ import sila_java.library.manager.ServerFinder;
 @Slf4j
 public class OrchestratorGui extends javax.swing.JFrame {
 
-    static ServerManager serverManager;
+    private static ServerManager serverManager;
 
     private void addSpecificServer() {
         String addr = serverAddressTextField.getText();
@@ -142,6 +143,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         serverPortFormattedTextField = new javax.swing.JFormattedTextField();
         aboutDialog = new javax.swing.JDialog();
         aboutLabel = new javax.swing.JLabel();
+        taskQueuePopupMenu = new javax.swing.JPopupMenu();
+        removeRowEntryMenuItem = new javax.swing.JMenuItem();
+        execRowEntryMenuItem = new javax.swing.JMenuItem();
         serverSplitPane = new javax.swing.JSplitPane();
         serverPanel = new javax.swing.JPanel();
         featureScrollPane = new javax.swing.JScrollPane();
@@ -156,8 +160,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         taskQueueScrollPane = new javax.swing.JScrollPane();
         taskQueueTable = new javax.swing.JTable();
         executeAllBtn = new javax.swing.JButton();
-        commandScrollPane = new javax.swing.JScrollPane();
-        commandPanel = new javax.swing.JPanel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         openMenuItem = new javax.swing.JMenuItem();
@@ -290,6 +292,24 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         aboutDialog.getAccessibleContext().setAccessibleParent(this);
 
+        removeRowEntryMenuItem.setMnemonic('r');
+        removeRowEntryMenuItem.setText("Remove Entry");
+        removeRowEntryMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeRowEntryMenuItemActionPerformed(evt);
+            }
+        });
+        taskQueuePopupMenu.add(removeRowEntryMenuItem);
+
+        execRowEntryMenuItem.setMnemonic('x');
+        execRowEntryMenuItem.setText("Execute Entry");
+        execRowEntryMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                execRowEntryMenuItemActionPerformed(evt);
+            }
+        });
+        taskQueuePopupMenu.add(execRowEntryMenuItem);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SiLA Orchestrator");
         setLocationByPlatform(true);
@@ -388,7 +408,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         taskQueuePanel.setLayout(new java.awt.BorderLayout());
 
-        addTaskToQueueBtn.setIcon(new ImageIcon("src/main/resources/icons/add-entry.png"));
+        addTaskToQueueBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/add-entry.png"))); // NOI18N
         addTaskToQueueBtn.setToolTipText("Add Entry to Table");
         addTaskToQueueBtn.setEnabled(false);
         addTaskToQueueBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -524,6 +544,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         setJMenuBar(menuBar);
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
@@ -604,7 +625,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             // use the selected node to create a new table entry.
             CommandTableEntry cmdEntry = cmdNode.createTableEntry();
             DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
-            final int row = taskQueueTable.getRowCount();
+            final int row = model.getRowCount();
             model.addRow(new Object[]{
                 row + 1,
                 new ImageIcon("src/main/resources/icons/32px/command.png"),
@@ -617,14 +638,28 @@ public class OrchestratorGui extends javax.swing.JFrame {
             cmdEntry.addStatusChangeListener((PropertyChangeEvent pcEvt) -> {
                 if (pcEvt.getPropertyName().equals("taskState")) {
                     final TaskState state = (TaskState) pcEvt.getNewValue();
-                    model.setValueAt(state, row, 3);
+                    // Find the row of the changed entry. This has to be done dynamically, since 
+                    // the order of rows might change during runtime.
+                    int rowIdx = -1;
+                    for (int i = 0; i < model.getRowCount(); i++) {
+                        if (model.getDataVector().elementAt(i).get(2).equals(cmdEntry)) {
+                            rowIdx = i;
+                            break;
+                        }
+                    }
+
+                    if (rowIdx == -1) {
+                        log.error("Could not find entry in table");
+                        return;
+                    }
+                    model.setValueAt(state, rowIdx, 3);
                     switch (state) {
                         case RUNNING:
-                            model.setValueAt(cmdEntry.getStartTimeStamp(), row, 4);
+                            model.setValueAt(cmdEntry.getStartTimeStamp(), rowIdx, 4);
                             break;
                         case FINISHED_SUCCESS:
                         case FINISHED_ERROR:
-                            model.setValueAt(cmdEntry.getLastExecResult(), row, 5);
+                            model.setValueAt(cmdEntry.getLastExecResult(), rowIdx, 5);
                             break;
                         default:
                     }
@@ -641,6 +676,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private void taskQueueTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_taskQueueTableMouseClicked
         int selectedRowIdx = taskQueueTable.getSelectedRow();
         if (selectedRowIdx < 0) {
+            return;
+        }
+
+        // show popup-menu on right-click
+        if (evt.getButton() == MouseEvent.BUTTON3) {
+            taskQueuePopupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
             return;
         }
 
@@ -681,9 +722,29 @@ public class OrchestratorGui extends javax.swing.JFrame {
             executeAllBtn.setEnabled(true);
         };
         new Thread(queueRunner).start();
-
-
     }//GEN-LAST:event_executeAllBtnActionPerformed
+
+    private void removeRowEntryMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeRowEntryMenuItemActionPerformed
+        int selectedRowIdx = taskQueueTable.getSelectedRow();
+        if (selectedRowIdx < 0) {
+            return;
+        }
+        DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+        model.removeRow(selectedRowIdx);
+        commandPanel.removeAll();
+        commandPanel.revalidate();
+        commandPanel.repaint();
+    }//GEN-LAST:event_removeRowEntryMenuItemActionPerformed
+
+    private void execRowEntryMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_execRowEntryMenuItemActionPerformed
+        int selectedRowIdx = taskQueueTable.getSelectedRow();
+        if (selectedRowIdx < 0) {
+            return;
+        }
+        DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+        CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, 2);
+        new Thread(entry).start();
+    }//GEN-LAST:event_execRowEntryMenuItemActionPerformed
 
     /**
      * @param args the command line arguments
@@ -722,13 +783,14 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JButton addServerBtn;
     private javax.swing.JDialog addServerDialog;
     private javax.swing.JButton addTaskToQueueBtn;
-    private javax.swing.JPanel commandPanel;
-    private javax.swing.JScrollPane commandScrollPane;
+    private final javax.swing.JPanel commandPanel = new javax.swing.JPanel();
+    private final javax.swing.JScrollPane commandScrollPane = new javax.swing.JScrollPane();
     private javax.swing.JMenuItem contentsMenuItem;
     private javax.swing.JMenuItem copyMenuItem;
     private javax.swing.JMenuItem cutMenuItem;
     private javax.swing.JMenuItem deleteMenuItem;
     private javax.swing.JMenu editMenu;
+    private javax.swing.JMenuItem execRowEntryMenuItem;
     private javax.swing.JButton executeAllBtn;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JScrollPane featureScrollPane;
@@ -740,6 +802,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenuItem pasteMenuItem;
+    private javax.swing.JMenuItem removeRowEntryMenuItem;
     private javax.swing.JButton removeServerBtn;
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
@@ -753,6 +816,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JLabel serverPortLabel;
     private javax.swing.JSplitPane serverSplitPane;
     private javax.swing.JPanel taskQueuePanel;
+    private javax.swing.JPopupMenu taskQueuePopupMenu;
     private javax.swing.JScrollPane taskQueueScrollPane;
     private javax.swing.JTable taskQueueTable;
     // End of variables declaration//GEN-END:variables
