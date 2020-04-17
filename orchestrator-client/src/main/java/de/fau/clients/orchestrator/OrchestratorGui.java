@@ -160,6 +160,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
         taskQueueScrollPane = new javax.swing.JScrollPane();
         taskQueueTable = new javax.swing.JTable();
         executeAllBtn = new javax.swing.JButton();
+        moveTaskUpBtn = new javax.swing.JButton();
+        moveTaskDownBtn = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         openMenuItem = new javax.swing.JMenuItem();
@@ -406,7 +408,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
         mainPanelSplitPane.setDividerLocation(200);
         mainPanelSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
-        taskQueuePanel.setLayout(new java.awt.BorderLayout());
+        java.awt.GridBagLayout taskQueuePanelLayout = new java.awt.GridBagLayout();
+        taskQueuePanelLayout.columnWidths = new int[] {3};
+        taskQueuePanelLayout.rowHeights = new int[] {3};
+        taskQueuePanel.setLayout(taskQueuePanelLayout);
 
         addTaskToQueueBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/add-entry.png"))); // NOI18N
         addTaskToQueueBtn.setToolTipText("Add Entry to Table");
@@ -416,7 +421,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 addTaskToQueueBtnActionPerformed(evt);
             }
         });
-        taskQueuePanel.add(addTaskToQueueBtn, java.awt.BorderLayout.WEST);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        taskQueuePanel.add(addTaskToQueueBtn, gridBagConstraints);
 
         taskQueueTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -451,7 +461,14 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         taskQueueScrollPane.setViewportView(taskQueueTable);
 
-        taskQueuePanel.add(taskQueueScrollPane, java.awt.BorderLayout.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weighty = 0.5;
+        taskQueuePanel.add(taskQueueScrollPane, gridBagConstraints);
 
         executeAllBtn.setText("Execute All");
         executeAllBtn.setEnabled(false);
@@ -460,7 +477,41 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 executeAllBtnActionPerformed(evt);
             }
         });
-        taskQueuePanel.add(executeAllBtn, java.awt.BorderLayout.PAGE_END);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        taskQueuePanel.add(executeAllBtn, gridBagConstraints);
+
+        moveTaskUpBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/move-up.png"))); // NOI18N
+        moveTaskUpBtn.setToolTipText("Move selcted Task one place up in the queue order.");
+        moveTaskUpBtn.setEnabled(false);
+        moveTaskUpBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveTaskUpBtnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 0.5;
+        taskQueuePanel.add(moveTaskUpBtn, gridBagConstraints);
+
+        moveTaskDownBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/move-down.png"))); // NOI18N
+        moveTaskDownBtn.setToolTipText("Move selected Task one place down in the queue order.");
+        moveTaskDownBtn.setEnabled(false);
+        moveTaskDownBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveTaskDownBtnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 0.5;
+        taskQueuePanel.add(moveTaskDownBtn, gridBagConstraints);
 
         mainPanelSplitPane.setLeftComponent(taskQueuePanel);
 
@@ -691,6 +742,15 @@ public class OrchestratorGui extends javax.swing.JFrame {
             return;
         }
 
+        int rowCount = model.getRowCount();
+        if (rowCount > 1) {
+            moveTaskUpBtn.setEnabled(selectedRowIdx > 0);
+            moveTaskDownBtn.setEnabled(selectedRowIdx < rowCount - 1);
+        } else {
+            moveTaskUpBtn.setEnabled(false);
+            moveTaskDownBtn.setEnabled(false);
+        }
+
         if (!entry.isNodeBuild()) {
             entry.buildCommandPanel();
         }
@@ -729,6 +789,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
         if (selectedRowIdx < 0) {
             return;
         }
+        moveTaskUpBtn.setEnabled(false);
+        moveTaskDownBtn.setEnabled(false);
         DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
         model.removeRow(selectedRowIdx);
         commandPanel.removeAll();
@@ -745,6 +807,33 @@ public class OrchestratorGui extends javax.swing.JFrame {
         CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, 2);
         new Thread(entry).start();
     }//GEN-LAST:event_execRowEntryMenuItemActionPerformed
+
+    private void moveTaskUpBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveTaskUpBtnActionPerformed
+        int selectedRowIdx = taskQueueTable.getSelectedRow();
+        if (selectedRowIdx < 0) {
+            return;
+        } else if (selectedRowIdx <= 1) {
+            moveTaskUpBtn.setEnabled(false);
+        }
+        DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+        model.moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx - 1);
+        taskQueueTable.changeSelection(selectedRowIdx - 1, 0, false, false);
+        moveTaskDownBtn.setEnabled(true);
+    }//GEN-LAST:event_moveTaskUpBtnActionPerformed
+
+    private void moveTaskDownBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveTaskDownBtnActionPerformed
+        int selectedRowIdx = taskQueueTable.getSelectedRow();
+        int rowCount = taskQueueTable.getRowCount();
+        if (selectedRowIdx < 0 || selectedRowIdx >= rowCount - 1) {
+            return;
+        } else if (selectedRowIdx >= rowCount - 2) {
+            moveTaskDownBtn.setEnabled(false);
+        }
+        DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+        model.moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx + 1);
+        taskQueueTable.changeSelection(selectedRowIdx + 1, 0, false, false);
+        moveTaskUpBtn.setEnabled(true);
+    }//GEN-LAST:event_moveTaskDownBtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -800,6 +889,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JPanel mainPanel;
     private javax.swing.JSplitPane mainPanelSplitPane;
     private javax.swing.JMenuBar menuBar;
+    private javax.swing.JButton moveTaskDownBtn;
+    private javax.swing.JButton moveTaskUpBtn;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenuItem pasteMenuItem;
     private javax.swing.JMenuItem removeRowEntryMenuItem;
