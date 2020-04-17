@@ -2,7 +2,6 @@ package de.fau.clients.orchestrator;
 
 import java.util.UUID;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.JPanel;
 import sila_java.library.core.models.Feature.Command;
 
 public class CommandTreeNode extends DefaultMutableTreeNode {
@@ -12,7 +11,6 @@ public class CommandTreeNode extends DefaultMutableTreeNode {
     private final Command command;
 
     public CommandTreeNode(
-            final JPanel panel,
             final UUID serverId,
             final String featureId,
             final Command command) {

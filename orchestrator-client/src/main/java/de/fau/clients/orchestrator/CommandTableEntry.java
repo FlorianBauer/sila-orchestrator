@@ -98,8 +98,6 @@ public class CommandTableEntry implements Runnable {
      */
     public void showCommandPanel(final JScrollPane scrollPane) {
         scrollPane.setViewportView(panel);
-        panel.revalidate();
-        panel.repaint();
     }
 
     /**

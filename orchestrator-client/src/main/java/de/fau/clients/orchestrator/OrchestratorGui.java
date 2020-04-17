@@ -76,7 +76,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
                     featureNode.add(commandNode);
                     for (final Command command : feature.getCommand()) {
-                        final CommandTreeNode ctn = new CommandTreeNode(commandPanel,
+                        final CommandTreeNode ctn = new CommandTreeNode(
                                 server.getConfiguration().getUuid(),
                                 feature.getIdentifier(),
                                 command);
@@ -537,10 +537,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         taskQueuePanel.add(removeTaskFromQueueBtn, gridBagConstraints);
 
         mainPanelSplitPane.setLeftComponent(taskQueuePanel);
-
-        commandPanel.setLayout(new javax.swing.BoxLayout(commandPanel, javax.swing.BoxLayout.PAGE_AXIS));
-        commandScrollPane.setViewportView(commandPanel);
-
         mainPanelSplitPane.setRightComponent(commandScrollPane);
 
         mainPanel.add(mainPanelSplitPane);
@@ -740,10 +736,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
             });
             executeAllBtn.setEnabled(true);
         } else {
-            commandPanel.removeAll();
+            commandScrollPane.setViewportView(null);
         }
-        commandPanel.revalidate();
-        commandPanel.repaint();
     }//GEN-LAST:event_addTaskToQueueBtnActionPerformed
 
     private void taskQueueTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_taskQueueTableMouseClicked
@@ -858,9 +852,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         removeTaskFromQueueMenuItem.setEnabled(false);
         DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
         model.removeRow(selectedRowIdx);
-        commandPanel.removeAll();
-        commandPanel.revalidate();
-        commandPanel.repaint();
+        commandScrollPane.setViewportView(null);
     }//GEN-LAST:event_removeTaskFromQueue
 
     /**
@@ -900,7 +892,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JButton addServerBtn;
     private javax.swing.JDialog addServerDialog;
     private javax.swing.JButton addTaskToQueueBtn;
-    private final javax.swing.JPanel commandPanel = new javax.swing.JPanel();
     private final javax.swing.JScrollPane commandScrollPane = new javax.swing.JScrollPane();
     private javax.swing.JMenuItem contentsMenuItem;
     private javax.swing.JMenuItem copyMenuItem;
