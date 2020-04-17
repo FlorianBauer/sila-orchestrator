@@ -15,7 +15,8 @@ import sila_java.library.core.models.Constraints;
 
 final class BasicNode implements SilaNode {
 
-    public static final Dimension MAX_SIZE = new Dimension(4096, 32);
+    public static final Dimension MAX_SIZE_TEXT_FIELD = new Dimension(4096, 32);
+    public static final Dimension MAX_SIZE_SPINNER = new Dimension(128, 32);
     public static final Dimension PREFERRED_SIZE_TEXT_FIELD = new Dimension(256, 32);
     public static final Dimension PREFERRED_SIZE_SPINNER = new Dimension(48, 32);
 
@@ -38,34 +39,33 @@ final class BasicNode implements SilaNode {
                 break;
             case BOOLEAN:
                 JCheckBox checkBox = new JCheckBox();
-                checkBox.setMaximumSize(MAX_SIZE);
                 node.valueSupplier = () -> (checkBox.isSelected() ? "true" : "false");
                 node.component = checkBox;
                 break;
             case DATE:
                 JSpinner dateSpinner = new JSpinner(new SpinnerDateModel());
-                dateSpinner.setMaximumSize(MAX_SIZE);
+                dateSpinner.setMaximumSize(MAX_SIZE_SPINNER);
                 dateSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
                 node.valueSupplier = () -> (dateSpinner.getValue().toString());
                 node.component = dateSpinner;
                 break;
             case INTEGER:
                 JSpinner intSpinner = new JSpinner(new SpinnerNumberModel());
-                intSpinner.setMaximumSize(MAX_SIZE);
+                intSpinner.setMaximumSize(MAX_SIZE_SPINNER);
                 intSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
                 node.valueSupplier = () -> (intSpinner.getValue().toString());
                 node.component = intSpinner;
                 break;
             case REAL:
                 JSpinner realSpinner = new JSpinner(new SpinnerNumberModel());
-                realSpinner.setMaximumSize(MAX_SIZE);
+                realSpinner.setMaximumSize(MAX_SIZE_SPINNER);
                 realSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
                 node.valueSupplier = () -> (realSpinner.getValue().toString());
                 node.component = realSpinner;
                 break;
             case STRING:
                 JTextField strField = new JTextField();
-                strField.setMaximumSize(MAX_SIZE);
+                strField.setMaximumSize(MAX_SIZE_TEXT_FIELD);
                 strField.setPreferredSize(PREFERRED_SIZE_TEXT_FIELD);
                 node.valueSupplier = () -> (strField.getText());
                 node.component = strField;
@@ -106,34 +106,33 @@ final class BasicNode implements SilaNode {
                 break;
             case BOOLEAN:
                 JCheckBox checkBox = new JCheckBox();
-                checkBox.setMaximumSize(MAX_SIZE);
                 node.valueSupplier = () -> (checkBox.isSelected() ? "true" : "false");
                 node.component = checkBox;
                 break;
             case DATE:
                 JSpinner dateSpinner = new JSpinner(new SpinnerDateModel());
-                dateSpinner.setMaximumSize(MAX_SIZE);
+                dateSpinner.setMaximumSize(MAX_SIZE_SPINNER);
                 dateSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
                 node.valueSupplier = () -> (dateSpinner.getValue().toString());
                 node.component = dateSpinner;
                 break;
             case INTEGER:
                 JSpinner intSpinner = new JSpinner(new SpinnerNumberModel());
-                intSpinner.setMaximumSize(MAX_SIZE);
+                intSpinner.setMaximumSize(MAX_SIZE_SPINNER);
                 intSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
                 node.valueSupplier = () -> (intSpinner.getValue().toString());
                 node.component = intSpinner;
                 break;
             case REAL:
                 JSpinner realSpinner = new JSpinner(new SpinnerNumberModel());
-                realSpinner.setMaximumSize(MAX_SIZE);
+                realSpinner.setMaximumSize(MAX_SIZE_SPINNER);
                 realSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
                 node.valueSupplier = () -> (realSpinner.getValue().toString());
                 node.component = realSpinner;
                 break;
             case STRING:
                 JTextField strField = new JTextField();
-                strField.setMaximumSize(MAX_SIZE);
+                strField.setMaximumSize(MAX_SIZE_TEXT_FIELD);
                 strField.setPreferredSize(PREFERRED_SIZE_TEXT_FIELD);
                 node.valueSupplier = () -> (strField.getText());
                 node.component = strField;
