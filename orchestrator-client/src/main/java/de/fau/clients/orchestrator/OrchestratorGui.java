@@ -24,6 +24,7 @@ import sila_java.library.manager.ServerFinder;
 public class OrchestratorGui extends javax.swing.JFrame {
 
     private static ServerManager serverManager;
+    private static int taskRowId = 0;
 
     private void addSpecificServer() {
         String addr = serverAddressTextField.getText();
@@ -698,9 +699,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
             // use the selected node to create a new table entry.
             CommandTableEntry cmdEntry = cmdNode.createTableEntry();
             DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
-            final int row = model.getRowCount();
             model.addRow(new Object[]{
-                row + 1,
+                ++taskRowId,
                 new ImageIcon("src/main/resources/icons/32px/command.png"),
                 cmdEntry,
                 cmdEntry.getState(),
