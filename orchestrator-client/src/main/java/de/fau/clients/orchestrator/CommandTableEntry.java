@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -30,8 +31,9 @@ public class CommandTableEntry implements Runnable {
 
     /// Use a "ISO 8601-ish" date-time representation.
     private static final DateTimeFormatter timeStampFromat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final ImageIcon EXECUTE_ICON = new ImageIcon("src/main/resources/icons/execute.png");
     private final JPanel panel = new JPanel();
-    private final JButton execBtn = new JButton("Execute");
+    private final JButton execBtn = new JButton("Execute", EXECUTE_ICON);
     private final UUID serverId;
     private final String featureId;
     private final Feature.Command command;

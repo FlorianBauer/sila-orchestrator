@@ -305,6 +305,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         taskQueuePopupMenu.add(removeTaskFromQueueMenuItem);
 
+        execRowEntryMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/execute-16px.png"))); // NOI18N
         execRowEntryMenuItem.setMnemonic('x');
         execRowEntryMenuItem.setText("Execute Entry");
         execRowEntryMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -317,13 +318,15 @@ public class OrchestratorGui extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SiLA Orchestrator");
         setLocationByPlatform(true);
-        setPreferredSize(new java.awt.Dimension(1024, 512));
+        setPreferredSize(new java.awt.Dimension(1200, 600));
         setSize(new java.awt.Dimension(0, 0));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
             }
         });
+
+        serverSplitPane.setContinuousLayout(true);
 
         serverPanel.setPreferredSize(new java.awt.Dimension(384, 220));
         java.awt.GridBagLayout jPanel1Layout = new java.awt.GridBagLayout();
@@ -407,8 +410,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         mainPanel.setPreferredSize(new java.awt.Dimension(512, 409));
         mainPanel.setLayout(new javax.swing.BoxLayout(mainPanel, javax.swing.BoxLayout.PAGE_AXIS));
 
-        mainPanelSplitPane.setDividerLocation(200);
+        mainPanelSplitPane.setDividerLocation(300);
         mainPanelSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        mainPanelSplitPane.setContinuousLayout(true);
 
         java.awt.GridBagLayout taskQueuePanelLayout = new java.awt.GridBagLayout();
         taskQueuePanelLayout.columnWidths = new int[] {3};
@@ -472,6 +476,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.weighty = 0.5;
         taskQueuePanel.add(taskQueueScrollPane, gridBagConstraints);
 
+        executeAllBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/execute-all.png"))); // NOI18N
         executeAllBtn.setText("Execute All");
         executeAllBtn.setToolTipText("Execute all tasks in queue");
         executeAllBtn.setEnabled(false);
@@ -519,7 +524,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         removeTaskFromQueueBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/list-remove.png"))); // NOI18N
         removeTaskFromQueueBtn.setToolTipText("Remove selected task from queue");
         removeTaskFromQueueBtn.setEnabled(false);
-        removeTaskFromQueueBtn.setMinimumSize(new java.awt.Dimension(32, 32));
         removeTaskFromQueueBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeTaskFromQueue(evt);

@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -13,12 +14,15 @@ import sila_java.library.core.models.ListType;
 
 final class ListNode implements SilaNode {
 
+    private static final ImageIcon REMOVE_ICON = new ImageIcon("src/main/resources/icons/list-remove.png");
+    private static final ImageIcon ADD_ICON = new ImageIcon("src/main/resources/icons/list-add.png");
+
     /// A panel to place additional components on.
     private final JPanel listPanel = new JPanel();
     /// The button to trigger the removal of unnecessary list elements.
-    private final JButton removeBtn = new JButton("Remove");
+    private final JButton removeBtn = new JButton("Remove", REMOVE_ICON);
     /// The button to trigger the addition of extra list elements.
-    private final JButton addBtn = new JButton("Add");
+    private final JButton addBtn = new JButton("Add", ADD_ICON);
     /// Prototype node to clone the list element on a add-operations.
     private final SilaNode prototype;
     /// List holding the SilaNode elements.
