@@ -30,7 +30,7 @@ import sila_java.library.manager.models.SiLACall;
 public class CommandTableEntry implements Runnable {
 
     /// Use a "ISO 8601-ish" date-time representation.
-    private static final DateTimeFormatter timeStampFromat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter timeStampFromat = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss.SSS");
     private static final ImageIcon EXECUTE_ICON = new ImageIcon("src/main/resources/icons/execute.png");
     private final JPanel panel = new JPanel();
     private final JButton execBtn = new JButton("Execute", EXECUTE_ICON);
