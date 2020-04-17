@@ -26,7 +26,7 @@ final class ListNode implements SilaNode {
     /// Prototype node to clone the list element on a add-operations.
     private final SilaNode prototype;
     /// List holding the SilaNode elements.
-    private final ArrayList<SilaNode> nodeList = new ArrayList();
+    private final ArrayList<SilaNode> nodeList = new ArrayList<>();
     /// Constraint object holding vaious constraints (e.g. min. and max. list elements).
     private final Constraints constraints;
 
