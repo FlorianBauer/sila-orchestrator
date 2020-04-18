@@ -15,6 +15,8 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -54,6 +56,10 @@ public class CommandTableEntry implements Runnable {
         this.featureId = featureId;
         this.command = command;
         this.panel.setLayout(new BoxLayout(this.panel, BoxLayout.Y_AXIS));
+        this.panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        execBtn.addActionListener((ActionEvent evt) -> {
+            executeCommandBtnActionPerformed();
+        });
     }
 
     /**
@@ -81,10 +87,7 @@ public class CommandTableEntry implements Runnable {
                 featNode = new FeatureNode(params);
                 featNode.populatePanel(panel);
             }
-
-            execBtn.addActionListener((ActionEvent evt) -> {
-                executeCommandBtnActionPerformed();
-            });
+            panel.add(Box.createVerticalStrut(10));
             panel.add(execBtn);
         } else {
             log.warn("Multiple calls to buildCommandPanel() are discouraged.");

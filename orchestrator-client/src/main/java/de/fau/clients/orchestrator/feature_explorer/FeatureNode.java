@@ -2,8 +2,9 @@ package de.fau.clients.orchestrator.feature_explorer;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Box;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.DataTypeType;
@@ -76,12 +77,15 @@ public final class FeatureNode {
      * Populates the given panel with GUI components representing the consisting nodes. Do not
      * populate a given panel more then once.
      *
-     * @param panel The panel to add the elements.
+     * @param panel The container/component to add the elements to.
      */
-    public void populatePanel(@NonNull final JPanel panel) {
+    public void populatePanel(@NonNull final JComponent panel) {
         for (int i = 0; i < elements.size(); i++) {
             panel.add(new JLabel(elements.get(i).getDisplayName()));
-            panel.add(children.get(i).getComponent());
+            final JComponent comp = children.get(i).getComponent();
+            comp.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            panel.add(comp);
+            panel.add(Box.createVerticalStrut(10));
         }
     }
 }

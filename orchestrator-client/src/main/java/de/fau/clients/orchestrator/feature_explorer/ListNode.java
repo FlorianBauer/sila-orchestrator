@@ -3,6 +3,7 @@ package de.fau.clients.orchestrator.feature_explorer;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -121,12 +122,14 @@ final class ListNode implements SilaNode {
         }
 
         if (constraints == null || constraints.getElementCount() == null) {
-            // Adding the "Remove"-button if no fixed element count constraint was given.
-            listPanel.add(removeBtn);
-            // Adding the "Add"-button if no fixed element count constraint was given.
-            listPanel.add(addBtn);
+            // Adding the "Remove" and "Add"-buttons if no fixed element count constraint was given.
+            Box hbox = Box.createHorizontalBox();
+            hbox.add(addBtn);
+            hbox.add(removeBtn);
+            hbox.add(Box.createHorizontalGlue());
+            listPanel.add(hbox);
         }
-        return this.listPanel;
+        return listPanel;
     }
 
     private void removeBtnActionPerformed() {
