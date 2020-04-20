@@ -152,7 +152,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         featureScrollPane = new javax.swing.JScrollPane();
         featureTree = new javax.swing.JTree();
         addServerBtn = new javax.swing.JButton();
-        removeServerBtn = new javax.swing.JButton();
         scanServerBtn = new javax.swing.JButton();
         mainPanel = new javax.swing.JPanel();
         mainPanelSplitPane = new javax.swing.JSplitPane();
@@ -372,23 +371,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         serverPanel.add(addServerBtn, gridBagConstraints);
-
-        removeServerBtn.setMnemonic('r');
-        removeServerBtn.setText("Remove");
-        removeServerBtn.setEnabled(false);
-        removeServerBtn.setPreferredSize(new java.awt.Dimension(80, 30));
-        removeServerBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeServerBtnActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        serverPanel.add(removeServerBtn, gridBagConstraints);
 
         scanServerBtn.setMnemonic('s');
         scanServerBtn.setText("Scan");
@@ -654,10 +636,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_scanServerBtnActionPerformed
 
-    private void removeServerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeServerBtnActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_removeServerBtnActionPerformed
-
     private void serverPortFormattedTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverPortFormattedTextFieldActionPerformed
         addSpecificServer();
     }//GEN-LAST:event_serverPortFormattedTextFieldActionPerformed
@@ -912,7 +890,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JButton moveTaskUpBtn;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenuItem pasteMenuItem;
-    private javax.swing.JButton removeServerBtn;
     private javax.swing.JButton removeTaskFromQueueBtn;
     private javax.swing.JMenuItem removeTaskFromQueueMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;
