@@ -2,6 +2,7 @@ package de.fau.clients.orchestrator.feature_explorer;
 
 import java.awt.Dimension;
 import java.util.function.Supplier;
+import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -135,7 +136,15 @@ final class BasicNode implements SilaNode {
                 numericSpinner.setMaximumSize(MAX_SIZE_SPINNER);
                 numericSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
                 node.valueSupplier = () -> (numericSpinner.getValue().toString());
-                node.component = numericSpinner;
+                if (constraints.getUnit() != null) {
+                    Box hbox = Box.createHorizontalBox();
+                    hbox.add(numericSpinner);
+                    hbox.add(Box.createHorizontalStrut(5));
+                    hbox.add(new JLabel(constraints.getUnit().getLabel()));
+                    node.component = hbox;
+                } else {
+                    node.component = numericSpinner;
+                }
                 break;
             case STRING:
                 JTextField strField = new JTextField();
