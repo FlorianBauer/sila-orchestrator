@@ -2,6 +2,8 @@ package de.fau.clients.orchestrator.feature_explorer;
 
 import java.awt.Dimension;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
@@ -37,6 +39,8 @@ final class BasicNode implements SilaNode {
     private static final ZoneId ZONE = ZoneId.systemDefault();
     private static final String DATE_FORMAT = "yyyy-MM-dd";
     private static final DateTimeFormatter SILA_DATE_FORMATTER = DateTimeFormatter.ofPattern("uuuuMMdd");
+    private static final String TIME_FORMAT = "HH:mm:ss";
+    private static final DateTimeFormatter SILA_TIME_FORMATTER = DateTimeFormatter.ofPattern("HHmmss");
     private BasicType type = null;
     private Constraints constraints;
     private Supplier<String> valueSupplier;
@@ -89,9 +93,15 @@ final class BasicNode implements SilaNode {
                 node.component = strField;
                 break;
             case TIME:
-                // TODO: implement
-                node.component = new JLabel("placeholder 02");
-                node.valueSupplier = () -> ("not implemented 02");
+                JSpinner timeSpinner = new JSpinner(new SpinnerDateModel());
+                timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
+                timeSpinner.setMaximumSize(MAX_SIZE_SPINNER);
+                timeSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
+                node.valueSupplier = () -> {
+                    Date time = (Date) timeSpinner.getValue();
+                    return LocalTime.ofInstant(time.toInstant(), ZONE).format(SILA_TIME_FORMATTER);
+                };
+                node.component = timeSpinner;
                 break;
             case TIMESTAMP:
                 // TODO: implement
@@ -170,9 +180,21 @@ final class BasicNode implements SilaNode {
                 node.component = strField;
                 break;
             case TIME:
-                // TODO: implement
-                node.component = new JLabel("placeholder 02");
-                node.valueSupplier = () -> ("not implemented 02");
+                JSpinner timeSpinner = new JSpinner(
+                        // FIXME: The out-commented function below seems to return a valid 
+                        // spinner-model, but the spinner itself does not work correctly. Therefore 
+                        // a unrestrained default-spinner-model is used as a temporary hack.
+                        // createRangeConstrainedTimeModel(constraints)
+                        new SpinnerDateModel()
+                );
+                timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
+                timeSpinner.setMaximumSize(MAX_SIZE_SPINNER);
+                timeSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
+                node.valueSupplier = () -> {
+                    Date time = (Date) timeSpinner.getValue();
+                    return LocalTime.ofInstant(time.toInstant(), ZONE).format(SILA_TIME_FORMATTER);
+                };
+                node.component = timeSpinner;
                 break;
             case TIMESTAMP:
                 // TODO: implement
@@ -334,5 +356,55 @@ final class BasicNode implements SilaNode {
 
         Date initDate = Date.from(init.atStartOfDay(ZONE).toInstant());
         return new SpinnerDateModel(initDate, startDate, endDate, Calendar.DAY_OF_MONTH);
+    }
+
+    /**
+     * FIXME: The Swing spinner is buggy. The underlying model seems to be correct, however the
+     * component does not accept the range-limit.
+     *
+     * @param constraints
+     * @return
+     * @hidden bug
+     */
+    private static SpinnerDateModel createRangeConstrainedTimeModel(final Constraints constraints) {
+        LocalDateTime init = LocalDateTime.now();
+        LocalDateTime start = null;
+        if (constraints.getMinimalExclusive() != null) {
+            start = LocalTime.parse(constraints.getMinimalExclusive(), SILA_TIME_FORMATTER)
+                    .atDate(init.toLocalDate())
+                    .plusSeconds(1);
+        } else if (constraints.getMinimalInclusive() != null) {
+            start = LocalTime.parse(constraints.getMinimalInclusive(), SILA_TIME_FORMATTER)
+                    .atDate(init.toLocalDate());
+        }
+
+        Date startTime = null;
+        if (start != null) {
+            if (start.compareTo(init) >= 0) {
+                init = start.plusSeconds(1);
+            }
+            startTime = Date.from(start.atZone(ZONE).toInstant());
+        }
+
+        LocalDateTime end = null;
+        if (constraints.getMaximalExclusive() != null) {
+            end = LocalTime.parse(constraints.getMaximalExclusive(), SILA_TIME_FORMATTER)
+                    .atDate(init.toLocalDate())
+                    .minusSeconds(1);
+        } else if (constraints.getMaximalInclusive() != null) {
+            end = LocalTime.parse(constraints.getMaximalInclusive(), SILA_TIME_FORMATTER)
+                    .atDate(init.toLocalDate());
+        }
+
+        Date endTime = null;
+        if (end != null) {
+            if (end.compareTo(init) <= 0) {
+                init = end.minusSeconds(1);
+            }
+            endTime = Date.from(end.atZone(ZONE).toInstant());
+        }
+
+        Date initDate = Date.from(init.atZone(ZONE).toInstant());
+        return new SpinnerDateModel(initDate, startTime, endTime, Calendar.MINUTE);
     }
 }
