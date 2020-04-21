@@ -1,6 +1,11 @@
 package de.fau.clients.orchestrator.feature_explorer;
 
 import java.awt.Dimension;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.function.Supplier;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
@@ -29,6 +34,9 @@ final class BasicNode implements SilaNode {
      */
     private static final double REAL_EXCLUSIVE_OFFSET = 0.001;
     private static final double REAL_STEP_SIZE = 0.1;
+    private static final ZoneId ZONE = ZoneId.systemDefault();
+    private static final String DATE_FORMAT = "yyyy-MM-dd";
+    private static final DateTimeFormatter SILA_DATE_FORMATTER = DateTimeFormatter.ofPattern("uuuuMMdd");
     private BasicType type = null;
     private Constraints constraints;
     private Supplier<String> valueSupplier;
@@ -53,9 +61,13 @@ final class BasicNode implements SilaNode {
                 break;
             case DATE:
                 JSpinner dateSpinner = new JSpinner(new SpinnerDateModel());
+                dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
                 dateSpinner.setMaximumSize(MAX_SIZE_SPINNER);
                 dateSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
-                node.valueSupplier = () -> (dateSpinner.getValue().toString());
+                node.valueSupplier = () -> {
+                    Date date = (Date) dateSpinner.getValue();
+                    return LocalDate.ofInstant(date.toInstant(), ZONE).format(SILA_DATE_FORMATTER);
+                };
                 node.component = dateSpinner;
                 break;
             case INTEGER:
@@ -116,10 +128,14 @@ final class BasicNode implements SilaNode {
                 node.component = checkBox;
                 break;
             case DATE:
-                JSpinner dateSpinner = new JSpinner(new SpinnerDateModel());
+                JSpinner dateSpinner = new JSpinner(createRangeConstrainedDateModel(constraints));
+                dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
                 dateSpinner.setMaximumSize(MAX_SIZE_SPINNER);
                 dateSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
-                node.valueSupplier = () -> (dateSpinner.getValue().toString());
+                node.valueSupplier = () -> {
+                    Date date = (Date) dateSpinner.getValue();
+                    return LocalDate.ofInstant(date.toInstant(), ZONE).format(SILA_DATE_FORMATTER);
+                };
                 node.component = dateSpinner;
                 break;
             case INTEGER:
@@ -274,5 +290,49 @@ final class BasicNode implements SilaNode {
         }
         initVal = (max != null && max < initVal) ? max : initVal;
         return new SpinnerNumberModel((Number) initVal, min, max, REAL_STEP_SIZE);
+    }
+
+    /**
+     * Creates a Date based, range-limited model to constrain input in
+     * <code>JSpinner</code>-components. This functions does not consider any
+     * <code>Set</code>-constraints.
+     *
+     * @param constraints The SiLA-Constraints element defining the date limits.
+     * @return The spinner-model for a <code>JSpinner</code>-component.
+     */
+    private static SpinnerDateModel createRangeConstrainedDateModel(final Constraints constraints) {
+        LocalDate init = LocalDate.now();
+        LocalDate start = null;
+        if (constraints.getMinimalExclusive() != null) {
+            start = LocalDate.parse(constraints.getMinimalExclusive(), SILA_DATE_FORMATTER).plusDays(1);
+        } else if (constraints.getMinimalInclusive() != null) {
+            start = LocalDate.parse(constraints.getMinimalInclusive(), SILA_DATE_FORMATTER);
+        }
+
+        Date startDate = null;
+        if (start != null) {
+            if (start.isAfter(init)) {
+                init = start;
+            }
+            startDate = Date.from(start.atStartOfDay(ZONE).toInstant());
+        }
+
+        LocalDate end = null;
+        if (constraints.getMaximalExclusive() != null) {
+            end = LocalDate.parse(constraints.getMaximalExclusive(), SILA_DATE_FORMATTER).minusDays(1);
+        } else if (constraints.getMaximalInclusive() != null) {
+            end = LocalDate.parse(constraints.getMaximalInclusive(), SILA_DATE_FORMATTER);
+        }
+
+        Date endDate = null;
+        if (end != null) {
+            if (end.isBefore(init)) {
+                init = end;
+            }
+            endDate = Date.from(end.atStartOfDay(ZONE).toInstant());
+        }
+
+        Date initDate = Date.from(init.atStartOfDay(ZONE).toInstant());
+        return new SpinnerDateModel(initDate, startDate, endDate, Calendar.DAY_OF_MONTH);
     }
 }
