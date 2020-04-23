@@ -27,10 +27,11 @@ import sila_java.library.core.models.Constraints;
 
 final class BasicNode implements SilaNode {
 
-    public static final Dimension MAX_SIZE_TEXT_FIELD = new Dimension(4096, 32);
-    public static final Dimension PREFERRED_SIZE_TEXT_FIELD = new Dimension(256, 32);
-    public static final Dimension MAX_SIZE_SPINNER = new Dimension(128, 32);
-    public static final Dimension PREFERRED_SIZE_SPINNER = new Dimension(48, 32);
+    public static final int MAX_HEIGHT = 42;
+    public static final Dimension MAX_SIZE_TEXT_FIELD = new Dimension(4096, MAX_HEIGHT);
+    public static final Dimension MAX_SIZE_NUMERIC_SPINNER = new Dimension(160, MAX_HEIGHT);
+    public static final Dimension MAX_SIZE_DATE_TIME_SPINNER = new Dimension(160, MAX_HEIGHT);
+    public static final Dimension MAX_SIZE_TIMESTAMP_SPINNER = new Dimension(200, MAX_HEIGHT);
     /**
      * The precision of the offset-limit of an exclusive float range (e.g. the exclusive upper-limit
      * of the value <code>1.0</code> could be <code>0.9</code>, <code>0.99</code>,
@@ -68,8 +69,7 @@ final class BasicNode implements SilaNode {
             case DATE:
                 JSpinner dateSpinner = new JSpinner(new SpinnerDateModel());
                 dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
-                dateSpinner.setMaximumSize(MAX_SIZE_SPINNER);
-                dateSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
+                dateSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
                 node.valueSupplier = () -> {
                     Date date = (Date) dateSpinner.getValue();
                     return LocalDate.ofInstant(date.toInstant(), ZONE).format(SILA_DATE_FORMATTER);
@@ -82,23 +82,20 @@ final class BasicNode implements SilaNode {
                         ? new SpinnerNumberModel()
                         : new SpinnerNumberModel(0.0, null, null, REAL_STEP_SIZE);
                 JSpinner numericSpinner = new JSpinner(model);
-                numericSpinner.setMaximumSize(MAX_SIZE_SPINNER);
-                numericSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
+                numericSpinner.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
                 node.valueSupplier = () -> (numericSpinner.getValue().toString());
                 node.component = numericSpinner;
                 break;
             case STRING:
                 JTextField strField = new JTextField();
                 strField.setMaximumSize(MAX_SIZE_TEXT_FIELD);
-                strField.setPreferredSize(PREFERRED_SIZE_TEXT_FIELD);
                 node.valueSupplier = () -> (strField.getText());
                 node.component = strField;
                 break;
             case TIME:
                 JSpinner timeSpinner = new JSpinner(new SpinnerDateModel());
                 timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
-                timeSpinner.setMaximumSize(MAX_SIZE_SPINNER);
-                timeSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
+                timeSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
                 node.valueSupplier = () -> {
                     Date time = (Date) timeSpinner.getValue();
                     return LocalTime.ofInstant(time.toInstant(), ZONE).format(SILA_TIME_FORMATTER);
@@ -159,8 +156,7 @@ final class BasicNode implements SilaNode {
                         return LocalDate.ofInstant(date.toInstant(), ZONE).format(SILA_DATE_FORMATTER);
                     };
                 }
-                dateSpinner.setMaximumSize(MAX_SIZE_SPINNER);
-                dateSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
+                dateSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
                 node.component = dateSpinner;
                 break;
             case INTEGER:
@@ -174,14 +170,14 @@ final class BasicNode implements SilaNode {
                             : createRangeConstrainedRealModel(constraints);
                 }
                 JSpinner numericSpinner = new JSpinner(model);
-                numericSpinner.setMaximumSize(MAX_SIZE_SPINNER);
-                numericSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
+                numericSpinner.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
                 node.valueSupplier = () -> (numericSpinner.getValue().toString());
                 if (constraints.getUnit() != null) {
                     Box hbox = Box.createHorizontalBox();
                     hbox.add(numericSpinner);
                     hbox.add(Box.createHorizontalStrut(5));
                     hbox.add(new JLabel(constraints.getUnit().getLabel()));
+                    hbox.setMaximumSize(MAX_SIZE_TEXT_FIELD);
                     node.component = hbox;
                 } else {
                     node.component = numericSpinner;
@@ -220,8 +216,7 @@ final class BasicNode implements SilaNode {
                         return LocalTime.ofInstant(time.toInstant(), ZONE).format(SILA_TIME_FORMATTER);
                     };
                 }
-                timeSpinner.setMaximumSize(MAX_SIZE_SPINNER);
-                timeSpinner.setPreferredSize(PREFERRED_SIZE_SPINNER);
+                timeSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
                 node.component = timeSpinner;
                 break;
             case TIMESTAMP:
