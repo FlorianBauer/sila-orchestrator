@@ -1,12 +1,18 @@
 package de.fau.clients.orchestrator.feature_explorer;
 
 import java.awt.Dimension;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -39,11 +45,17 @@ final class BasicNode implements SilaNode {
      */
     private static final double REAL_EXCLUSIVE_OFFSET = 0.001;
     private static final double REAL_STEP_SIZE = 0.1;
-    private static final ZoneId ZONE = ZoneId.systemDefault();
+    private static final ZoneOffset LOCAL_OFFSET = ZoneId.systemDefault().getRules().getOffset(Instant.now());
+    private static final int LOCAL_OFFSET_IN_SEC = LOCAL_OFFSET.getTotalSeconds();
+    /**
+     * The date-format used by the GUI-components.
+     */
     private static final String DATE_FORMAT = "yyyy-MM-dd";
-    private static final DateTimeFormatter SILA_DATE_FORMATTER = DateTimeFormatter.ofPattern("uuuuMMdd");
+    /**
+     * The time-format used by the GUI-components.
+     */
     private static final String TIME_FORMAT = "HH:mm:ss";
-    private static final DateTimeFormatter SILA_TIME_FORMATTER = DateTimeFormatter.ofPattern("HHmmss");
+    private static final String DATE_TIME_FORMAT = DATE_FORMAT + " " + TIME_FORMAT;
     private BasicType type = null;
     private Constraints constraints;
     private Supplier<String> valueSupplier;
@@ -72,7 +84,7 @@ final class BasicNode implements SilaNode {
                 dateSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
                 node.valueSupplier = () -> {
                     Date date = (Date) dateSpinner.getValue();
-                    return LocalDate.ofInstant(date.toInstant(), ZONE).format(SILA_DATE_FORMATTER);
+                    return LocalDate.ofInstant(date.toInstant(), LOCAL_OFFSET).toString();
                 };
                 node.component = dateSpinner;
                 break;
@@ -98,7 +110,9 @@ final class BasicNode implements SilaNode {
                 timeSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
                 node.valueSupplier = () -> {
                     Date time = (Date) timeSpinner.getValue();
-                    return LocalTime.ofInstant(time.toInstant(), ZONE).format(SILA_TIME_FORMATTER);
+                    return OffsetTime.ofInstant(time.toInstant(), LOCAL_OFFSET)
+                            .withOffsetSameInstant(ZoneOffset.UTC)
+                            .toString();
                 };
                 node.component = timeSpinner;
                 break;
@@ -142,18 +156,18 @@ final class BasicNode implements SilaNode {
                     final List<String> dateSet = constraints.getSet().getValue();
                     ArrayList<LocalDate> dates = new ArrayList<>(dateSet.size());
                     for (final String element : dateSet) {
-                        dates.add(LocalDate.parse(element, SILA_DATE_FORMATTER));
+                        dates.add(parseIsoDate(element));
                     }
                     dateSpinner = new JSpinner(new SpinnerListModel(dates));
                     node.valueSupplier = () -> {
-                        return ((LocalDate) dateSpinner.getValue()).format(SILA_DATE_FORMATTER);
+                        return ((LocalDate) dateSpinner.getValue()).toString();
                     };
                 } else {
                     dateSpinner = new JSpinner(createRangeConstrainedDateModel(constraints));
                     dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
                     node.valueSupplier = () -> {
                         Date date = (Date) dateSpinner.getValue();
-                        return LocalDate.ofInstant(date.toInstant(), ZONE).format(SILA_DATE_FORMATTER);
+                        return LocalDate.ofInstant(date.toInstant(), LOCAL_OFFSET).toString();
                     };
                 }
                 dateSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
@@ -186,7 +200,6 @@ final class BasicNode implements SilaNode {
             case STRING:
                 JTextField strField = new JTextField();
                 strField.setMaximumSize(MAX_SIZE_TEXT_FIELD);
-                strField.setPreferredSize(PREFERRED_SIZE_TEXT_FIELD);
                 node.valueSupplier = () -> (strField.getText());
                 node.component = strField;
                 break;
@@ -194,13 +207,15 @@ final class BasicNode implements SilaNode {
                 final JSpinner timeSpinner;
                 if (constraints.getSet() != null) {
                     final List<String> timeSet = constraints.getSet().getValue();
-                    ArrayList<LocalTime> times = new ArrayList<>(timeSet.size());
+                    ArrayList<OffsetTime> times = new ArrayList<>(timeSet.size());
                     for (final String element : timeSet) {
-                        times.add(LocalTime.parse(element, SILA_TIME_FORMATTER));
+                        times.add(parseIsoTime(element));
                     }
                     timeSpinner = new JSpinner(new SpinnerListModel(times));
                     node.valueSupplier = () -> {
-                        return ((LocalTime) timeSpinner.getValue()).format(SILA_TIME_FORMATTER);
+                        return ((OffsetTime) timeSpinner.getValue())
+                                .withOffsetSameInstant(ZoneOffset.UTC)
+                                .toString();
                     };
                 } else {
                     timeSpinner = new JSpinner(
@@ -213,16 +228,39 @@ final class BasicNode implements SilaNode {
                     timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
                     node.valueSupplier = () -> {
                         Date time = (Date) timeSpinner.getValue();
-                        return LocalTime.ofInstant(time.toInstant(), ZONE).format(SILA_TIME_FORMATTER);
+                        return OffsetTime.ofInstant(time.toInstant(), LOCAL_OFFSET)
+                                .withOffsetSameInstant(ZoneOffset.UTC)
+                                .toString();
                     };
                 }
                 timeSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
                 node.component = timeSpinner;
                 break;
             case TIMESTAMP:
-                // TODO: implement
-                node.component = new JLabel("placeholder 03");
-                node.valueSupplier = () -> ("not implemented 03");
+                final JSpinner timeStampSpinner;
+                if (constraints.getSet() != null) {
+                    final List<String> timeSet = constraints.getSet().getValue();
+                    ArrayList<OffsetDateTime> times = new ArrayList<>(timeSet.size());
+                    for (final String element : timeSet) {
+                        times.add(parseIsoDateTime(element));
+                    }
+                    timeStampSpinner = new JSpinner(new SpinnerListModel(times));
+                    node.valueSupplier = () -> {
+                        return ((OffsetDateTime) timeStampSpinner.getValue()).toString();
+                    };
+                } else {
+                    timeStampSpinner = new JSpinner(
+                            // TODO: implement createRangeConstrainedTimestampModel(constraints)
+                            new SpinnerDateModel()
+                    );
+                    timeStampSpinner.setEditor(new JSpinner.DateEditor(timeStampSpinner, DATE_TIME_FORMAT));
+                    node.valueSupplier = () -> {
+                        Date time = (Date) timeStampSpinner.getValue();
+                        return OffsetDateTime.ofInstant(time.toInstant(), ZoneOffset.UTC).toString();
+                    };
+                }
+                timeStampSpinner.setMaximumSize(MAX_SIZE_TIMESTAMP_SPINNER);
+                node.component = timeStampSpinner;
                 break;
             case ANY:
                 // TODO: implement
@@ -349,9 +387,10 @@ final class BasicNode implements SilaNode {
         LocalDate init = LocalDate.now();
         LocalDate start = null;
         if (constraints.getMinimalExclusive() != null) {
-            start = LocalDate.parse(constraints.getMinimalExclusive(), SILA_DATE_FORMATTER).plusDays(1);
+            start = parseIsoDate(constraints.getMinimalExclusive()).plusDays(1);
+
         } else if (constraints.getMinimalInclusive() != null) {
-            start = LocalDate.parse(constraints.getMinimalInclusive(), SILA_DATE_FORMATTER);
+            start = parseIsoDate(constraints.getMinimalInclusive());
         }
 
         Date startDate = null;
@@ -359,14 +398,14 @@ final class BasicNode implements SilaNode {
             if (start.isAfter(init)) {
                 init = start;
             }
-            startDate = Date.from(start.atStartOfDay(ZONE).toInstant());
+            startDate = Date.from(start.atStartOfDay(LOCAL_OFFSET).toInstant());
         }
 
         LocalDate end = null;
         if (constraints.getMaximalExclusive() != null) {
-            end = LocalDate.parse(constraints.getMaximalExclusive(), SILA_DATE_FORMATTER).minusDays(1);
+            end = parseIsoDate(constraints.getMaximalExclusive()).minusDays(1);
         } else if (constraints.getMaximalInclusive() != null) {
-            end = LocalDate.parse(constraints.getMaximalInclusive(), SILA_DATE_FORMATTER);
+            end = parseIsoDate(constraints.getMaximalInclusive());
         }
 
         Date endDate = null;
@@ -374,10 +413,10 @@ final class BasicNode implements SilaNode {
             if (end.isBefore(init)) {
                 init = end;
             }
-            endDate = Date.from(end.atStartOfDay(ZONE).toInstant());
+            endDate = Date.from(end.atStartOfDay(LOCAL_OFFSET).toInstant());
         }
 
-        Date initDate = Date.from(init.atStartOfDay(ZONE).toInstant());
+        Date initDate = Date.from(init.atStartOfDay(LOCAL_OFFSET).toInstant());
         return new SpinnerDateModel(initDate, startDate, endDate, Calendar.DAY_OF_MONTH);
     }
 
@@ -390,14 +429,14 @@ final class BasicNode implements SilaNode {
      * @hidden bug
      */
     private static SpinnerDateModel createRangeConstrainedTimeModel(final Constraints constraints) {
-        LocalDateTime init = LocalDateTime.now();
-        LocalDateTime start = null;
+        OffsetDateTime init = OffsetDateTime.now();
+        OffsetDateTime start = null;
         if (constraints.getMinimalExclusive() != null) {
-            start = LocalTime.parse(constraints.getMinimalExclusive(), SILA_TIME_FORMATTER)
+            start = parseIsoTime(constraints.getMinimalExclusive())
                     .atDate(init.toLocalDate())
                     .plusSeconds(1);
         } else if (constraints.getMinimalInclusive() != null) {
-            start = LocalTime.parse(constraints.getMinimalInclusive(), SILA_TIME_FORMATTER)
+            start = parseIsoTime(constraints.getMinimalInclusive())
                     .atDate(init.toLocalDate());
         }
 
@@ -406,16 +445,16 @@ final class BasicNode implements SilaNode {
             if (start.compareTo(init) >= 0) {
                 init = start.plusSeconds(1);
             }
-            startTime = Date.from(start.atZone(ZONE).toInstant());
+            startTime = Date.from(start.toInstant());
         }
 
-        LocalDateTime end = null;
+        OffsetDateTime end = null;
         if (constraints.getMaximalExclusive() != null) {
-            end = LocalTime.parse(constraints.getMaximalExclusive(), SILA_TIME_FORMATTER)
+            end = parseIsoTime(constraints.getMaximalExclusive())
                     .atDate(init.toLocalDate())
                     .minusSeconds(1);
         } else if (constraints.getMaximalInclusive() != null) {
-            end = LocalTime.parse(constraints.getMaximalInclusive(), SILA_TIME_FORMATTER)
+            end = parseIsoTime(constraints.getMaximalInclusive())
                     .atDate(init.toLocalDate());
         }
 
@@ -424,10 +463,92 @@ final class BasicNode implements SilaNode {
             if (end.compareTo(init) <= 0) {
                 init = end.minusSeconds(1);
             }
-            endTime = Date.from(end.atZone(ZONE).toInstant());
+            endTime = Date.from(end.toInstant());
         }
 
-        Date initDate = Date.from(init.atZone(ZONE).toInstant());
+        Date initDate = Date.from(init.toInstant());
         return new SpinnerDateModel(initDate, startTime, endTime, Calendar.MINUTE);
+    }
+
+    /**
+     * Parses ISO-8601 date-Strings of the form <code>yyyy-MM-dd</code>. Additional
+     * time-zone-offsets are going to be ignored.
+     *
+     * @param isoDateStr a ISO-8601 conform date-String.
+     * @return A LocalDate-date or <code>null</code> on error.
+     */
+    private static LocalDate parseIsoDate(String isoDateStr) {
+        final List<DateTimeFormatter> formatters = Arrays.asList(
+                DateTimeFormatter.ISO_DATE,
+                DateTimeFormatter.ofPattern("uuuu-MM-ddX"),
+                new DateTimeFormatterBuilder()
+                        .appendPattern("uuuuMMdd[X]")
+                        .toFormatter()
+        );
+
+        for (final DateTimeFormatter formatter : formatters) {
+            try {
+                return LocalDate.parse(isoDateStr, formatter);
+            } catch (DateTimeParseException ex) {
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Parses ISO-8601 time-Strings of the form <code>HH:mm:ss</code>.
+     *
+     * @param isoDateTimeStr A ISO-8601 conform time-String.
+     * @return A OffsetTime-timestamp adjusted to the current systems time-offset or
+     * <code>null</code> on error.
+     */
+    private static OffsetTime parseIsoTime(String isoTimeStr) {
+        final List<DateTimeFormatter> formatters = Arrays.asList(
+                DateTimeFormatter.ISO_OFFSET_TIME,
+                new DateTimeFormatterBuilder()
+                        .appendPattern("HH:mm:ss[.SSS][X]")
+                        .parseDefaulting(ChronoField.OFFSET_SECONDS, LOCAL_OFFSET_IN_SEC)
+                        .toFormatter(),
+                new DateTimeFormatterBuilder()
+                        .appendPattern("HHmmss[.SSS][X]")
+                        .parseDefaulting(ChronoField.OFFSET_SECONDS, LOCAL_OFFSET_IN_SEC)
+                        .toFormatter()
+        );
+
+        for (final DateTimeFormatter formatter : formatters) {
+            try {
+                return OffsetTime.parse(isoTimeStr, formatter).withOffsetSameInstant(LOCAL_OFFSET);
+            } catch (DateTimeParseException ex) {
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Parses ISO-8601 timestamps of the form <code>yyyy-MM-ddTHH:mm:ss</code>.
+     *
+     * @param isoDateTimeStr A ISO-8601 conform date-time-String.
+     * @return A OffsetDateTime-timestamp adjusted to UTC or <code>null</code> on error.
+     */
+    private static OffsetDateTime parseIsoDateTime(String isoDateTimeStr) {
+        final List<DateTimeFormatter> formatters = Arrays.asList(
+                DateTimeFormatter.ISO_OFFSET_DATE_TIME,
+                new DateTimeFormatterBuilder()
+                        .appendPattern("uuuu-MM-dd'T'HH:mm:ss[.SSS][X]")
+                        .parseDefaulting(ChronoField.OFFSET_SECONDS, LOCAL_OFFSET_IN_SEC)
+                        .toFormatter(),
+                new DateTimeFormatterBuilder()
+                        .appendPattern("uuuuMMdd'T'HHmmss[.SSS][X]")
+                        .parseDefaulting(ChronoField.OFFSET_SECONDS, LOCAL_OFFSET_IN_SEC)
+                        .toFormatter()
+        );
+
+        for (final DateTimeFormatter fmt : formatters) {
+            try {
+                return OffsetDateTime.parse(isoDateTimeStr, fmt).withOffsetSameInstant(ZoneOffset.UTC);
+            } catch (DateTimeParseException ex) {
+            }
+        }
+        return null;
     }
 }
