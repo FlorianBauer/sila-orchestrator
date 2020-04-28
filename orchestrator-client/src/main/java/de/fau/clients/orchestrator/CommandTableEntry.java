@@ -8,6 +8,7 @@
 package de.fau.clients.orchestrator;
 
 import de.fau.clients.orchestrator.feature_explorer.FeatureNode;
+import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -38,6 +39,7 @@ public class CommandTableEntry implements Runnable {
     private final JButton execBtn = new JButton("Execute", EXECUTE_ICON);
     private final UUID serverId;
     private final String featureId;
+    private final TypeDefLut typeDefs;
     private final Feature.Command command;
     private final PropertyChangeSupport stateChanges = new PropertyChangeSupport(this);
     private boolean isNodeBuild = false;
@@ -50,10 +52,12 @@ public class CommandTableEntry implements Runnable {
     public CommandTableEntry(
             final UUID serverId,
             final String featureId,
+            final TypeDefLut typeDefs,
             final Feature.Command command) {
 
         this.serverId = serverId;
         this.featureId = featureId;
+        this.typeDefs = typeDefs;
         this.command = command;
         this.panel.setLayout(new BoxLayout(this.panel, BoxLayout.Y_AXIS));
         this.panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -84,8 +88,8 @@ public class CommandTableEntry implements Runnable {
                 if (params.isEmpty()) {
                     return;
                 }
-                featNode = new FeatureNode(params);
-                featNode.populatePanel(panel);
+                featNode = new FeatureNode(typeDefs, params);
+                panel.add(featNode.getComponent());
             }
             panel.add(Box.createVerticalStrut(10));
             panel.add(execBtn);
@@ -164,7 +168,12 @@ public class CommandTableEntry implements Runnable {
                 ? SiLACall.Type.OBSERVABLE_COMMAND
                 : SiLACall.Type.UNOBSERVABLE_COMMAND;
 
-        final String jsonMsg = featNode.toJsonMessage();
+        final String jsonMsg = featNode.toJsonString();
+        if (jsonMsg.isEmpty()) {
+            log.warn("jsonMsg is empty. Execution was skipped.");
+            execBtn.setEnabled(true);
+            return;
+        }
         log.info("jsonMsg: " + jsonMsg);
 
         startTimeStamp = OffsetDateTime.now();

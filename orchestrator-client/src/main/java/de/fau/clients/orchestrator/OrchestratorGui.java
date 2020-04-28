@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator;
 
+import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
@@ -72,6 +73,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 featureNode.setUserObject(new FeatureTreeType(feature));
                 serverNode.add(featureNode);
 
+                final TypeDefLut typeDefs = new TypeDefLut(feature);
                 if (feature.getCommand() != null && !feature.getCommand().isEmpty()) {
                     DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
                     featureNode.add(commandNode);
@@ -79,6 +81,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                         final CommandTreeNode ctn = new CommandTreeNode(
                                 server.getConfiguration().getUuid(),
                                 feature.getIdentifier(),
+                                typeDefs,
                                 command);
                         ctn.setUserObject(new FeatureTreeType(command));
                         commandNode.add(ctn);

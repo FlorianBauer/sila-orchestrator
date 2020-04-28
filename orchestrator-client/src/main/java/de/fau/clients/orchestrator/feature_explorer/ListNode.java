@@ -24,6 +24,8 @@ final class ListNode implements SilaNode {
     private final JButton removeBtn = new JButton("Remove", REMOVE_ICON);
     /// The button to trigger the addition of extra list elements.
     private final JButton addBtn = new JButton("Add", ADD_ICON);
+    /// The look-up table for type definitions of this SiLA-feature.
+    private final TypeDefLut typeDefs;
     /// Prototype node to clone the list element on a add-operations.
     private final SilaNode prototype;
     /// List holding the SilaNode elements.
@@ -31,7 +33,8 @@ final class ListNode implements SilaNode {
     /// Constraint object holding vaious constraints (e.g. min. and max. list elements).
     private final Constraints constraints;
 
-    private ListNode(@NonNull final SilaNode prototype) {
+    private ListNode(@NonNull final TypeDefLut typeDefs, @NonNull final SilaNode prototype) {
+        this.typeDefs = typeDefs;
         this.prototype = prototype;
         this.constraints = null;
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.PAGE_AXIS));
@@ -47,7 +50,8 @@ final class ListNode implements SilaNode {
         });
     }
 
-    private ListNode(@NonNull final SilaNode prototype, final Constraints constraints) {
+    private ListNode(TypeDefLut typeDefs, @NonNull final SilaNode prototype, final Constraints constraints) {
+        this.typeDefs = typeDefs;
         this.prototype = prototype;
         this.constraints = constraints;
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.PAGE_AXIS));
@@ -77,24 +81,29 @@ final class ListNode implements SilaNode {
         });
     }
 
-    protected static ListNode create(@NonNull final ListType type) {
-        SilaNode prototype = FeatureNode.createFromDataType(type.getDataType());
-        return new ListNode(prototype);
+    protected static ListNode create(
+            @NonNull final TypeDefLut typeDefs,
+            @NonNull final ListType type) {
+
+        SilaNode prototype = FeatureNode.createFromDataType(typeDefs, type.getDataType());
+        return new ListNode(typeDefs, prototype);
     }
 
     protected static ListNode createWithConstraint(
+            @NonNull final TypeDefLut typeDefs,
             @NonNull final ListType type,
             final Constraints con) {
-        SilaNode prototype = FeatureNode.createFromDataType(type.getDataType());
-        return new ListNode(prototype, con);
+
+        SilaNode prototype = FeatureNode.createFromDataType(typeDefs, type.getDataType());
+        return new ListNode(typeDefs, prototype, con);
     }
 
     @Override
     public ListNode cloneNode() {
         if (this.constraints != null) {
-            return new ListNode(this.prototype, this.constraints);
+            return new ListNode(this.typeDefs, this.prototype, this.constraints);
         }
-        return new ListNode(this.prototype);
+        return new ListNode(this.typeDefs, this.prototype);
     }
 
     @Override
