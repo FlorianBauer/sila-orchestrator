@@ -1,11 +1,22 @@
 package de.fau.clients.orchestrator;
 
+import de.fau.clients.orchestrator.file_loader.TaskQueueData;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
+import de.fau.clients.orchestrator.file_loader.TaskEntry;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.ToolTipManager;
 import javax.swing.table.DefaultTableModel;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +33,13 @@ import sila_java.library.core.models.Feature.Metadata;
 import sila_java.library.manager.ServerFinder;
 
 @Slf4j
+@SuppressWarnings("serial")
 public class OrchestratorGui extends javax.swing.JFrame {
 
     private static ServerManager serverManager;
     private static int taskRowId = 0;
+    private boolean wasSaved = false;
+    private String outFilePath = "";
 
     private void addSpecificServer() {
         String addr = serverAddressTextField.getText();
@@ -92,7 +106,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode("Properties");
                     featureNode.add(propertyNode);
                     for (final Property prop : feature.getProperty()) {
-                        DefaultMutableTreeNode ptn = new DefaultMutableTreeNode();
+                        final PropertyTreeNode ptn = new PropertyTreeNode(
+                                server.getConfiguration().getUuid(),
+                                feature.getIdentifier(),
+                                typeDefs,
+                                prop);
                         ptn.setUserObject(new FeatureTreeType(prop));
                         propertyNode.add(ptn);
                     }
@@ -150,6 +168,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
         taskQueuePopupMenu = new javax.swing.JPopupMenu();
         removeTaskFromQueueMenuItem = new javax.swing.JMenuItem();
         execRowEntryMenuItem = new javax.swing.JMenuItem();
+        fileSaveAsChooser = new javax.swing.JFileChooser();
+        fileOpenChooser = new javax.swing.JFileChooser();
         serverSplitPane = new javax.swing.JSplitPane();
         serverPanel = new javax.swing.JPanel();
         featureScrollPane = new javax.swing.JScrollPane();
@@ -161,7 +181,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         taskQueuePanel = new javax.swing.JPanel();
         addTaskToQueueBtn = new javax.swing.JButton();
         taskQueueScrollPane = new javax.swing.JScrollPane();
-        taskQueueTable = new javax.swing.JTable();
+        taskQueueTable = new TaskQueue();
         executeAllBtn = new javax.swing.JButton();
         moveTaskUpBtn = new javax.swing.JButton();
         moveTaskDownBtn = new javax.swing.JButton();
@@ -318,6 +338,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         taskQueuePopupMenu.add(execRowEntryMenuItem);
 
+        fileSaveAsChooser.setDialogType(javax.swing.JFileChooser.SAVE_DIALOG);
+        fileSaveAsChooser.setDialogTitle("Save");
+        fileSaveAsChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
+
+        fileOpenChooser.setFileFilter(new SiloFileFilter());
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SiLA Orchestrator");
         setLocationByPlatform(true);
@@ -420,29 +446,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         taskQueuePanel.add(addTaskToQueueBtn, gridBagConstraints);
 
-        taskQueueTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Task #", "Icon", "Feature", "State", "Time", "Result"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
-            };
-            boolean[] canEdit = new boolean [] {
-                true, false, false, false, false, false
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
         taskQueueTable.setFillsViewportHeight(true);
         taskQueueTable.setRowHeight(32);
         taskQueueTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -535,15 +538,31 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         openMenuItem.setMnemonic('o');
         openMenuItem.setText("Open");
+        openMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openMenuItemActionPerformed(evt);
+            }
+        });
         fileMenu.add(openMenuItem);
 
+        saveMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveMenuItem.setMnemonic('s');
         saveMenuItem.setText("Save");
+        saveMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveMenuItemActionPerformed(evt);
+            }
+        });
         fileMenu.add(saveMenuItem);
 
         saveAsMenuItem.setMnemonic('a');
         saveAsMenuItem.setText("Save As ...");
         saveAsMenuItem.setDisplayedMnemonicIndex(5);
+        saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsActionPerformed(evt);
+            }
+        });
         fileMenu.add(saveAsMenuItem);
 
         exitMenuItem.setMnemonic('x');
@@ -659,9 +678,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
 
         if (node.isLeaf()) {
-            addTaskToQueueBtn.setEnabled(true);
+            if (node instanceof CommandTreeNode) {
+                addTaskToQueueBtn.setEnabled(true);
+                commandScrollPane.setViewportView(null);
+            } else if (node instanceof PropertyTreeNode) {
+                PropertyTreeNode propNode = (PropertyTreeNode) node;
+                if (!propNode.isPanelBuild()) {
+                    propNode.requestPropertyData();
+                }
+                commandScrollPane.setViewportView(propNode.getPanel());
+            }
         } else {
             addTaskToQueueBtn.setEnabled(false);
+            commandScrollPane.setViewportView(null);
         }
     }//GEN-LAST:event_featureTreeValueChanged
 
@@ -672,52 +701,51 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
 
         if (node.isLeaf()) {
-            CommandTreeNode cmdNode = (CommandTreeNode) node;
-            // use the selected node to create a new table entry.
-            CommandTableEntry cmdEntry = cmdNode.createTableEntry();
-            DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
-            model.addRow(new Object[]{
-                ++taskRowId,
-                new ImageIcon("src/main/resources/icons/32px/command.png"),
-                cmdEntry,
-                cmdEntry.getState(),
-                cmdEntry.getStartTimeStamp(),
-                "-"
-            });
+            if (node instanceof CommandTreeNode) {
+                CommandTreeNode cmdNode = (CommandTreeNode) node;
+                // use the selected node to create a new table entry.
+                CommandTableEntry cmdEntry = cmdNode.createTableEntry();
+                DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+                model.addRow(new Object[]{
+                    ++taskRowId,
+                    cmdEntry,
+                    cmdEntry.getState(),
+                    cmdEntry.getStartTimeStamp(),
+                    cmdEntry.getLastExecResult()
+                });
 
-            cmdEntry.addStatusChangeListener((PropertyChangeEvent pcEvt) -> {
-                if (pcEvt.getPropertyName().equals("taskState")) {
-                    final TaskState state = (TaskState) pcEvt.getNewValue();
-                    // Find the row of the changed entry. This has to be done dynamically, since 
-                    // the order of rows might change during runtime.
-                    int rowIdx = -1;
-                    for (int i = 0; i < model.getRowCount(); i++) {
-                        if (model.getDataVector().elementAt(i).get(2).equals(cmdEntry)) {
-                            rowIdx = i;
-                            break;
+                cmdEntry.addStatusChangeListener((PropertyChangeEvent pcEvt) -> {
+                    if (pcEvt.getPropertyName().equals("taskState")) {
+                        final TaskState state = (TaskState) pcEvt.getNewValue();
+                        // Find the row of the changed entry. This has to be done dynamically, since 
+                        // the order of rows might change during runtime.
+                        int rowIdx = -1;
+                        for (int i = 0; i < model.getRowCount(); i++) {
+                            if (model.getDataVector().elementAt(i).get(TaskQueue.COLUMN_COMMAND_IDX).equals(cmdEntry)) {
+                                rowIdx = i;
+                                break;
+                            }
+                        }
+
+                        if (rowIdx == -1) {
+                            log.error("Could not find entry in table");
+                            return;
+                        }
+                        model.setValueAt(state, rowIdx, TaskQueue.COLUMN_STATE_IDX);
+                        switch (state) {
+                            case RUNNING:
+                                model.setValueAt(cmdEntry.getStartTimeStamp(), rowIdx, TaskQueue.COLUMN_START_TIME_IDX);
+                                break;
+                            case FINISHED_SUCCESS:
+                            case FINISHED_ERROR:
+                                model.setValueAt(cmdEntry.getLastExecResult(), rowIdx, TaskQueue.COLUMN_RESULT_IDX);
+                                break;
+                            default:
                         }
                     }
-
-                    if (rowIdx == -1) {
-                        log.error("Could not find entry in table");
-                        return;
-                    }
-                    model.setValueAt(state, rowIdx, 3);
-                    switch (state) {
-                        case RUNNING:
-                            model.setValueAt(cmdEntry.getStartTimeStamp(), rowIdx, 4);
-                            break;
-                        case FINISHED_SUCCESS:
-                        case FINISHED_ERROR:
-                            model.setValueAt(cmdEntry.getLastExecResult(), rowIdx, 5);
-                            break;
-                        default:
-                    }
-                }
-            });
-            executeAllBtn.setEnabled(true);
-        } else {
-            commandScrollPane.setViewportView(null);
+                });
+                executeAllBtn.setEnabled(true);
+            }
         }
     }//GEN-LAST:event_addTaskToQueueBtnActionPerformed
 
@@ -734,7 +762,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
 
         DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
-        CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, 2);
+        CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, TaskQueue.COLUMN_COMMAND_IDX);
         if (entry == null) {
             return;
         }
@@ -751,11 +779,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         final boolean isTaskRemoveEnabled = (rowCount > 0);
         removeTaskFromQueueBtn.setEnabled(isTaskRemoveEnabled);
         removeTaskFromQueueMenuItem.setEnabled(isTaskRemoveEnabled);
-
-        if (!entry.isNodeBuild()) {
-            entry.buildCommandPanel();
-        }
-        entry.showCommandPanel(commandScrollPane);
+        commandScrollPane.setViewportView(entry.getPanel());
     }//GEN-LAST:event_taskQueueTableMouseClicked
 
     private void executeAllBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeAllBtnActionPerformed
@@ -763,16 +787,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         Runnable queueRunner = () -> {
             Thread entryThread;
-            CommandTableEntry entry;
             final DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
             for (int i = 0; i < taskQueueTable.getRowCount(); i++) {
-                entry = (CommandTableEntry) model.getValueAt(i, 2);
-
-                if (!entry.isNodeBuild()) {
-                    // create entry with default values, if not done so far by the user
-                    entry.buildCommandPanel();
-                }
-                entryThread = new Thread(entry);
+                entryThread = new Thread((CommandTableEntry) model.getValueAt(i, TaskQueue.COLUMN_COMMAND_IDX));
                 entryThread.start();
                 try {
                     entryThread.join();
@@ -791,7 +808,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             return;
         }
         DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
-        CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, 2);
+        CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, TaskQueue.COLUMN_COMMAND_IDX);
         new Thread(entry).start();
     }//GEN-LAST:event_execRowEntryMenuItemActionPerformed
 
@@ -804,7 +821,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
         DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
         model.moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx - 1);
-        taskQueueTable.changeSelection(selectedRowIdx - 1, 0, false, false);
+        taskQueueTable.changeSelection(selectedRowIdx - 1, TaskQueue.COLUMN_TASK_ID_IDX, false, false);
         moveTaskDownBtn.setEnabled(true);
     }//GEN-LAST:event_moveTaskUpBtnActionPerformed
 
@@ -818,7 +835,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
         DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
         model.moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx + 1);
-        taskQueueTable.changeSelection(selectedRowIdx + 1, 0, false, false);
+        taskQueueTable.changeSelection(selectedRowIdx + 1, TaskQueue.COLUMN_TASK_ID_IDX, false, false);
         moveTaskUpBtn.setEnabled(true);
     }//GEN-LAST:event_moveTaskDownBtnActionPerformed
 
@@ -835,6 +852,102 @@ public class OrchestratorGui extends javax.swing.JFrame {
         model.removeRow(selectedRowIdx);
         commandScrollPane.setViewportView(null);
     }//GEN-LAST:event_removeTaskFromQueue
+
+    private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuItemActionPerformed
+        if (!wasSaved || outFilePath.isEmpty()) {
+            saveAsActionPerformed(evt);
+        } else {
+            // TODO: give the user some kind of notificatin that the file was saved
+            // TODO: gather data to save
+            String outData = getSaveData();
+            if (outData.isEmpty()) {
+                log.warn("Empty save!");
+                return;
+            }
+
+            try {
+                Files.writeString(Paths.get(outFilePath), outData, StandardCharsets.UTF_8);
+                log.info("Saved " + outFilePath);
+            } catch (IOException ex) {
+                log.error(OrchestratorGui.class.getName(), ex.getMessage());
+            }
+        }
+    }//GEN-LAST:event_saveMenuItemActionPerformed
+
+    private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
+        String outData = getSaveData();
+        if (outData.isEmpty()) {
+            log.warn("Empty save!");
+            return;
+        }
+
+        fileSaveAsChooser.setSelectedFile(new File(LocalDate.now().toString() + ".silo"));
+        int retVal = fileSaveAsChooser.showSaveDialog(this);
+        if (retVal == JFileChooser.APPROVE_OPTION) {
+            File outFile = fileSaveAsChooser.getSelectedFile();
+            outFilePath = outFile.getAbsolutePath();
+            File tmpFile = new File(outFilePath);
+            int userDesition = JOptionPane.OK_OPTION;
+            if (tmpFile.exists() && tmpFile.isFile()) {
+                userDesition = JOptionPane.showConfirmDialog(this,
+                        "File \"" + tmpFile.getName() + "\" already exists in \""
+                        + tmpFile.getParent() + "\"!\n"
+                        + "Do you want to overwrite the existing file?",
+                        null,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        JOptionPane.YES_NO_CANCEL_OPTION);
+            }
+
+            if (userDesition == JOptionPane.OK_OPTION) {
+                try {
+                    Files.writeString(Paths.get(outFilePath), outData, StandardCharsets.UTF_8);
+                    wasSaved = true;
+                    log.info("Saved as file " + outFilePath);
+                } catch (IOException ex) {
+                    log.error(ex.getMessage());
+                }
+            }
+        }
+    }//GEN-LAST:event_saveAsActionPerformed
+
+    private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
+        int retVal = fileOpenChooser.showOpenDialog(this);
+        if (retVal == JFileChooser.APPROVE_OPTION) {
+            final File file = fileOpenChooser.getSelectedFile();
+            log.info("Opend file: " + file.getAbsolutePath());
+            ObjectMapper mapper = new ObjectMapper();
+            TaskQueueData tqd = null;
+            try {
+                tqd = mapper.readValue(file, TaskQueueData.class);
+            } catch (IOException ex) {
+                log.error(ex.getMessage());
+            }
+
+            if (tqd != null) {
+                // FIXME: use a import routine to create CommandTableEntries
+                log.info("File Version: " + tqd.getSiloFileVersion());
+                
+                for (TaskEntry entry : tqd.getTasks()) {
+                    log.info("TaskId: " + entry);
+                }
+
+            }
+        } else {
+            log.warn("File access cancelled by user.");
+        }
+    }//GEN-LAST:event_openMenuItemActionPerformed
+
+    private String getSaveData() {
+        String outData = "";
+        ObjectMapper mapper = new ObjectMapper();
+        TaskQueueData tqd = TaskQueueData.createFromTaskQueue((TaskQueue) taskQueueTable);
+        try {
+            outData = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tqd);
+        } catch (JsonProcessingException ex) {
+            log.error(ex.getMessage());
+        }
+        return outData;
+    }
 
     /**
      * @param args the command line arguments
@@ -885,6 +998,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JScrollPane featureScrollPane;
     private javax.swing.JTree featureTree;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JFileChooser fileOpenChooser;
+    private javax.swing.JFileChooser fileSaveAsChooser;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JSplitPane mainPanelSplitPane;

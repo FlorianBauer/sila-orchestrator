@@ -7,7 +7,8 @@
  */
 package de.fau.clients.orchestrator;
 
-import de.fau.clients.orchestrator.feature_explorer.FeatureNode;
+import de.fau.clients.orchestrator.feature_explorer.NodeFactory;
+import de.fau.clients.orchestrator.feature_explorer.SilaNode;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
@@ -22,7 +23,6 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Feature;
 import sila_java.library.core.models.SiLAElement;
@@ -42,11 +42,11 @@ public class CommandTableEntry implements Runnable {
     private final TypeDefLut typeDefs;
     private final Feature.Command command;
     private final PropertyChangeSupport stateChanges = new PropertyChangeSupport(this);
-    private boolean isNodeBuild = false;
-    private FeatureNode featNode = null;
+    private boolean isPanelBuilt = false;
+    private SilaNode cmdNode = null;
     private OffsetDateTime startTimeStamp = null;
     private OffsetDateTime endTimeStamp = null;
-    private String execResult = "";
+    private String lastExecResult = "";
     private TaskState state = TaskState.NEUTRAL;
 
     public CommandTableEntry(
@@ -78,42 +78,47 @@ public class CommandTableEntry implements Runnable {
 
     /**
      * Build all GUI components in the Panel to allow user-interaction with the commands parameter.
+     *
+     * @return A populated JPanel.
      */
-    public void buildCommandPanel() {
-        if (isNodeBuild == false) {
-            isNodeBuild = true;
-
-            if (featNode == null) {
-                final List<SiLAElement> params = command.getParameter();
-                if (params.isEmpty()) {
-                    return;
-                }
-                featNode = new FeatureNode(typeDefs, params);
-                panel.add(featNode.getComponent());
+    public JPanel getPanel() {
+        if (!isPanelBuilt) {
+            if (cmdNode == null) {
+                buildNode();
             }
+            panel.add(cmdNode.getComponent());
             panel.add(Box.createVerticalStrut(10));
             panel.add(execBtn);
-        } else {
-            log.warn("Multiple calls to buildCommandPanel() are discouraged.");
+            isPanelBuilt = true;
+        }
+        return panel;
+    }
+
+    public void buildNode() {
+        if (cmdNode == null) {
+            final List<SiLAElement> params = command.getParameter();
+            if (params.isEmpty()) {
+                log.warn("Parameter list for command is empty.");
+                return;
+            }
+            cmdNode = NodeFactory.createFromElements(typeDefs, params);
         }
     }
 
-    /**
-     * Embeds the build-up Panel in the given ScrollPane and draws its contents.
-     *
-     * @param scrollPane The ScrollPane to embed the Panel.
-     */
-    public void showCommandPanel(final JScrollPane scrollPane) {
-        scrollPane.setViewportView(panel);
+    public String getServerId() {
+        return serverId.toString();
     }
 
-    /**
-     * Returns wether the Node was previously build or not.
-     *
-     * @return true if the Node is already build-up, otherwise false.
-     */
-    public boolean isNodeBuild() {
-        return isNodeBuild;
+    public String getFeatureId() {
+        return featureId;
+    }
+
+    public String getCommandId() {
+        return command.getIdentifier();
+    }
+
+    public String getCommandParams() {
+        return cmdNode.toJsonString();
     }
 
     public String getStartTimeStamp() {
@@ -136,7 +141,7 @@ public class CommandTableEntry implements Runnable {
      * @return The last result as String.
      */
     public String getLastExecResult() {
-        return execResult;
+        return lastExecResult;
     }
 
     public TaskState getState() {
@@ -168,7 +173,10 @@ public class CommandTableEntry implements Runnable {
                 ? SiLACall.Type.OBSERVABLE_COMMAND
                 : SiLACall.Type.UNOBSERVABLE_COMMAND;
 
-        final String jsonMsg = featNode.toJsonString();
+        if (cmdNode == null) {
+            buildNode();
+        }
+        final String jsonMsg = cmdNode.toJsonString();
         if (jsonMsg.isEmpty()) {
             log.warn("jsonMsg is empty. Execution was skipped.");
             execBtn.setEnabled(true);
@@ -190,15 +198,15 @@ public class CommandTableEntry implements Runnable {
 
         final TaskState oldState = state;
         try {
-            execResult = ServerManager.getInstance().newCallExecutor(call).execute();
+            lastExecResult = ServerManager.getInstance().newCallExecutor(call).execute();
             state = TaskState.FINISHED_SUCCESS;
         } catch (RuntimeException ex) {
             log.error(ex.getMessage());
-            execResult = ex.getMessage();
+            lastExecResult = ex.getMessage();
             state = TaskState.FINISHED_ERROR;
         } catch (Exception ex) {
             log.error(ex.getMessage());
-            execResult = ex.getMessage();
+            lastExecResult = ex.getMessage();
             state = TaskState.FINISHED_ERROR;
         }
         endTimeStamp = OffsetDateTime.now();

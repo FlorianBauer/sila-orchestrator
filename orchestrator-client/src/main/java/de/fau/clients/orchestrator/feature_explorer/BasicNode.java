@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator.feature_explorer;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.awt.Dimension;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -33,11 +34,11 @@ import sila_java.library.core.models.Constraints;
 
 final class BasicNode implements SilaNode {
 
-    public static final int MAX_HEIGHT = 42;
-    public static final Dimension MAX_SIZE_TEXT_FIELD = new Dimension(4096, MAX_HEIGHT);
-    public static final Dimension MAX_SIZE_NUMERIC_SPINNER = new Dimension(160, MAX_HEIGHT);
-    public static final Dimension MAX_SIZE_DATE_TIME_SPINNER = new Dimension(160, MAX_HEIGHT);
-    public static final Dimension MAX_SIZE_TIMESTAMP_SPINNER = new Dimension(200, MAX_HEIGHT);
+    private static final int MAX_HEIGHT = 42;
+    private static final Dimension MAX_SIZE_TEXT_FIELD = new Dimension(4096, MAX_HEIGHT);
+    private static final Dimension MAX_SIZE_NUMERIC_SPINNER = new Dimension(160, MAX_HEIGHT);
+    private static final Dimension MAX_SIZE_DATE_TIME_SPINNER = new Dimension(160, MAX_HEIGHT);
+    private static final Dimension MAX_SIZE_TIMESTAMP_SPINNER = new Dimension(200, MAX_HEIGHT);
     /**
      * The precision of the offset-limit of an exclusive float range (e.g. the exclusive upper-limit
      * of the value <code>1.0</code> could be <code>0.9</code>, <code>0.99</code>,
@@ -56,27 +57,25 @@ final class BasicNode implements SilaNode {
      */
     private static final String TIME_FORMAT = "HH:mm:ss";
     private static final String DATE_TIME_FORMAT = DATE_FORMAT + " " + TIME_FORMAT;
-    private BasicType type = null;
+    private final BasicType type;
     private Constraints constraints;
     private Supplier<String> valueSupplier;
     private JComponent component = null;
 
-    private BasicNode() {
+    private BasicNode(@NonNull final BasicType type) {
+        this.type = type;
     }
 
-    protected static BasicNode create(@NonNull final BasicType type) {
-        BasicNode node = new BasicNode();
-        node.type = type;
-        switch (type) {
+    protected static BasicNode create(final BasicType type) {
+        BasicNode node = new BasicNode(type);
+        switch (node.type) {
             case BINARY:
                 // TODO: implement
                 node.component = new JLabel("placeholder 01");
                 node.valueSupplier = () -> ("not implemented 01");
                 break;
             case BOOLEAN:
-                JCheckBox checkBox = new JCheckBox();
-                node.valueSupplier = () -> (checkBox.isSelected() ? "true" : "false");
-                node.component = checkBox;
+                createBooleanType(node);
                 break;
             case DATE:
                 JSpinner dateSpinner = new JSpinner(new SpinnerDateModel());
@@ -90,7 +89,7 @@ final class BasicNode implements SilaNode {
                 break;
             case INTEGER:
             case REAL:
-                SpinnerModel model = (type == BasicType.INTEGER)
+                SpinnerModel model = (node.type == BasicType.INTEGER)
                         ? new SpinnerNumberModel()
                         : new SpinnerNumberModel(0.0, null, null, REAL_STEP_SIZE);
                 JSpinner numericSpinner = new JSpinner(model);
@@ -134,21 +133,18 @@ final class BasicNode implements SilaNode {
     }
 
     protected static BasicNode createWithConstraint(
-            @NonNull final BasicType type,
+            final BasicType type,
             final Constraints constraints) {
 
-        BasicNode node = new BasicNode();
-        node.type = type;
-        switch (type) {
+        BasicNode node = new BasicNode(type);
+        switch (node.type) {
             case BINARY:
                 // TODO: implement
                 node.component = new JLabel("placeholder 01");
                 node.valueSupplier = () -> ("not implemented 01");
                 break;
             case BOOLEAN:
-                JCheckBox checkBox = new JCheckBox();
-                node.valueSupplier = () -> (checkBox.isSelected() ? "true" : "false");
-                node.component = checkBox;
+                createBooleanType(node);
                 break;
             case DATE:
                 final JSpinner dateSpinner;
@@ -274,6 +270,67 @@ final class BasicNode implements SilaNode {
         return node;
     }
 
+    protected static BasicNode createFromJson(
+            final BasicType type,
+            final JsonNode jsonNode,
+            boolean isReadOnly) {
+
+        BasicNode node = new BasicNode(type);
+        switch (node.type) {
+            case BINARY:
+                // TODO: implement
+                node.component = new JLabel("placeholder 01");
+                node.valueSupplier = () -> ("not implemented 01");
+                break;
+            case BOOLEAN:
+                createBooleanType(node, jsonNode, isReadOnly);
+                break;
+            case DATE:
+                JSpinner dateSpinner = new JSpinner(new SpinnerDateModel());
+                dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
+                dateSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
+                node.valueSupplier = () -> {
+                    Date date = (Date) dateSpinner.getValue();
+                    return LocalDate.ofInstant(date.toInstant(), LOCAL_OFFSET).toString();
+                };
+                node.component = dateSpinner;
+                break;
+            case INTEGER:
+            case REAL:
+                createNumberType(node, jsonNode, isReadOnly);
+                break;
+            case STRING:
+                createStringType(node, jsonNode, isReadOnly);
+                break;
+            case TIME:
+                JSpinner timeSpinner = new JSpinner(new SpinnerDateModel());
+                timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
+                timeSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
+                node.valueSupplier = () -> {
+                    Date time = (Date) timeSpinner.getValue();
+                    return OffsetTime.ofInstant(time.toInstant(), LOCAL_OFFSET)
+                            .withOffsetSameInstant(ZoneOffset.UTC)
+                            .toString();
+                };
+                node.component = timeSpinner;
+                break;
+            case TIMESTAMP:
+                // TODO: implement
+                node.component = new JLabel("placeholder 03");
+                node.valueSupplier = () -> ("not implemented 03");
+                break;
+            case ANY:
+                // TODO: implement
+                node.component = new JLabel("placeholder 04");
+                node.valueSupplier = () -> ("not implemented 04");
+                break;
+            default:
+                // TODO: implement
+                return null;
+        }
+        return node;
+    }
+
     @Override
     public BasicNode cloneNode() {
         if (this.constraints == null) {
@@ -295,6 +352,62 @@ final class BasicNode implements SilaNode {
     @Override
     public JComponent getComponent() {
         return this.component;
+    }
+
+    private static void createBooleanType(BasicNode node) {
+        JCheckBox checkBox = new JCheckBox();
+        node.valueSupplier = () -> (checkBox.isSelected() ? "true" : "false");
+        node.component = checkBox;
+    }
+
+    private static void createBooleanType(BasicNode node, JsonNode jsonNode, boolean isReadOnly) {
+        JCheckBox checkBox = new JCheckBox();
+        if (jsonNode != null) {
+            checkBox.setSelected(jsonNode.asBoolean());
+        }
+        if (isReadOnly) {
+            checkBox.setEnabled(false);
+        } else {
+            node.valueSupplier = () -> (checkBox.isSelected() ? "true" : "false");
+        }
+        node.component = checkBox;
+    }
+
+    private static void createStringType(BasicNode node, JsonNode jsonNode, boolean isReadOnly) {
+        JTextField strField = new JTextField();
+        strField.setMaximumSize(MAX_SIZE_TEXT_FIELD);
+        if (jsonNode != null) {
+            String textValue = jsonNode.asText();
+            strField.setText(textValue);
+        }
+
+        if (isReadOnly) {
+            strField.setEnabled(false);
+        } else {
+            node.valueSupplier = () -> (jsonNode.textValue());
+        }
+        node.component = strField;
+    }
+
+    private static void createNumberType(BasicNode node, JsonNode jsonNode, boolean isReadOnly) {
+        if (!isReadOnly) {
+            SpinnerModel model = (node.type == BasicType.INTEGER)
+                    ? new SpinnerNumberModel()
+                    : new SpinnerNumberModel(0.0, null, null, REAL_STEP_SIZE);
+            JSpinner numericSpinner = new JSpinner(model);
+            numericSpinner.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
+            if (jsonNode != null) {
+                model.setValue(jsonNode.asDouble());
+            }
+            node.valueSupplier = () -> (numericSpinner.getValue().toString());
+            node.component = numericSpinner;
+        } else {
+            JTextField strField = new JTextField();
+            strField.setMaximumSize(MAX_SIZE_TEXT_FIELD);
+            strField.setText(jsonNode.asText());
+            strField.setEnabled(false);
+            node.component = strField;
+        }
     }
 
     /**

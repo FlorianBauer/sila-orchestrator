@@ -51,11 +51,16 @@
             <artifactId>server_base</artifactId>
             <version>0.0.3-SNAPSHOT</version>
         </dependency>
-
         <dependency>
             <groupId>org.sila-standard.sila_java.library</groupId>
             <artifactId>manager</artifactId>
             <version>0.0.3-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.9.3</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 

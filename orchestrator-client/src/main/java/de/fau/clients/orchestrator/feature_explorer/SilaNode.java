@@ -5,7 +5,7 @@ import javax.swing.JComponent;
 /**
  * Interface for SiLA-DataType elements.
  */
-interface SilaNode {
+public interface SilaNode {
 
     /**
      * Creates a deep-copy of the current node.
