@@ -181,7 +181,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         taskQueuePanel = new javax.swing.JPanel();
         addTaskToQueueBtn = new javax.swing.JButton();
         taskQueueScrollPane = new javax.swing.JScrollPane();
-        taskQueueTable = new TaskQueue();
+        taskQueueTable = new TaskQueueTable();
         executeAllBtn = new javax.swing.JButton();
         moveTaskUpBtn = new javax.swing.JButton();
         moveTaskDownBtn = new javax.swing.JButton();
@@ -721,7 +721,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                         // the order of rows might change during runtime.
                         int rowIdx = -1;
                         for (int i = 0; i < model.getRowCount(); i++) {
-                            if (model.getDataVector().elementAt(i).get(TaskQueue.COLUMN_COMMAND_IDX).equals(cmdEntry)) {
+                            if (model.getDataVector().elementAt(i).get(TaskQueueTable.COLUMN_COMMAND_IDX).equals(cmdEntry)) {
                                 rowIdx = i;
                                 break;
                             }
@@ -731,14 +731,14 @@ public class OrchestratorGui extends javax.swing.JFrame {
                             log.error("Could not find entry in table");
                             return;
                         }
-                        model.setValueAt(state, rowIdx, TaskQueue.COLUMN_STATE_IDX);
+                        model.setValueAt(state, rowIdx, TaskQueueTable.COLUMN_STATE_IDX);
                         switch (state) {
                             case RUNNING:
-                                model.setValueAt(cmdEntry.getStartTimeStamp(), rowIdx, TaskQueue.COLUMN_START_TIME_IDX);
+                                model.setValueAt(cmdEntry.getStartTimeStamp(), rowIdx, TaskQueueTable.COLUMN_START_TIME_IDX);
                                 break;
                             case FINISHED_SUCCESS:
                             case FINISHED_ERROR:
-                                model.setValueAt(cmdEntry.getLastExecResult(), rowIdx, TaskQueue.COLUMN_RESULT_IDX);
+                                model.setValueAt(cmdEntry.getLastExecResult(), rowIdx, TaskQueueTable.COLUMN_RESULT_IDX);
                                 break;
                             default:
                         }
@@ -762,7 +762,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
 
         DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
-        CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, TaskQueue.COLUMN_COMMAND_IDX);
+        CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_COMMAND_IDX);
         if (entry == null) {
             return;
         }
@@ -789,7 +789,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             Thread entryThread;
             final DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
             for (int i = 0; i < taskQueueTable.getRowCount(); i++) {
-                entryThread = new Thread((CommandTableEntry) model.getValueAt(i, TaskQueue.COLUMN_COMMAND_IDX));
+                entryThread = new Thread((CommandTableEntry) model.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX));
                 entryThread.start();
                 try {
                     entryThread.join();
@@ -808,7 +808,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             return;
         }
         DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
-        CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, TaskQueue.COLUMN_COMMAND_IDX);
+        CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_COMMAND_IDX);
         new Thread(entry).start();
     }//GEN-LAST:event_execRowEntryMenuItemActionPerformed
 
@@ -821,7 +821,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
         DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
         model.moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx - 1);
-        taskQueueTable.changeSelection(selectedRowIdx - 1, TaskQueue.COLUMN_TASK_ID_IDX, false, false);
+        taskQueueTable.changeSelection(selectedRowIdx - 1, TaskQueueTable.COLUMN_TASK_ID_IDX, false, false);
         moveTaskDownBtn.setEnabled(true);
     }//GEN-LAST:event_moveTaskUpBtnActionPerformed
 
@@ -835,7 +835,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
         DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
         model.moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx + 1);
-        taskQueueTable.changeSelection(selectedRowIdx + 1, TaskQueue.COLUMN_TASK_ID_IDX, false, false);
+        taskQueueTable.changeSelection(selectedRowIdx + 1, TaskQueueTable.COLUMN_TASK_ID_IDX, false, false);
         moveTaskUpBtn.setEnabled(true);
     }//GEN-LAST:event_moveTaskDownBtnActionPerformed
 
@@ -940,7 +940,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private String getSaveData() {
         String outData = "";
         ObjectMapper mapper = new ObjectMapper();
-        TaskQueueData tqd = TaskQueueData.createFromTaskQueue((TaskQueue) taskQueueTable);
+        TaskQueueData tqd = TaskQueueData.createFromTaskQueue((TaskQueueTable) taskQueueTable);
         try {
             outData = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tqd);
         } catch (JsonProcessingException ex) {

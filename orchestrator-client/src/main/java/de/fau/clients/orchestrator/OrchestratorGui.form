@@ -1570,7 +1570,7 @@
                             <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="taskQueueTableMouseClicked"/>
                           </Events>
                           <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new TaskQueue()"/>
+                            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new de.fau.clients.orchestrator.TaskQueueTable()"/>
                           </AuxValues>
                         </Component>
                       </SubComponents>

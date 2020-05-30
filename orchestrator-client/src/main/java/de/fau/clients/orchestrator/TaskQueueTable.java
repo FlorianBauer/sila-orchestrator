@@ -3,7 +3,7 @@ package de.fau.clients.orchestrator;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-public class TaskQueue extends JTable {
+public class TaskQueueTable extends JTable {
 
     public static final int COLUMN_TASK_ID_IDX = 0;
     public static final int COLUMN_COMMAND_IDX = 1;
@@ -19,7 +19,7 @@ public class TaskQueue extends JTable {
         "Result"
     };
 
-    public TaskQueue() {
+    public TaskQueueTable() {
         super(new TaskQueueTableModel());
         columnModel.getColumn(COLUMN_TASK_ID_IDX).setPreferredWidth(40);
         columnModel.getColumn(COLUMN_COMMAND_IDX).setPreferredWidth(180);

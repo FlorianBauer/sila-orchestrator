@@ -2,7 +2,7 @@ package de.fau.clients.orchestrator.file_loader;
 
 import com.fasterxml.jackson.annotation.*;
 import de.fau.clients.orchestrator.CommandTableEntry;
-import de.fau.clients.orchestrator.TaskQueue;
+import de.fau.clients.orchestrator.TaskQueueTable;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
 
@@ -20,15 +20,15 @@ public class TaskQueueData {
     private ArrayList<TaskEntry> tasks = null;
     private String versionOfLoadedFile = "";
 
-    public static TaskQueueData createFromTaskQueue(final TaskQueue queue) {
+    public static TaskQueueData createFromTaskQueue(final TaskQueueTable queue) {
         TaskQueueData data = new TaskQueueData();
 
         final DefaultTableModel model = (DefaultTableModel) queue.getModel();
         final int rows = model.getRowCount();
         data.tasks = new ArrayList<>(rows);
         for (int i = 0; i < rows; i++) {
-            final int taskId = (int) model.getValueAt(i, TaskQueue.COLUMN_TASK_ID_IDX);
-            final CommandTableEntry tableEntry = (CommandTableEntry) model.getValueAt(i, TaskQueue.COLUMN_COMMAND_IDX);
+            final int taskId = (int) model.getValueAt(i, TaskQueueTable.COLUMN_TASK_ID_IDX);
+            final CommandTableEntry tableEntry = (CommandTableEntry) model.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX);
             final CommandEntry cmdEntry = new CommandEntry(
                     tableEntry.getServerId(),
                     tableEntry.getFeatureId(),
