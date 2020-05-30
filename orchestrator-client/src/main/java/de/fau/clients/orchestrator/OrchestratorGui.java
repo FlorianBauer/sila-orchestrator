@@ -141,7 +141,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         try {
             serverManager = ServerManager.getInstance();
         } catch (Exception ex) {
-            log.error("ServerManager: ", ex);
+            log.error(ex.getMessage());
             System.exit(1);
         }
         initComponents();
@@ -869,7 +869,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 Files.writeString(Paths.get(outFilePath), outData, StandardCharsets.UTF_8);
                 log.info("Saved " + outFilePath);
             } catch (IOException ex) {
-                log.error(OrchestratorGui.class.getName(), ex.getMessage());
+                log.error(ex.getMessage());
             }
         }
     }//GEN-LAST:event_saveMenuItemActionPerformed
