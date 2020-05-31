@@ -14,7 +14,7 @@ import java.util.Map;
  *
  */
 @JsonPropertyOrder({"serverId", "featureId", "commandId", "commandParams"})
-class CommandEntry {
+public class CommandEntry {
 
     static private final ObjectMapper mapper = new ObjectMapper();
     private final String serverId;

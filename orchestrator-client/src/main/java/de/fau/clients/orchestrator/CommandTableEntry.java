@@ -7,6 +7,7 @@
  */
 package de.fau.clients.orchestrator;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import de.fau.clients.orchestrator.feature_explorer.NodeFactory;
 import de.fau.clients.orchestrator.feature_explorer.SilaNode;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
@@ -35,8 +36,8 @@ public class CommandTableEntry implements Runnable {
     /// Use a "ISO 8601-ish" date-time representation.
     private static final DateTimeFormatter TIME_STAMP_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss.SSS");
     private static final ImageIcon EXECUTE_ICON = new ImageIcon("src/main/resources/icons/execute.png");
-    private final JPanel panel = new JPanel();
-    private final JButton execBtn = new JButton("Execute", EXECUTE_ICON);
+    private JPanel panel = null;
+    private JButton execBtn = null;
     private final UUID serverId;
     private final String featureId;
     private final TypeDefLut typeDefs;
@@ -44,6 +45,7 @@ public class CommandTableEntry implements Runnable {
     private final PropertyChangeSupport stateChanges = new PropertyChangeSupport(this);
     private boolean isPanelBuilt = false;
     private SilaNode cmdNode = null;
+    private JsonNode cmdParams = null;
     private OffsetDateTime startTimeStamp = null;
     private OffsetDateTime endTimeStamp = null;
     private String lastExecResult = "";
@@ -59,11 +61,20 @@ public class CommandTableEntry implements Runnable {
         this.featureId = featureId;
         this.typeDefs = typeDefs;
         this.command = command;
-        this.panel.setLayout(new BoxLayout(this.panel, BoxLayout.Y_AXIS));
-        this.panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        execBtn.addActionListener((ActionEvent evt) -> {
-            executeCommandBtnActionPerformed();
-        });
+    }
+
+    public CommandTableEntry(
+            final UUID serverId,
+            final String featureId,
+            final TypeDefLut typeDefs,
+            final Feature.Command command,
+            final JsonNode cmdParams) {
+
+        this.serverId = serverId;
+        this.featureId = featureId;
+        this.typeDefs = typeDefs;
+        this.command = command;
+        this.cmdParams = cmdParams;
     }
 
     /**
@@ -86,8 +97,15 @@ public class CommandTableEntry implements Runnable {
             if (cmdNode == null) {
                 buildNode();
             }
+            panel = new JPanel();
+            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+            panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             panel.add(cmdNode.getComponent());
             panel.add(Box.createVerticalStrut(10));
+            execBtn = new JButton("Execute", EXECUTE_ICON);
+            execBtn.addActionListener((ActionEvent evt) -> {
+                executeCommandBtnActionPerformed();
+            });
             panel.add(execBtn);
             isPanelBuilt = true;
         }
@@ -101,7 +119,12 @@ public class CommandTableEntry implements Runnable {
                 log.warn("Parameter list for command is empty.");
                 return;
             }
-            cmdNode = NodeFactory.createFromElements(typeDefs, params);
+
+            if (cmdParams == null) {
+                cmdNode = NodeFactory.createFromElements(typeDefs, params);
+            } else {
+                cmdNode = NodeFactory.createFromElementsWithJson(typeDefs, params, cmdParams);
+            }
         }
     }
 
@@ -168,7 +191,9 @@ public class CommandTableEntry implements Runnable {
      */
     @Override
     public void run() {
-        execBtn.setEnabled(false);
+        if (isPanelBuilt) {
+            execBtn.setEnabled(false);
+        }
         final SiLACall.Type callType = command.getObservable().equalsIgnoreCase("yes")
                 ? SiLACall.Type.OBSERVABLE_COMMAND
                 : SiLACall.Type.UNOBSERVABLE_COMMAND;
@@ -176,13 +201,15 @@ public class CommandTableEntry implements Runnable {
         if (cmdNode == null) {
             buildNode();
         }
-        final String jsonMsg = cmdNode.toJsonString();
-        if (jsonMsg.isEmpty()) {
+        final String jsonParams = cmdNode.toJsonString();
+        if (jsonParams.isEmpty()) {
             log.warn("jsonMsg is empty. Execution was skipped.");
-            execBtn.setEnabled(true);
+            if (isPanelBuilt) {
+                execBtn.setEnabled(true);
+            }
             return;
         }
-        log.info("jsonMsg: " + jsonMsg);
+        log.info("Command parameters as JSON: " + jsonParams);
 
         startTimeStamp = OffsetDateTime.now();
         final TaskState tmpState = state;
@@ -193,7 +220,7 @@ public class CommandTableEntry implements Runnable {
                 featureId,
                 command.getIdentifier(),
                 callType,
-                jsonMsg
+                jsonParams
         );
 
         final TaskState oldState = state;
@@ -210,7 +237,9 @@ public class CommandTableEntry implements Runnable {
             state = TaskState.FINISHED_ERROR;
         }
         endTimeStamp = OffsetDateTime.now();
-        execBtn.setEnabled(true);
+        if (isPanelBuilt) {
+            execBtn.setEnabled(true);
+        }
         stateChanges.firePropertyChange("taskState", oldState, state);
     }
 

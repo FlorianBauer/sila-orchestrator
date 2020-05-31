@@ -18,7 +18,6 @@ import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.ToolTipManager;
-import javax.swing.table.DefaultTableModel;
 import lombok.extern.slf4j.Slf4j;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -705,45 +704,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 CommandTreeNode cmdNode = (CommandTreeNode) node;
                 // use the selected node to create a new table entry.
                 CommandTableEntry cmdEntry = cmdNode.createTableEntry();
-                DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
-                model.addRow(new Object[]{
-                    ++taskRowId,
-                    cmdEntry,
-                    cmdEntry.getState(),
-                    cmdEntry.getStartTimeStamp(),
-                    cmdEntry.getLastExecResult()
-                });
-
-                cmdEntry.addStatusChangeListener((PropertyChangeEvent pcEvt) -> {
-                    if (pcEvt.getPropertyName().equals("taskState")) {
-                        final TaskState state = (TaskState) pcEvt.getNewValue();
-                        // Find the row of the changed entry. This has to be done dynamically, since 
-                        // the order of rows might change during runtime.
-                        int rowIdx = -1;
-                        for (int i = 0; i < model.getRowCount(); i++) {
-                            if (model.getDataVector().elementAt(i).get(TaskQueueTable.COLUMN_COMMAND_IDX).equals(cmdEntry)) {
-                                rowIdx = i;
-                                break;
-                            }
-                        }
-
-                        if (rowIdx == -1) {
-                            log.error("Could not find entry in table");
-                            return;
-                        }
-                        model.setValueAt(state, rowIdx, TaskQueueTable.COLUMN_STATE_IDX);
-                        switch (state) {
-                            case RUNNING:
-                                model.setValueAt(cmdEntry.getStartTimeStamp(), rowIdx, TaskQueueTable.COLUMN_START_TIME_IDX);
-                                break;
-                            case FINISHED_SUCCESS:
-                            case FINISHED_ERROR:
-                                model.setValueAt(cmdEntry.getLastExecResult(), rowIdx, TaskQueueTable.COLUMN_RESULT_IDX);
-                                break;
-                            default:
-                        }
-                    }
-                });
+                final TaskQueueTableModel model = (TaskQueueTableModel) taskQueueTable.getModel();
+                model.addCommandTableEntry(++taskRowId, cmdEntry);
                 executeAllBtn.setEnabled(true);
             }
         }
@@ -761,7 +723,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             return;
         }
 
-        DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+        final TaskQueueTableModel model = (TaskQueueTableModel) taskQueueTable.getModel();
         CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_COMMAND_IDX);
         if (entry == null) {
             return;
@@ -787,7 +749,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         Runnable queueRunner = () -> {
             Thread entryThread;
-            final DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+            final TaskQueueTableModel model = (TaskQueueTableModel) taskQueueTable.getModel();
             for (int i = 0; i < taskQueueTable.getRowCount(); i++) {
                 entryThread = new Thread((CommandTableEntry) model.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX));
                 entryThread.start();
@@ -807,7 +769,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         if (selectedRowIdx < 0) {
             return;
         }
-        DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+        final TaskQueueTableModel model = (TaskQueueTableModel) taskQueueTable.getModel();
         CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_COMMAND_IDX);
         new Thread(entry).start();
     }//GEN-LAST:event_execRowEntryMenuItemActionPerformed
@@ -819,7 +781,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         } else if (selectedRowIdx <= 1) {
             moveTaskUpBtn.setEnabled(false);
         }
-        DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+        final TaskQueueTableModel model = (TaskQueueTableModel) taskQueueTable.getModel();
         model.moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx - 1);
         taskQueueTable.changeSelection(selectedRowIdx - 1, TaskQueueTable.COLUMN_TASK_ID_IDX, false, false);
         moveTaskDownBtn.setEnabled(true);
@@ -833,7 +795,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         } else if (selectedRowIdx >= rowCount - 2) {
             moveTaskDownBtn.setEnabled(false);
         }
-        DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+        final TaskQueueTableModel model = (TaskQueueTableModel) taskQueueTable.getModel();
         model.moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx + 1);
         taskQueueTable.changeSelection(selectedRowIdx + 1, TaskQueueTable.COLUMN_TASK_ID_IDX, false, false);
         moveTaskUpBtn.setEnabled(true);
@@ -848,7 +810,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         moveTaskDownBtn.setEnabled(false);
         removeTaskFromQueueBtn.setEnabled(false);
         removeTaskFromQueueMenuItem.setEnabled(false);
-        DefaultTableModel model = (DefaultTableModel) taskQueueTable.getModel();
+        final TaskQueueTableModel model = (TaskQueueTableModel) taskQueueTable.getModel();
         model.removeRow(selectedRowIdx);
         commandScrollPane.setViewportView(null);
     }//GEN-LAST:event_removeTaskFromQueue
@@ -858,7 +820,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
             saveAsActionPerformed(evt);
         } else {
             // TODO: give the user some kind of notificatin that the file was saved
-            // TODO: gather data to save
             String outData = getSaveData();
             if (outData.isEmpty()) {
                 log.warn("Empty save!");
@@ -924,13 +885,14 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
 
             if (tqd != null) {
-                // FIXME: use a import routine to create CommandTableEntries
                 log.info("File Version: " + tqd.getSiloFileVersion());
-                
+                final TaskQueueTableModel model = (TaskQueueTableModel) taskQueueTable.getModel();
                 for (TaskEntry entry : tqd.getTasks()) {
-                    log.info("TaskId: " + entry);
+                    log.info("Import task with ID: " + entry);
+                    model.importEntry(entry);
                 }
-
+                // FIXME: only enable the ExecuteAll-Button when the task import was successfull.
+                executeAllBtn.setEnabled(true);
             }
         } else {
             log.warn("File access cancelled by user.");

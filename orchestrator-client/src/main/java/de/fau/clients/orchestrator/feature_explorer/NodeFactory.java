@@ -21,6 +21,14 @@ public final class NodeFactory {
         return CompositNode.create(typeDefs, elements);
     }
 
+    public final static SilaNode createFromElementsWithJson(
+            @NonNull final TypeDefLut typeDefs,
+            @NonNull final List<SiLAElement> elements,
+            @NonNull final JsonNode jsonNode) {
+
+        return CompositNode.createFromJson(typeDefs, elements, jsonNode, false);
+    }
+
     public final static SilaNode createFromDataType(
             @NonNull final TypeDefLut typeDefs,
             @NonNull final DataTypeType type) {
