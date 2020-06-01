@@ -15,23 +15,31 @@ import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 
 /**
- *
+ * This class represents the underlying data-model of the <code>TaskQueueTable</code> in the GUI.
  */
 @Slf4j
 @SuppressWarnings("serial")
 public class TaskQueueTableModel extends DefaultTableModel {
 
+    public static final String TASK_STATE_PROPERTY = "taskState";
     private static final ServerManager serverManager = ServerManager.getInstance();
 
-    public void importEntry(final TaskEntry entry) {
-        final UUID serverUuid = UUID.fromString(entry.getCommand().getServerId());
+    /**
+     * Imports a given task entry into the table. The corresponding server has to be available to
+     * successfully load the task.
+     *
+     * @param entry The task entry to import.
+     * @return true if import was successful, otherwise false.
+     */
+    public boolean importTaskEntry(final TaskEntry entry) {
+        final UUID serverUuid = entry.getCommand().getServerUuid();
         final Map<UUID, Server> serverMap = serverManager.getServers();
         if (serverMap.isEmpty()) {
             log.warn("No server available.");
-            return;
+            return false;
         } else if (!serverMap.containsKey(serverUuid)) {
             log.warn("Server with UUID " + serverUuid.toString() + " not found.");
-            return;
+            return false;
         }
 
         final List<Feature> featureList = serverMap.get(serverUuid).getFeatures();
@@ -52,17 +60,28 @@ public class TaskQueueTableModel extends DefaultTableModel {
                             tableEntry.getState(),
                             tableEntry.getStartTimeStamp(),
                             tableEntry.getLastExecResult()});
-                        addListener(tableEntry);
+                        addStateListener(tableEntry);
                         log.info("Row added");
-                        return;
+                        return true;
                     }
                 }
             }
         }
         log.warn("Feature not found on server.");
+        return false;
     }
 
-    public void addCommandTableEntry(int taskId, final CommandTableEntry cmdEntry) {
+    /**
+     * Adds the given command entry to the table and registers a change listener on the state
+     * property. To import task entries from outside sources, use
+     * {@link #importTaskEntry(de.fau.clients.orchestrator.file_loader.TaskEntry)}.
+     *
+     * @param taskId The task ID to use for this entry.
+     * @param cmdEntry The command entry to add.
+     *
+     * See also {@link #importTaskEntry(de.fau.clients.orchestrator.file_loader.TaskEntry)}
+     */
+    protected void addCommandTableEntry(int taskId, final CommandTableEntry cmdEntry) {
         this.addRow(new Object[]{
             taskId,
             cmdEntry,
@@ -70,13 +89,12 @@ public class TaskQueueTableModel extends DefaultTableModel {
             cmdEntry.getStartTimeStamp(),
             cmdEntry.getLastExecResult()
         });
-
-        addListener(cmdEntry);
+        addStateListener(cmdEntry);
     }
 
-    private void addListener(final CommandTableEntry cmdEntry) {
+    private void addStateListener(final CommandTableEntry cmdEntry) {
         cmdEntry.addStatusChangeListener((PropertyChangeEvent pcEvt) -> {
-            if (pcEvt.getPropertyName().equals("taskState")) {
+            if (pcEvt.getPropertyName().equals(TASK_STATE_PROPERTY)) {
                 final TaskState state = (TaskState) pcEvt.getNewValue();
                 // Find the row of the changed entry. This has to be done dynamically, since 
                 // the order of rows might change during runtime.

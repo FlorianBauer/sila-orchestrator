@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  *
@@ -17,7 +18,7 @@ import java.util.Map;
 public class CommandEntry {
 
     static private final ObjectMapper mapper = new ObjectMapper();
-    private final String serverId;
+    private final UUID serverId;
     private final String featureId;
     private final String commandId;
     private String commandParams = "";
@@ -29,7 +30,7 @@ public class CommandEntry {
             @JsonProperty("serverId") String serverId,
             @JsonProperty("featureId") String featureId,
             @JsonProperty("commandId") String commandId) {
-        this.serverId = serverId;
+        this.serverId = UUID.fromString(serverId);
         this.featureId = featureId;
         this.commandId = commandId;
     }
@@ -39,7 +40,7 @@ public class CommandEntry {
             String featureId,
             String commandId,
             String commandParams) {
-        this.serverId = serverId;
+        this.serverId = UUID.fromString(serverId);
         this.featureId = featureId;
         this.commandId = commandId;
         this.commandParams = commandParams;
@@ -47,6 +48,11 @@ public class CommandEntry {
     }
 
     public String getServerId() {
+        return serverId.toString();
+    }
+
+    @JsonIgnore
+    public UUID getServerUuid() {
         return serverId;
     }
 

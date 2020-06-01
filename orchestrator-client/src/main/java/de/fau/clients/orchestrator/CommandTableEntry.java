@@ -214,7 +214,7 @@ public class CommandTableEntry implements Runnable {
         startTimeStamp = OffsetDateTime.now();
         final TaskState tmpState = state;
         state = TaskState.RUNNING;
-        stateChanges.firePropertyChange("taskState", tmpState, state);
+        stateChanges.firePropertyChange(TaskQueueTableModel.TASK_STATE_PROPERTY, tmpState, state);
 
         SiLACall call = new SiLACall(serverId,
                 featureId,
@@ -240,7 +240,7 @@ public class CommandTableEntry implements Runnable {
         if (isPanelBuilt) {
             execBtn.setEnabled(true);
         }
-        stateChanges.firePropertyChange("taskState", oldState, state);
+        stateChanges.firePropertyChange(TaskQueueTableModel.TASK_STATE_PROPERTY, oldState, state);
     }
 
     /**

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import de.fau.clients.orchestrator.file_loader.TaskEntry;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -888,8 +887,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 log.info("File Version: " + tqd.getSiloFileVersion());
                 final TaskQueueTableModel model = (TaskQueueTableModel) taskQueueTable.getModel();
                 for (TaskEntry entry : tqd.getTasks()) {
-                    log.info("Import task with ID: " + entry);
-                    model.importEntry(entry);
+                    log.info("Import task: " + entry);
+                    model.importTaskEntry(entry);
                 }
                 // FIXME: only enable the ExecuteAll-Button when the task import was successfull.
                 executeAllBtn.setEnabled(true);

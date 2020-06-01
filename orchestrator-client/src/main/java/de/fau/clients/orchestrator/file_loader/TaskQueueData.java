@@ -26,10 +26,13 @@ public class TaskQueueData {
         final DefaultTableModel model = (DefaultTableModel) queue.getModel();
         final int rows = model.getRowCount();
         data.tasks = new ArrayList<>(rows);
+        int taskId;
+        CommandTableEntry tableEntry;
+        CommandEntry cmdEntry;
         for (int i = 0; i < rows; i++) {
-            final int taskId = (int) model.getValueAt(i, TaskQueueTable.COLUMN_TASK_ID_IDX);
-            final CommandTableEntry tableEntry = (CommandTableEntry) model.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX);
-            final CommandEntry cmdEntry = new CommandEntry(
+            taskId = (int) model.getValueAt(i, TaskQueueTable.COLUMN_TASK_ID_IDX);
+            tableEntry = (CommandTableEntry) model.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX);
+            cmdEntry = new CommandEntry(
                     tableEntry.getServerId(),
                     tableEntry.getFeatureId(),
                     tableEntry.getCommandId(),
@@ -38,9 +41,6 @@ public class TaskQueueData {
         }
 
         return data;
-    }
-
-    public TaskQueueData() {
     }
 
     public ArrayList<TaskEntry> getTasks() {
@@ -55,7 +55,7 @@ public class TaskQueueData {
         this.tasks = tasks;
     }
 
-    public final String getSiloFileVersion() {
+    public String getSiloFileVersion() {
         return SILO_FILE_VERSION;
     }
 
