@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator;
 
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 
 @SuppressWarnings("serial")
 public class TaskQueueTable extends JTable {
@@ -21,8 +22,15 @@ public class TaskQueueTable extends JTable {
 
     public TaskQueueTable() {
         super(new TaskQueueTableModel());
+        this.setFillsViewportHeight(true);
+        this.setRowHeight(32);
+        this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         columnModel.getColumn(COLUMN_TASK_ID_IDX).setPreferredWidth(40);
         columnModel.getColumn(COLUMN_COMMAND_IDX).setPreferredWidth(180);
     }
-    
+
+    @Override
+    public TaskQueueTableModel getModel() {
+        return (TaskQueueTableModel) this.dataModel;
+    }
 }
