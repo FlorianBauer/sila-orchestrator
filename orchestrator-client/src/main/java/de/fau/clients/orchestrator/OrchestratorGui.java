@@ -15,19 +15,20 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.ToolTipManager;
-import lombok.extern.slf4j.Slf4j;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeSelectionModel;
+import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Feature;
 import sila_java.library.core.models.Feature.Command;
 import sila_java.library.core.models.Feature.Property;
 import sila_java.library.manager.ServerAdditionException;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
-import javax.swing.tree.TreeSelectionModel;
 import sila_java.library.core.models.Feature.Metadata;
 import sila_java.library.manager.ServerFinder;
 
@@ -460,7 +461,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         taskQueuePanel.add(executeAllBtn, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -619,6 +619,35 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         taskQueueScrollPane.setViewportView(taskQueueTable);
+
+        for (int i = 0; i < TaskQueueTable.COLUMN_TITLES.length; i++) {
+            if (i == TaskQueueTable.COLUMN_COMMAND_IDX) {
+                // Do not allow the user to hide the command column.
+                continue;
+            }
+            final int colIdx = i;
+            final JCheckBoxMenuItem item = new JCheckBoxMenuItem();
+            item.setSelected(true);
+            item.setText(TaskQueueTable.COLUMN_TITLES[colIdx]);
+            item.addActionListener(evt -> {
+                if (item.isSelected()) {
+                    taskQueueTable.showColumn(colIdx);
+                } else {
+                    taskQueueTable.hideColumn(colIdx);
+                }
+            });
+            taskQueueHeaderPopupMenu.add(item);
+        }
+
+        taskQueueTable.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent evt) {
+                // show popup-menu on right-click
+                if (evt.getButton() == MouseEvent.BUTTON3) {
+                    taskQueueHeaderPopupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+                }
+            }
+        });
     }
 
     private void taskQueueTableMouseClicked(final MouseEvent evt) {
@@ -984,6 +1013,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private javax.swing.JFormattedTextField serverPortFormattedTextField;
     private javax.swing.JLabel serverPortLabel;
     private javax.swing.JSplitPane serverSplitPane;
+    private final javax.swing.JPopupMenu taskQueueHeaderPopupMenu = new javax.swing.JPopupMenu();
     private javax.swing.JPanel taskQueuePanel;
     private javax.swing.JPopupMenu taskQueuePopupMenu;
     private javax.swing.JScrollPane taskQueueScrollPane;
