@@ -890,8 +890,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_openMenuItemActionPerformed
 
     private void clearQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearQueueActionPerformed
-        taskQueueTable.getModel().removeAllRows();
         disableTaskQueueOperations();
+        commandScrollPane.setViewportView(null);
+        taskQueueTable.getModel().removeAllRows();
     }//GEN-LAST:event_clearQueueActionPerformed
 
     /**
