@@ -25,6 +25,15 @@ public class TaskQueueTableModel extends DefaultTableModel {
     private static final ServerManager serverManager = ServerManager.getInstance();
 
     /**
+     * Clears the entire table. The table is empty after this operation.
+     */
+    public void removeAllRows() {
+        for (int i = getRowCount() - 1; i >= 0; i--) {
+            removeRow(i);
+        }
+    }
+
+    /**
      * Imports a given task entry into the table. The corresponding server has to be available to
      * successfully load the task.
      *
