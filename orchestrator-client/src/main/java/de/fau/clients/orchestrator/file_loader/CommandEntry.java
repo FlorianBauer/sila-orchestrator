@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator.file_loader;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -14,11 +15,11 @@ import java.util.UUID;
 /**
  *
  */
-@JsonPropertyOrder({"serverId", "featureId", "commandId", "commandParams"})
+@JsonPropertyOrder({"serverUuid", "featureId", "commandId", "commandParams"})
 public class CommandEntry {
 
     static private final ObjectMapper mapper = new ObjectMapper();
-    private final UUID serverId;
+    private final UUID serverUuid;
     private final String featureId;
     private final String commandId;
     private String commandParams = "";
@@ -27,33 +28,34 @@ public class CommandEntry {
 
     @JsonCreator
     public CommandEntry(
-            @JsonProperty("serverId") String serverId,
+            @JsonProperty("serverUuid") String serverUuid,
             @JsonProperty("featureId") String featureId,
             @JsonProperty("commandId") String commandId) {
-        this.serverId = UUID.fromString(serverId);
+        this.serverUuid = UUID.fromString(serverUuid);
         this.featureId = featureId;
         this.commandId = commandId;
     }
 
     public CommandEntry(
-            String serverId,
+            String serverUuid,
             String featureId,
             String commandId,
             String commandParams) {
-        this.serverId = UUID.fromString(serverId);
+        this.serverUuid = UUID.fromString(serverUuid);
         this.featureId = featureId;
         this.commandId = commandId;
         this.commandParams = commandParams;
         this.commandNode = mapper.valueToTree(commandParams);
     }
 
-    public String getServerId() {
-        return serverId.toString();
+    @JsonGetter("serverUuid")
+    public String getServerUuidAsString() {
+        return serverUuid.toString();
     }
 
     @JsonIgnore
     public UUID getServerUuid() {
-        return serverId;
+        return serverUuid;
     }
 
     public String getFeatureId() {
@@ -81,6 +83,6 @@ public class CommandEntry {
 
     @Override
     public String toString() {
-        return "(" + serverId + ", " + featureId + ", " + commandId + ", " + commandNode + ")";
+        return "(" + serverUuid + ", " + featureId + ", " + commandId + ", " + commandNode + ")";
     }
 }
