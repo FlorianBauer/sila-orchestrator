@@ -875,6 +875,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
 
             if (tqd != null) {
+                clearQueueActionPerformed(evt);
                 log.info("File Version: " + tqd.getSiloFileVersion());
                 final TaskQueueTableModel model = taskQueueTable.getModel();
                 for (TaskEntry entry : tqd.getTasks()) {
