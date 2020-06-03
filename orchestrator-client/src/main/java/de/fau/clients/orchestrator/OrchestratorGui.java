@@ -158,50 +158,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        addServerDialog = new javax.swing.JDialog();
-        serverAddressLabel = new javax.swing.JLabel();
-        serverAddressTextField = new javax.swing.JTextField();
-        serverPortLabel = new javax.swing.JLabel();
-        serverDialogOkBtn = new javax.swing.JButton();
-        serverDialogCancelBtn = new javax.swing.JButton();
-        serverPortFormattedTextField = new javax.swing.JFormattedTextField();
-        aboutDialog = new javax.swing.JDialog();
-        aboutLabel = new javax.swing.JLabel();
-        taskQueuePopupMenu = new javax.swing.JPopupMenu();
-        removeTaskFromQueueMenuItem = new javax.swing.JMenuItem();
-        execRowEntryMenuItem = new javax.swing.JMenuItem();
-        fileSaveAsChooser = new javax.swing.JFileChooser();
-        fileOpenChooser = new javax.swing.JFileChooser();
-        serverSplitPane = new javax.swing.JSplitPane();
-        serverPanel = new javax.swing.JPanel();
-        featureScrollPane = new javax.swing.JScrollPane();
-        featureTree = new javax.swing.JTree();
-        addServerBtn = new javax.swing.JButton();
-        scanServerBtn = new javax.swing.JButton();
-        mainPanel = new javax.swing.JPanel();
-        mainPanelSplitPane = new javax.swing.JSplitPane();
-        taskQueuePanel = new javax.swing.JPanel();
-        addTaskToQueueBtn = new javax.swing.JButton();
-        executeAllBtn = new javax.swing.JButton();
-        taskQueueScrollPane = new javax.swing.JScrollPane();
-        moveTaskUpBtn = new javax.swing.JButton();
-        moveTaskDownBtn = new javax.swing.JButton();
-        removeTaskFromQueueBtn = new javax.swing.JButton();
-        menuBar = new javax.swing.JMenuBar();
-        fileMenu = new javax.swing.JMenu();
-        openMenuItem = new javax.swing.JMenuItem();
-        saveMenuItem = new javax.swing.JMenuItem();
-        saveAsMenuItem = new javax.swing.JMenuItem();
-        exitMenuItem = new javax.swing.JMenuItem();
-        editMenu = new javax.swing.JMenu();
-        cutMenuItem = new javax.swing.JMenuItem();
-        copyMenuItem = new javax.swing.JMenuItem();
-        pasteMenuItem = new javax.swing.JMenuItem();
-        deleteMenuItem = new javax.swing.JMenuItem();
-        helpMenu = new javax.swing.JMenu();
-        contentsMenuItem = new javax.swing.JMenuItem();
-        aboutMenuItem = new javax.swing.JMenuItem();
-
         addServerDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addServerDialog.setTitle("Add Server");
         addServerDialog.setModal(true);
@@ -453,7 +409,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         executeAllBtn.setEnabled(false);
         executeAllBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                executeAllBtnActionPerformed(evt);
+                executeAllActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -538,9 +494,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
         saveMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveMenuItem.setMnemonic('s');
         saveMenuItem.setText("Save");
+        saveMenuItem.setEnabled(false);
         saveMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveMenuItemActionPerformed(evt);
+                saveActionPerformed(evt);
             }
         });
         fileMenu.add(saveMenuItem);
@@ -548,6 +505,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         saveAsMenuItem.setMnemonic('a');
         saveAsMenuItem.setText("Save As ...");
         saveAsMenuItem.setDisplayedMnemonicIndex(5);
+        saveAsMenuItem.setEnabled(false);
         saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAsActionPerformed(evt);
@@ -566,33 +524,33 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         menuBar.add(fileMenu);
 
-        editMenu.setMnemonic('e');
-        editMenu.setText("Edit");
+        tasksMenu.setMnemonic('t');
+        tasksMenu.setText("Tasks");
 
-        cutMenuItem.setMnemonic('t');
-        cutMenuItem.setText("Cut");
-        editMenu.add(cutMenuItem);
+        clearQueueMenuItem.setMnemonic('c');
+        clearQueueMenuItem.setText("Clear Queue");
+        clearQueueMenuItem.setEnabled(false);
+        clearQueueMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearQueueActionPerformed(evt);
+            }
+        });
+        tasksMenu.add(clearQueueMenuItem);
 
-        copyMenuItem.setMnemonic('y');
-        copyMenuItem.setText("Copy");
-        editMenu.add(copyMenuItem);
+        executeAllMenuItem.setMnemonic('e');
+        executeAllMenuItem.setText("Execute All");
+        executeAllMenuItem.setEnabled(false);
+        executeAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                executeAllActionPerformed(evt);
+            }
+        });
+        tasksMenu.add(executeAllMenuItem);
 
-        pasteMenuItem.setMnemonic('p');
-        pasteMenuItem.setText("Paste");
-        editMenu.add(pasteMenuItem);
-
-        deleteMenuItem.setMnemonic('d');
-        deleteMenuItem.setText("Delete");
-        editMenu.add(deleteMenuItem);
-
-        menuBar.add(editMenu);
+        menuBar.add(tasksMenu);
 
         helpMenu.setMnemonic('h');
         helpMenu.setText("Help");
-
-        contentsMenuItem.setMnemonic('c');
-        contentsMenuItem.setText("Contents");
-        helpMenu.add(contentsMenuItem);
 
         aboutMenuItem.setMnemonic('a');
         aboutMenuItem.setText("About");
@@ -770,12 +728,17 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 final TaskQueueTableModel model = taskQueueTable.getModel();
                 model.addCommandTableEntry(++taskRowId, cmdEntry);
                 executeAllBtn.setEnabled(true);
+                executeAllMenuItem.setEnabled(true);
+                clearQueueMenuItem.setEnabled(true);
+                saveMenuItem.setEnabled(true);
+                saveAsMenuItem.setEnabled(true);
             }
         }
     }//GEN-LAST:event_addTaskToQueueBtnActionPerformed
 
-    private void executeAllBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeAllBtnActionPerformed
+    private void executeAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeAllActionPerformed
         executeAllBtn.setEnabled(false);
+        executeAllMenuItem.setEnabled(false);
 
         Runnable queueRunner = () -> {
             Thread entryThread;
@@ -790,9 +753,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 }
             }
             executeAllBtn.setEnabled(true);
+            executeAllMenuItem.setEnabled(true);
         };
         new Thread(queueRunner).start();
-    }//GEN-LAST:event_executeAllBtnActionPerformed
+    }//GEN-LAST:event_executeAllActionPerformed
 
     private void execRowEntryMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_execRowEntryMenuItemActionPerformed
         int selectedRowIdx = taskQueueTable.getSelectedRow();
@@ -845,7 +809,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         commandScrollPane.setViewportView(null);
     }//GEN-LAST:event_removeTaskFromQueue
 
-    private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuItemActionPerformed
+    private void saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveActionPerformed
         if (!wasSaved || outFilePath.isEmpty()) {
             saveAsActionPerformed(evt);
         } else {
@@ -863,7 +827,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 log.error(ex.getMessage());
             }
         }
-    }//GEN-LAST:event_saveMenuItemActionPerformed
+    }//GEN-LAST:event_saveActionPerformed
 
     private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
         String outData = getSaveData();
@@ -923,11 +887,24 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 }
                 // FIXME: only enable the ExecuteAll-Button when the task import was successfull.
                 executeAllBtn.setEnabled(true);
+                executeAllMenuItem.setEnabled(true);
+                clearQueueMenuItem.setEnabled(true);
+                saveMenuItem.setEnabled(true);
+                saveAsMenuItem.setEnabled(true);
             }
         } else {
             log.warn("File access cancelled by user.");
         }
     }//GEN-LAST:event_openMenuItemActionPerformed
+
+    private void clearQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearQueueActionPerformed
+        taskQueueTable.getModel().removeAllRows();
+        executeAllBtn.setEnabled(false);
+        executeAllMenuItem.setEnabled(false);
+        clearQueueMenuItem.setEnabled(false);
+        saveMenuItem.setEnabled(false);
+        saveAsMenuItem.setEnabled(false);
+    }//GEN-LAST:event_clearQueueActionPerformed
 
     private String getSaveData() {
         String outData = "";
@@ -972,50 +949,47 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JDialog aboutDialog;
-    private javax.swing.JLabel aboutLabel;
-    private javax.swing.JMenuItem aboutMenuItem;
-    private javax.swing.JButton addServerBtn;
-    private javax.swing.JDialog addServerDialog;
-    private javax.swing.JButton addTaskToQueueBtn;
+    private final javax.swing.JDialog aboutDialog = new javax.swing.JDialog();
+    private final javax.swing.JLabel aboutLabel = new javax.swing.JLabel();
+    private final javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JButton addServerBtn = new javax.swing.JButton();
+    private final javax.swing.JDialog addServerDialog = new javax.swing.JDialog();
+    private final javax.swing.JButton addTaskToQueueBtn = new javax.swing.JButton();
+    private final javax.swing.JMenuItem clearQueueMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JScrollPane commandScrollPane = new javax.swing.JScrollPane();
-    private javax.swing.JMenuItem contentsMenuItem;
-    private javax.swing.JMenuItem copyMenuItem;
-    private javax.swing.JMenuItem cutMenuItem;
-    private javax.swing.JMenuItem deleteMenuItem;
-    private javax.swing.JMenu editMenu;
-    private javax.swing.JMenuItem execRowEntryMenuItem;
-    private javax.swing.JButton executeAllBtn;
-    private javax.swing.JMenuItem exitMenuItem;
-    private javax.swing.JScrollPane featureScrollPane;
-    private javax.swing.JTree featureTree;
-    private javax.swing.JMenu fileMenu;
-    private javax.swing.JFileChooser fileOpenChooser;
-    private javax.swing.JFileChooser fileSaveAsChooser;
-    private javax.swing.JMenu helpMenu;
-    private javax.swing.JPanel mainPanel;
-    private javax.swing.JSplitPane mainPanelSplitPane;
-    private javax.swing.JMenuBar menuBar;
-    private javax.swing.JButton moveTaskDownBtn;
-    private javax.swing.JButton moveTaskUpBtn;
-    private javax.swing.JMenuItem openMenuItem;
-    private javax.swing.JMenuItem pasteMenuItem;
-    private javax.swing.JButton removeTaskFromQueueBtn;
-    private javax.swing.JMenuItem removeTaskFromQueueMenuItem;
-    private javax.swing.JMenuItem saveAsMenuItem;
-    private javax.swing.JMenuItem saveMenuItem;
-    private javax.swing.JButton scanServerBtn;
-    private javax.swing.JLabel serverAddressLabel;
-    private javax.swing.JTextField serverAddressTextField;
-    private javax.swing.JButton serverDialogCancelBtn;
-    private javax.swing.JButton serverDialogOkBtn;
-    private javax.swing.JPanel serverPanel;
-    private javax.swing.JFormattedTextField serverPortFormattedTextField;
-    private javax.swing.JLabel serverPortLabel;
-    private javax.swing.JSplitPane serverSplitPane;
+    private final javax.swing.JMenuItem execRowEntryMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JButton executeAllBtn = new javax.swing.JButton();
+    private final javax.swing.JMenuItem executeAllMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JScrollPane featureScrollPane = new javax.swing.JScrollPane();
+    private final javax.swing.JTree featureTree = new javax.swing.JTree();
+    private final javax.swing.JMenu fileMenu = new javax.swing.JMenu();
+    private final javax.swing.JFileChooser fileOpenChooser = new javax.swing.JFileChooser();
+    private final javax.swing.JFileChooser fileSaveAsChooser = new javax.swing.JFileChooser();
+    private final javax.swing.JMenu helpMenu = new javax.swing.JMenu();
+    private final javax.swing.JPanel mainPanel = new javax.swing.JPanel();
+    private final javax.swing.JSplitPane mainPanelSplitPane = new javax.swing.JSplitPane();
+    private final javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
+    private final javax.swing.JButton moveTaskDownBtn = new javax.swing.JButton();
+    private final javax.swing.JButton moveTaskUpBtn = new javax.swing.JButton();
+    private final javax.swing.JMenuItem openMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JButton removeTaskFromQueueBtn = new javax.swing.JButton();
+    private final javax.swing.JMenuItem removeTaskFromQueueMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JMenuItem saveAsMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JMenuItem saveMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JButton scanServerBtn = new javax.swing.JButton();
+    private final javax.swing.JLabel serverAddressLabel = new javax.swing.JLabel();
+    private final javax.swing.JTextField serverAddressTextField = new javax.swing.JTextField();
+    private final javax.swing.JButton serverDialogCancelBtn = new javax.swing.JButton();
+    private final javax.swing.JButton serverDialogOkBtn = new javax.swing.JButton();
+    private final javax.swing.JPanel serverPanel = new javax.swing.JPanel();
+    private final javax.swing.JFormattedTextField serverPortFormattedTextField = new javax.swing.JFormattedTextField();
+    private final javax.swing.JLabel serverPortLabel = new javax.swing.JLabel();
+    private final javax.swing.JSplitPane serverSplitPane = new javax.swing.JSplitPane();
     private final javax.swing.JPopupMenu taskQueueHeaderPopupMenu = new javax.swing.JPopupMenu();
-    private javax.swing.JPanel taskQueuePanel;
-    private javax.swing.JPopupMenu taskQueuePopupMenu;
-    private javax.swing.JScrollPane taskQueueScrollPane;
+    private final javax.swing.JPanel taskQueuePanel = new javax.swing.JPanel();
+    private final javax.swing.JPopupMenu taskQueuePopupMenu = new javax.swing.JPopupMenu();
+    private final javax.swing.JScrollPane taskQueueScrollPane = new javax.swing.JScrollPane();
+    private final javax.swing.JMenu tasksMenu = new javax.swing.JMenu();
     // End of variables declaration//GEN-END:variables
 }
