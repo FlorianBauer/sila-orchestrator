@@ -727,11 +727,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 CommandTableEntry cmdEntry = cmdNode.createTableEntry();
                 final TaskQueueTableModel model = taskQueueTable.getModel();
                 model.addCommandTableEntry(++taskRowId, cmdEntry);
-                executeAllBtn.setEnabled(true);
-                executeAllMenuItem.setEnabled(true);
-                clearQueueMenuItem.setEnabled(true);
-                saveMenuItem.setEnabled(true);
-                saveAsMenuItem.setEnabled(true);
+                enableTaskQueueOperations();
             }
         }
     }//GEN-LAST:event_addTaskToQueueBtnActionPerformed
@@ -885,12 +881,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     log.info("Import task: " + entry);
                     model.importTaskEntry(entry);
                 }
-                // FIXME: only enable the ExecuteAll-Button when the task import was successfull.
-                executeAllBtn.setEnabled(true);
-                executeAllMenuItem.setEnabled(true);
-                clearQueueMenuItem.setEnabled(true);
-                saveMenuItem.setEnabled(true);
-                saveAsMenuItem.setEnabled(true);
+                // FIXME: only enable the GUI controlls when the task import was successfull.
+                enableTaskQueueOperations();
             }
         } else {
             log.warn("File access cancelled by user.");
@@ -899,12 +891,36 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
     private void clearQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearQueueActionPerformed
         taskQueueTable.getModel().removeAllRows();
+        disableTaskQueueOperations();
+    }//GEN-LAST:event_clearQueueActionPerformed
+
+    /**
+     * Enables all the GUI controls which actions can be applied on entries in the task queue. This
+     * function is to enable user interaction after the task queue was set to a valid state (e.g.
+     * queue is not empty anymore).
+     */
+    private void enableTaskQueueOperations() {
+        executeAllBtn.setEnabled(true);
+        executeAllMenuItem.setEnabled(true);
+        clearQueueMenuItem.setEnabled(true);
+        saveMenuItem.setEnabled(true);
+        saveAsMenuItem.setEnabled(true);
+    }
+
+    /**
+     * Disables all the GUI controls which actions relay on entries in the task queue. This function
+     * is supposed to be used when the table is empty or in an locked state and actions, like saving
+     * or executing tasks, make no sense for the user.
+     */
+    private void disableTaskQueueOperations() {
         executeAllBtn.setEnabled(false);
         executeAllMenuItem.setEnabled(false);
         clearQueueMenuItem.setEnabled(false);
         saveMenuItem.setEnabled(false);
         saveAsMenuItem.setEnabled(false);
-    }//GEN-LAST:event_clearQueueActionPerformed
+        moveTaskUpBtn.setEnabled(false);
+        moveTaskDownBtn.setEnabled(false);
+    }
 
     private String getSaveData() {
         String outData = "";
