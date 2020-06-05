@@ -354,6 +354,14 @@ final class BasicNode implements SilaNode {
         return this.component;
     }
 
+    @Override
+    public String toString() {
+        return "(" + this.type + ", "
+                + this.constraints + ", "
+                + this.valueSupplier.getClass() + ", "
+                + this.component.getClass() + ")";
+    }
+
     private static void createBooleanType(BasicNode node) {
         JCheckBox checkBox = new JCheckBox();
         node.valueSupplier = () -> (checkBox.isSelected() ? "true" : "false");
