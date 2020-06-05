@@ -58,9 +58,9 @@ final class BasicNode implements SilaNode {
     private static final String TIME_FORMAT = "HH:mm:ss";
     private static final String DATE_TIME_FORMAT = DATE_FORMAT + " " + TIME_FORMAT;
     private final BasicType type;
-    private Constraints constraints;
+    private Constraints constraints = null;
     private Supplier<String> valueSupplier;
-    private JComponent component = null;
+    private JComponent component;
 
     private BasicNode(@NonNull final BasicType type) {
         this.type = type;
@@ -69,10 +69,15 @@ final class BasicNode implements SilaNode {
     protected static BasicNode create(final BasicType type) {
         BasicNode node = new BasicNode(type);
         switch (node.type) {
-            case BINARY:
+            case ANY:
                 // TODO: implement
                 node.component = new JLabel("placeholder 01");
                 node.valueSupplier = () -> ("not implemented 01");
+                break;
+            case BINARY:
+                // TODO: implement
+                node.component = new JLabel("placeholder 02");
+                node.valueSupplier = () -> ("not implemented 02");
                 break;
             case BOOLEAN:
                 createBooleanType(node);
@@ -116,18 +121,17 @@ final class BasicNode implements SilaNode {
                 node.component = timeSpinner;
                 break;
             case TIMESTAMP:
-                // TODO: implement
-                node.component = new JLabel("placeholder 03");
-                node.valueSupplier = () -> ("not implemented 03");
-                break;
-            case ANY:
-                // TODO: implement
-                node.component = new JLabel("placeholder 04");
-                node.valueSupplier = () -> ("not implemented 04");
+                JSpinner timeStampSpinner = new JSpinner(new SpinnerDateModel());
+                timeStampSpinner.setEditor(new JSpinner.DateEditor(timeStampSpinner, DATE_TIME_FORMAT));
+                timeStampSpinner.setMaximumSize(MAX_SIZE_TIMESTAMP_SPINNER);
+                node.valueSupplier = () -> {
+                    Date time = (Date) timeStampSpinner.getValue();
+                    return OffsetDateTime.ofInstant(time.toInstant(), ZoneOffset.UTC).toString();
+                };
+                node.component = timeStampSpinner;
                 break;
             default:
-                // TODO: implement
-                return null;
+                throw new IllegalArgumentException("Not a valid BasicType.");
         }
         return node;
     }
@@ -137,19 +141,25 @@ final class BasicNode implements SilaNode {
             final Constraints constraints) {
 
         BasicNode node = new BasicNode(type);
+        node.constraints = constraints;
         switch (node.type) {
+            case ANY:
+                // TODO: implement
+                node.component = new JLabel("placeholder 03");
+                node.valueSupplier = () -> ("not implemented 03");
+                break;
             case BINARY:
                 // TODO: implement
-                node.component = new JLabel("placeholder 01");
-                node.valueSupplier = () -> ("not implemented 01");
+                node.component = new JLabel("placeholder 04");
+                node.valueSupplier = () -> ("not implemented 04");
                 break;
             case BOOLEAN:
                 createBooleanType(node);
                 break;
             case DATE:
                 final JSpinner dateSpinner;
-                if (constraints.getSet() != null) {
-                    final List<String> dateSet = constraints.getSet().getValue();
+                if (node.constraints.getSet() != null) {
+                    final List<String> dateSet = node.constraints.getSet().getValue();
                     ArrayList<LocalDate> dates = new ArrayList<>(dateSet.size());
                     for (final String element : dateSet) {
                         dates.add(parseIsoDate(element));
@@ -159,7 +169,7 @@ final class BasicNode implements SilaNode {
                         return ((LocalDate) dateSpinner.getValue()).toString();
                     };
                 } else {
-                    dateSpinner = new JSpinner(createRangeConstrainedDateModel(constraints));
+                    dateSpinner = new JSpinner(createRangeConstrainedDateModel(node.constraints));
                     dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
                     node.valueSupplier = () -> {
                         Date date = (Date) dateSpinner.getValue();
@@ -172,21 +182,21 @@ final class BasicNode implements SilaNode {
             case INTEGER:
             case REAL:
                 final SpinnerModel model;
-                if (constraints.getSet() != null) {
-                    model = new SpinnerListModel(constraints.getSet().getValue());
+                if (node.constraints.getSet() != null) {
+                    model = new SpinnerListModel(node.constraints.getSet().getValue());
                 } else {
                     model = (type == BasicType.INTEGER)
-                            ? createRangeConstrainedIntModel(constraints)
-                            : createRangeConstrainedRealModel(constraints);
+                            ? createRangeConstrainedIntModel(node.constraints)
+                            : createRangeConstrainedRealModel(node.constraints);
                 }
                 JSpinner numericSpinner = new JSpinner(model);
                 numericSpinner.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
                 node.valueSupplier = () -> (numericSpinner.getValue().toString());
-                if (constraints.getUnit() != null) {
+                if (node.constraints.getUnit() != null) {
                     Box hbox = Box.createHorizontalBox();
                     hbox.add(numericSpinner);
                     hbox.add(Box.createHorizontalStrut(5));
-                    hbox.add(new JLabel(constraints.getUnit().getLabel()));
+                    hbox.add(new JLabel(node.constraints.getUnit().getLabel()));
                     hbox.setMaximumSize(MAX_SIZE_TEXT_FIELD);
                     node.component = hbox;
                 } else {
@@ -201,8 +211,8 @@ final class BasicNode implements SilaNode {
                 break;
             case TIME:
                 final JSpinner timeSpinner;
-                if (constraints.getSet() != null) {
-                    final List<String> timeSet = constraints.getSet().getValue();
+                if (node.constraints.getSet() != null) {
+                    final List<String> timeSet = node.constraints.getSet().getValue();
                     ArrayList<OffsetTime> times = new ArrayList<>(timeSet.size());
                     for (final String element : timeSet) {
                         times.add(parseIsoTime(element));
@@ -234,8 +244,8 @@ final class BasicNode implements SilaNode {
                 break;
             case TIMESTAMP:
                 final JSpinner timeStampSpinner;
-                if (constraints.getSet() != null) {
-                    final List<String> timeSet = constraints.getSet().getValue();
+                if (node.constraints.getSet() != null) {
+                    final List<String> timeSet = node.constraints.getSet().getValue();
                     ArrayList<OffsetDateTime> times = new ArrayList<>(timeSet.size());
                     for (final String element : timeSet) {
                         times.add(parseIsoDateTime(element));
@@ -258,14 +268,8 @@ final class BasicNode implements SilaNode {
                 timeStampSpinner.setMaximumSize(MAX_SIZE_TIMESTAMP_SPINNER);
                 node.component = timeStampSpinner;
                 break;
-            case ANY:
-                // TODO: implement
-                node.component = new JLabel("placeholder 04");
-                node.valueSupplier = () -> ("not implemented 04");
-                break;
             default:
-                // TODO: implement
-                return null;
+                throw new IllegalArgumentException("Not a valid BasicType.");
         }
         return node;
     }
@@ -277,23 +281,23 @@ final class BasicNode implements SilaNode {
 
         BasicNode node = new BasicNode(type);
         switch (node.type) {
+            case ANY:
+                // TODO: implement
+                node.component = new JLabel("placeholder 05");
+                node.valueSupplier = () -> ("not implemented 05");
+                break;
             case BINARY:
                 // TODO: implement
-                node.component = new JLabel("placeholder 01");
-                node.valueSupplier = () -> ("not implemented 01");
+                node.component = new JLabel("placeholder 06");
+                node.valueSupplier = () -> ("not implemented 06");
                 break;
             case BOOLEAN:
                 createBooleanType(node, jsonNode, isReadOnly);
                 break;
             case DATE:
-                JSpinner dateSpinner = new JSpinner(new SpinnerDateModel());
-                dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
-                dateSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
-                node.valueSupplier = () -> {
-                    Date date = (Date) dateSpinner.getValue();
-                    return LocalDate.ofInstant(date.toInstant(), LOCAL_OFFSET).toString();
-                };
-                node.component = dateSpinner;
+                // TODO: implement
+                node.component = new JLabel("placeholder 07");
+                node.valueSupplier = () -> ("not implemented 07");
                 break;
             case INTEGER:
             case REAL:
@@ -303,30 +307,17 @@ final class BasicNode implements SilaNode {
                 createStringType(node, jsonNode, isReadOnly);
                 break;
             case TIME:
-                JSpinner timeSpinner = new JSpinner(new SpinnerDateModel());
-                timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
-                timeSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
-                node.valueSupplier = () -> {
-                    Date time = (Date) timeSpinner.getValue();
-                    return OffsetTime.ofInstant(time.toInstant(), LOCAL_OFFSET)
-                            .withOffsetSameInstant(ZoneOffset.UTC)
-                            .toString();
-                };
-                node.component = timeSpinner;
+                // TODO: implement
+                node.component = new JLabel("placeholder 08");
+                node.valueSupplier = () -> ("not implemented 08");
                 break;
             case TIMESTAMP:
                 // TODO: implement
-                node.component = new JLabel("placeholder 03");
-                node.valueSupplier = () -> ("not implemented 03");
-                break;
-            case ANY:
-                // TODO: implement
-                node.component = new JLabel("placeholder 04");
-                node.valueSupplier = () -> ("not implemented 04");
+                node.component = new JLabel("placeholder 09");
+                node.valueSupplier = () -> ("not implemented 09");
                 break;
             default:
-                // TODO: implement
-                return null;
+                throw new IllegalArgumentException("Not a valid BasicType.");
         }
         return node;
     }
@@ -343,9 +334,6 @@ final class BasicNode implements SilaNode {
     @Override
     public String toJsonString() {
         final String valueStr = valueSupplier.get();
-        if (valueStr.isEmpty()) {
-            return "";
-        }
         return "{\"value\":\"" + valueStr + "\"}";
     }
 
