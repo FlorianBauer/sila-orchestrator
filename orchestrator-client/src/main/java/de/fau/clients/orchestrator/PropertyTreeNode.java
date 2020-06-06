@@ -116,7 +116,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode {
                 typeDefs,
                 property.getDataType(),
                 rootNode.get(property.getIdentifier()),
-                true);
+                false);
     }
 
     @Override

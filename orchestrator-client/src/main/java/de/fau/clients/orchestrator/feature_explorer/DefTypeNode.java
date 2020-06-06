@@ -31,14 +31,14 @@ final class DefTypeNode implements SilaNode {
             @NonNull final TypeDefLut typeDefs,
             final String typeIdentifier,
             final JsonNode jsonNode,
-            boolean isReadOnly) {
+            boolean isEditable) {
 
         final DefTypeNode node = new DefTypeNode(typeDefs, typeIdentifier);
         node.defNode = NodeFactory.createFromJson(
                 typeDefs,
                 typeDefs.getElement(typeIdentifier),
                 jsonNode.get(typeIdentifier),
-                isReadOnly);
+                isEditable);
         return node;
     }
 

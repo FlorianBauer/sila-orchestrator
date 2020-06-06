@@ -26,7 +26,7 @@ public final class NodeFactory {
             @NonNull final List<SiLAElement> elements,
             @NonNull final JsonNode jsonNode) {
 
-        return CompositNode.createFromJson(typeDefs, elements, jsonNode, false);
+        return CompositNode.createFromJson(typeDefs, elements, jsonNode, true);
     }
 
     public final static SilaNode createFromDataType(
@@ -70,11 +70,11 @@ public final class NodeFactory {
             @NonNull final TypeDefLut typeDefs,
             @NonNull final DataTypeType type,
             @NonNull final JsonNode jsonNode,
-            boolean isReadOnly) {
+            boolean isEditable) {
 
         if (type.getBasic() != null) {
             // basic type
-            return BasicNode.createFromJson(type.getBasic(), jsonNode.get("value"), isReadOnly);
+            return BasicNode.createFromJson(type.getBasic(), jsonNode.get("value"), isEditable);
         } else {
             // derived type
             if (type.getConstrained() != null) {
@@ -93,11 +93,11 @@ public final class NodeFactory {
                     log.error("Constrained type is null");
                 }
             } else if (type.getList() != null) {
-                return ListNode.createFromJson(typeDefs, type.getList(), jsonNode, isReadOnly);
+                return ListNode.createFromJson(typeDefs, type.getList(), jsonNode, isEditable);
             } else if (type.getStructure() != null) {
-                return CompositNode.createFromJson(typeDefs, type.getStructure().getElement(), jsonNode, isReadOnly);
+                return CompositNode.createFromJson(typeDefs, type.getStructure().getElement(), jsonNode, isEditable);
             } else if (type.getDataTypeIdentifier() != null) {
-                return DefTypeNode.createFormJson(typeDefs, type.getDataTypeIdentifier(), jsonNode, isReadOnly);
+                return DefTypeNode.createFormJson(typeDefs, type.getDataTypeIdentifier(), jsonNode, isEditable);
             } else {
                 log.error("Unknown type of DataTypeType");
             }

@@ -1,25 +1,16 @@
 package de.fau.clients.orchestrator.feature_explorer;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.awt.Dimension;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Supplier;
 import javax.swing.Box;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
@@ -32,13 +23,12 @@ import lombok.NonNull;
 import sila_java.library.core.models.BasicType;
 import sila_java.library.core.models.Constraints;
 
+/**
+ * A <code>SilaNode</code> implementation representing SiLA Basic Types and its corresponding
+ * GUI-Components. See also {@link BasicNodeFactory}.
+ */
 final class BasicNode implements SilaNode {
 
-    private static final int MAX_HEIGHT = 42;
-    private static final Dimension MAX_SIZE_TEXT_FIELD = new Dimension(4096, MAX_HEIGHT);
-    private static final Dimension MAX_SIZE_NUMERIC_SPINNER = new Dimension(160, MAX_HEIGHT);
-    private static final Dimension MAX_SIZE_DATE_TIME_SPINNER = new Dimension(160, MAX_HEIGHT);
-    private static final Dimension MAX_SIZE_TIMESTAMP_SPINNER = new Dimension(200, MAX_HEIGHT);
     /**
      * The precision of the offset-limit of an exclusive float range (e.g. the exclusive upper-limit
      * of the value <code>1.0</code> could be <code>0.9</code>, <code>0.99</code>,
@@ -46,8 +36,6 @@ final class BasicNode implements SilaNode {
      */
     private static final double REAL_EXCLUSIVE_OFFSET = 0.001;
     private static final double REAL_STEP_SIZE = 0.1;
-    private static final ZoneOffset LOCAL_OFFSET = ZoneId.systemDefault().getRules().getOffset(Instant.now());
-    private static final int LOCAL_OFFSET_IN_SEC = LOCAL_OFFSET.getTotalSeconds();
     /**
      * The date-format used by the GUI-components.
      */
@@ -58,167 +46,140 @@ final class BasicNode implements SilaNode {
     private static final String TIME_FORMAT = "HH:mm:ss";
     private static final String DATE_TIME_FORMAT = DATE_FORMAT + " " + TIME_FORMAT;
     private final BasicType type;
-    private Constraints constraints = null;
-    private Supplier<String> valueSupplier;
-    private JComponent component;
+    private final JComponent component;
+    private final Supplier<String> valueSupplier;
+    private final Constraints constraints;
 
-    private BasicNode(@NonNull final BasicType type) {
+    protected BasicNode(
+            @NonNull final BasicType type,
+            final JComponent component,
+            final Supplier<String> valueSupplier) {
         this.type = type;
+        this.component = component;
+        this.valueSupplier = valueSupplier;
+        this.constraints = null;
+    }
+
+    protected BasicNode(
+            @NonNull final BasicType type,
+            final JComponent component,
+            final Supplier<String> valueSupplier,
+            final Constraints constraints) {
+        this.type = type;
+        this.component = component;
+        this.valueSupplier = valueSupplier;
+        this.constraints = constraints;
     }
 
     protected static BasicNode create(final BasicType type) {
-        BasicNode node = new BasicNode(type);
-        switch (node.type) {
+        switch (type) {
             case ANY:
                 // TODO: implement
-                node.component = new JLabel("placeholder 01");
-                node.valueSupplier = () -> ("not implemented 01");
-                break;
+                return new BasicNode(type, new JLabel("placeholder 01"), () -> ("not implemented 01"));
             case BINARY:
                 // TODO: implement
-                node.component = new JLabel("placeholder 02");
-                node.valueSupplier = () -> ("not implemented 02");
-                break;
+                return new BasicNode(type, new JLabel("placeholder 02"), () -> ("not implemented 02"));
             case BOOLEAN:
-                createBooleanType(node);
-                break;
+                return BasicNodeFactory.createBooleanTypeFromJson(null, true);
             case DATE:
-                JSpinner dateSpinner = new JSpinner(new SpinnerDateModel());
-                dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
-                dateSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
-                node.valueSupplier = () -> {
-                    Date date = (Date) dateSpinner.getValue();
-                    return LocalDate.ofInstant(date.toInstant(), LOCAL_OFFSET).toString();
-                };
-                node.component = dateSpinner;
-                break;
+                return BasicNodeFactory.createDateTypeFromJson(null, true);
             case INTEGER:
+                return BasicNodeFactory.createIntegerTypeFromJson(null, true);
             case REAL:
-                SpinnerModel model = (node.type == BasicType.INTEGER)
-                        ? new SpinnerNumberModel()
-                        : new SpinnerNumberModel(0.0, null, null, REAL_STEP_SIZE);
-                JSpinner numericSpinner = new JSpinner(model);
-                numericSpinner.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
-                node.valueSupplier = () -> (numericSpinner.getValue().toString());
-                node.component = numericSpinner;
-                break;
+                return BasicNodeFactory.createRealTypeFromJson(null, true);
             case STRING:
-                JTextField strField = new JTextField();
-                strField.setMaximumSize(MAX_SIZE_TEXT_FIELD);
-                node.valueSupplier = () -> (strField.getText());
-                node.component = strField;
-                break;
+                return BasicNodeFactory.createStringTypeFromJson(null, true);
             case TIME:
-                JSpinner timeSpinner = new JSpinner(new SpinnerDateModel());
-                timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
-                timeSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
-                node.valueSupplier = () -> {
-                    Date time = (Date) timeSpinner.getValue();
-                    return OffsetTime.ofInstant(time.toInstant(), LOCAL_OFFSET)
-                            .withOffsetSameInstant(ZoneOffset.UTC)
-                            .toString();
-                };
-                node.component = timeSpinner;
-                break;
+                return BasicNodeFactory.createTimeTypeFromJson(null, true);
             case TIMESTAMP:
-                JSpinner timeStampSpinner = new JSpinner(new SpinnerDateModel());
-                timeStampSpinner.setEditor(new JSpinner.DateEditor(timeStampSpinner, DATE_TIME_FORMAT));
-                timeStampSpinner.setMaximumSize(MAX_SIZE_TIMESTAMP_SPINNER);
-                node.valueSupplier = () -> {
-                    Date time = (Date) timeStampSpinner.getValue();
-                    return OffsetDateTime.ofInstant(time.toInstant(), ZoneOffset.UTC).toString();
-                };
-                node.component = timeStampSpinner;
-                break;
+                return BasicNodeFactory.createTimestampTypeFromJson(null, true);
             default:
                 throw new IllegalArgumentException("Not a valid BasicType.");
         }
-        return node;
     }
 
     protected static BasicNode createWithConstraint(
             final BasicType type,
             final Constraints constraints) {
-
-        BasicNode node = new BasicNode(type);
-        node.constraints = constraints;
-        switch (node.type) {
+        final JComponent comp;
+        final Supplier<String> supp;
+        switch (type) {
             case ANY:
                 // TODO: implement
-                node.component = new JLabel("placeholder 03");
-                node.valueSupplier = () -> ("not implemented 03");
+                comp = new JLabel("placeholder 03");
+                supp = () -> ("not implemented 03");
                 break;
             case BINARY:
                 // TODO: implement
-                node.component = new JLabel("placeholder 04");
-                node.valueSupplier = () -> ("not implemented 04");
+                comp = new JLabel("placeholder 04");
+                supp = () -> ("not implemented 04");
                 break;
             case BOOLEAN:
-                createBooleanType(node);
-                break;
+                return BasicNodeFactory.createBooleanTypeFromJson(null, true);
             case DATE:
                 final JSpinner dateSpinner;
-                if (node.constraints.getSet() != null) {
-                    final List<String> dateSet = node.constraints.getSet().getValue();
+                if (constraints.getSet() != null) {
+                    final List<String> dateSet = constraints.getSet().getValue();
                     ArrayList<LocalDate> dates = new ArrayList<>(dateSet.size());
                     for (final String element : dateSet) {
-                        dates.add(parseIsoDate(element));
+                        dates.add(DateTimeUtils.parseIsoDate(element));
                     }
                     dateSpinner = new JSpinner(new SpinnerListModel(dates));
-                    node.valueSupplier = () -> {
+                    supp = () -> {
                         return ((LocalDate) dateSpinner.getValue()).toString();
                     };
                 } else {
-                    dateSpinner = new JSpinner(createRangeConstrainedDateModel(node.constraints));
+                    dateSpinner = new JSpinner(createRangeConstrainedDateModel(constraints));
                     dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
-                    node.valueSupplier = () -> {
+                    supp = () -> {
                         Date date = (Date) dateSpinner.getValue();
-                        return LocalDate.ofInstant(date.toInstant(), LOCAL_OFFSET).toString();
+                        return LocalDate.ofInstant(date.toInstant(), DateTimeUtils.LOCAL_OFFSET).toString();
                     };
                 }
-                dateSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
-                node.component = dateSpinner;
+                dateSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
+                comp = dateSpinner;
                 break;
             case INTEGER:
             case REAL:
                 final SpinnerModel model;
-                if (node.constraints.getSet() != null) {
-                    model = new SpinnerListModel(node.constraints.getSet().getValue());
+                if (constraints.getSet() != null) {
+                    model = new SpinnerListModel(constraints.getSet().getValue());
                 } else {
                     model = (type == BasicType.INTEGER)
-                            ? createRangeConstrainedIntModel(node.constraints)
-                            : createRangeConstrainedRealModel(node.constraints);
+                            ? createRangeConstrainedIntModel(constraints)
+                            : createRangeConstrainedRealModel(constraints);
                 }
-                JSpinner numericSpinner = new JSpinner(model);
-                numericSpinner.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
-                node.valueSupplier = () -> (numericSpinner.getValue().toString());
-                if (node.constraints.getUnit() != null) {
+                final JSpinner numericSpinner = new JSpinner(model);
+                numericSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_NUMERIC_SPINNER);
+                if (constraints.getUnit() != null) {
                     Box hbox = Box.createHorizontalBox();
                     hbox.add(numericSpinner);
                     hbox.add(Box.createHorizontalStrut(5));
-                    hbox.add(new JLabel(node.constraints.getUnit().getLabel()));
-                    hbox.setMaximumSize(MAX_SIZE_TEXT_FIELD);
-                    node.component = hbox;
+                    hbox.add(new JLabel(constraints.getUnit().getLabel()));
+                    hbox.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
+                    comp = hbox;
                 } else {
-                    node.component = numericSpinner;
+                    comp = numericSpinner;
                 }
+                supp = () -> (numericSpinner.getValue().toString());
                 break;
             case STRING:
-                JTextField strField = new JTextField();
-                strField.setMaximumSize(MAX_SIZE_TEXT_FIELD);
-                node.valueSupplier = () -> (strField.getText());
-                node.component = strField;
+                // TODO: implement string pattern
+                final JTextField strField = new JTextField();
+                strField.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
+                comp = strField;
+                supp = () -> (strField.getText());
                 break;
             case TIME:
                 final JSpinner timeSpinner;
-                if (node.constraints.getSet() != null) {
-                    final List<String> timeSet = node.constraints.getSet().getValue();
+                if (constraints.getSet() != null) {
+                    final List<String> timeSet = constraints.getSet().getValue();
                     ArrayList<OffsetTime> times = new ArrayList<>(timeSet.size());
                     for (final String element : timeSet) {
-                        times.add(parseIsoTime(element));
+                        times.add(DateTimeUtils.parseIsoTime(element));
                     }
                     timeSpinner = new JSpinner(new SpinnerListModel(times));
-                    node.valueSupplier = () -> {
+                    supp = () -> {
                         return ((OffsetTime) timeSpinner.getValue())
                                 .withOffsetSameInstant(ZoneOffset.UTC)
                                 .toString();
@@ -232,26 +193,26 @@ final class BasicNode implements SilaNode {
                             new SpinnerDateModel()
                     );
                     timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
-                    node.valueSupplier = () -> {
+                    supp = () -> {
                         Date time = (Date) timeSpinner.getValue();
-                        return OffsetTime.ofInstant(time.toInstant(), LOCAL_OFFSET)
+                        return OffsetTime.ofInstant(time.toInstant(), DateTimeUtils.LOCAL_OFFSET)
                                 .withOffsetSameInstant(ZoneOffset.UTC)
                                 .toString();
                     };
                 }
-                timeSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
-                node.component = timeSpinner;
+                timeSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
+                comp = timeSpinner;
                 break;
             case TIMESTAMP:
                 final JSpinner timeStampSpinner;
-                if (node.constraints.getSet() != null) {
-                    final List<String> timeSet = node.constraints.getSet().getValue();
+                if (constraints.getSet() != null) {
+                    final List<String> timeSet = constraints.getSet().getValue();
                     ArrayList<OffsetDateTime> times = new ArrayList<>(timeSet.size());
                     for (final String element : timeSet) {
-                        times.add(parseIsoDateTime(element));
+                        times.add(DateTimeUtils.parseIsoDateTime(element));
                     }
                     timeStampSpinner = new JSpinner(new SpinnerListModel(times));
-                    node.valueSupplier = () -> {
+                    supp = () -> {
                         return ((OffsetDateTime) timeStampSpinner.getValue()).toString();
                     };
                 } else {
@@ -260,66 +221,48 @@ final class BasicNode implements SilaNode {
                             new SpinnerDateModel()
                     );
                     timeStampSpinner.setEditor(new JSpinner.DateEditor(timeStampSpinner, DATE_TIME_FORMAT));
-                    node.valueSupplier = () -> {
+                    supp = () -> {
                         Date time = (Date) timeStampSpinner.getValue();
                         return OffsetDateTime.ofInstant(time.toInstant(), ZoneOffset.UTC).toString();
                     };
                 }
-                timeStampSpinner.setMaximumSize(MAX_SIZE_TIMESTAMP_SPINNER);
-                node.component = timeStampSpinner;
+                timeStampSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_TIMESTAMP_SPINNER);
+                comp = timeStampSpinner;
                 break;
             default:
                 throw new IllegalArgumentException("Not a valid BasicType.");
         }
-        return node;
+        return new BasicNode(type, comp, supp, constraints);
     }
 
     protected static BasicNode createFromJson(
             final BasicType type,
             final JsonNode jsonNode,
-            boolean isReadOnly) {
-
-        BasicNode node = new BasicNode(type);
-        switch (node.type) {
+            boolean isEditable) {
+        switch (type) {
             case ANY:
                 // TODO: implement
-                node.component = new JLabel("placeholder 05");
-                node.valueSupplier = () -> ("not implemented 05");
-                break;
+                return new BasicNode(type, new JLabel("placeholder 05"), () -> ("not implemented 05"));
             case BINARY:
                 // TODO: implement
-                node.component = new JLabel("placeholder 06");
-                node.valueSupplier = () -> ("not implemented 06");
-                break;
+                return new BasicNode(type, new JLabel("placeholder 06"), () -> ("not implemented 06"));
             case BOOLEAN:
-                createBooleanType(node, jsonNode, isReadOnly);
-                break;
+                return BasicNodeFactory.createBooleanTypeFromJson(jsonNode, isEditable);
             case DATE:
-                // TODO: implement
-                node.component = new JLabel("placeholder 07");
-                node.valueSupplier = () -> ("not implemented 07");
-                break;
+                return BasicNodeFactory.createDateTypeFromJson(jsonNode, isEditable);
             case INTEGER:
+                return BasicNodeFactory.createIntegerTypeFromJson(jsonNode, isEditable);
             case REAL:
-                createNumberType(node, jsonNode, isReadOnly);
-                break;
+                return BasicNodeFactory.createRealTypeFromJson(jsonNode, isEditable);
             case STRING:
-                createStringType(node, jsonNode, isReadOnly);
-                break;
+                return BasicNodeFactory.createStringTypeFromJson(jsonNode, isEditable);
             case TIME:
-                // TODO: implement
-                node.component = new JLabel("placeholder 08");
-                node.valueSupplier = () -> ("not implemented 08");
-                break;
+                return BasicNodeFactory.createTimeTypeFromJson(jsonNode, isEditable);
             case TIMESTAMP:
-                // TODO: implement
-                node.component = new JLabel("placeholder 09");
-                node.valueSupplier = () -> ("not implemented 09");
-                break;
+                return BasicNodeFactory.createTimestampTypeFromJson(jsonNode, isEditable);
             default:
                 throw new IllegalArgumentException("Not a valid BasicType.");
         }
-        return node;
     }
 
     @Override
@@ -329,6 +272,14 @@ final class BasicNode implements SilaNode {
         } else {
             return createWithConstraint(this.type, this.constraints);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "(" + this.type + ", "
+                + this.component.getClass() + ", "
+                + this.valueSupplier.getClass() + ", "
+                + this.constraints + ")";
     }
 
     @Override
@@ -342,68 +293,16 @@ final class BasicNode implements SilaNode {
         return this.component;
     }
 
-    @Override
-    public String toString() {
-        return "(" + this.type + ", "
-                + this.constraints + ", "
-                + this.valueSupplier.getClass() + ", "
-                + this.component.getClass() + ")";
+    protected BasicType getType() {
+        return this.type;
     }
 
-    private static void createBooleanType(BasicNode node) {
-        JCheckBox checkBox = new JCheckBox();
-        node.valueSupplier = () -> (checkBox.isSelected() ? "true" : "false");
-        node.component = checkBox;
+    protected String getValue() {
+        return this.valueSupplier.get();
     }
 
-    private static void createBooleanType(BasicNode node, JsonNode jsonNode, boolean isReadOnly) {
-        JCheckBox checkBox = new JCheckBox();
-        if (jsonNode != null) {
-            checkBox.setSelected(jsonNode.asBoolean());
-        }
-        if (isReadOnly) {
-            checkBox.setEnabled(false);
-        } else {
-            node.valueSupplier = () -> (checkBox.isSelected() ? "true" : "false");
-        }
-        node.component = checkBox;
-    }
-
-    private static void createStringType(BasicNode node, JsonNode jsonNode, boolean isReadOnly) {
-        JTextField strField = new JTextField();
-        strField.setMaximumSize(MAX_SIZE_TEXT_FIELD);
-        if (jsonNode != null) {
-            String textValue = jsonNode.asText();
-            strField.setText(textValue);
-        }
-
-        if (isReadOnly) {
-            strField.setEnabled(false);
-        } else {
-            node.valueSupplier = () -> (jsonNode.textValue());
-        }
-        node.component = strField;
-    }
-
-    private static void createNumberType(BasicNode node, JsonNode jsonNode, boolean isReadOnly) {
-        if (!isReadOnly) {
-            SpinnerModel model = (node.type == BasicType.INTEGER)
-                    ? new SpinnerNumberModel()
-                    : new SpinnerNumberModel(0.0, null, null, REAL_STEP_SIZE);
-            JSpinner numericSpinner = new JSpinner(model);
-            numericSpinner.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
-            if (jsonNode != null) {
-                model.setValue(jsonNode.asDouble());
-            }
-            node.valueSupplier = () -> (numericSpinner.getValue().toString());
-            node.component = numericSpinner;
-        } else {
-            JTextField strField = new JTextField();
-            strField.setMaximumSize(MAX_SIZE_TEXT_FIELD);
-            strField.setText(jsonNode.asText());
-            strField.setEnabled(false);
-            node.component = strField;
-        }
+    protected Constraints getConstaint() {
+        return this.constraints;
     }
 
     /**
@@ -496,10 +395,9 @@ final class BasicNode implements SilaNode {
         LocalDate init = LocalDate.now();
         LocalDate start = null;
         if (constraints.getMinimalExclusive() != null) {
-            start = parseIsoDate(constraints.getMinimalExclusive()).plusDays(1);
-
+            start = DateTimeUtils.parseIsoDate(constraints.getMinimalExclusive()).plusDays(1);
         } else if (constraints.getMinimalInclusive() != null) {
-            start = parseIsoDate(constraints.getMinimalInclusive());
+            start = DateTimeUtils.parseIsoDate(constraints.getMinimalInclusive());
         }
 
         Date startDate = null;
@@ -507,14 +405,14 @@ final class BasicNode implements SilaNode {
             if (start.isAfter(init)) {
                 init = start;
             }
-            startDate = Date.from(start.atStartOfDay(LOCAL_OFFSET).toInstant());
+            startDate = Date.from(start.atStartOfDay(DateTimeUtils.LOCAL_OFFSET).toInstant());
         }
 
         LocalDate end = null;
         if (constraints.getMaximalExclusive() != null) {
-            end = parseIsoDate(constraints.getMaximalExclusive()).minusDays(1);
+            end = DateTimeUtils.parseIsoDate(constraints.getMaximalExclusive()).minusDays(1);
         } else if (constraints.getMaximalInclusive() != null) {
-            end = parseIsoDate(constraints.getMaximalInclusive());
+            end = DateTimeUtils.parseIsoDate(constraints.getMaximalInclusive());
         }
 
         Date endDate = null;
@@ -522,10 +420,10 @@ final class BasicNode implements SilaNode {
             if (end.isBefore(init)) {
                 init = end;
             }
-            endDate = Date.from(end.atStartOfDay(LOCAL_OFFSET).toInstant());
+            endDate = Date.from(end.atStartOfDay(DateTimeUtils.LOCAL_OFFSET).toInstant());
         }
 
-        Date initDate = Date.from(init.atStartOfDay(LOCAL_OFFSET).toInstant());
+        Date initDate = Date.from(init.atStartOfDay(DateTimeUtils.LOCAL_OFFSET).toInstant());
         return new SpinnerDateModel(initDate, startDate, endDate, Calendar.DAY_OF_MONTH);
     }
 
@@ -541,11 +439,11 @@ final class BasicNode implements SilaNode {
         OffsetDateTime init = OffsetDateTime.now();
         OffsetDateTime start = null;
         if (constraints.getMinimalExclusive() != null) {
-            start = parseIsoTime(constraints.getMinimalExclusive())
+            start = DateTimeUtils.parseIsoTime(constraints.getMinimalExclusive())
                     .atDate(init.toLocalDate())
                     .plusSeconds(1);
         } else if (constraints.getMinimalInclusive() != null) {
-            start = parseIsoTime(constraints.getMinimalInclusive())
+            start = DateTimeUtils.parseIsoTime(constraints.getMinimalInclusive())
                     .atDate(init.toLocalDate());
         }
 
@@ -559,11 +457,11 @@ final class BasicNode implements SilaNode {
 
         OffsetDateTime end = null;
         if (constraints.getMaximalExclusive() != null) {
-            end = parseIsoTime(constraints.getMaximalExclusive())
+            end = DateTimeUtils.parseIsoTime(constraints.getMaximalExclusive())
                     .atDate(init.toLocalDate())
                     .minusSeconds(1);
         } else if (constraints.getMaximalInclusive() != null) {
-            end = parseIsoTime(constraints.getMaximalInclusive())
+            end = DateTimeUtils.parseIsoTime(constraints.getMaximalInclusive())
                     .atDate(init.toLocalDate());
         }
 
@@ -577,87 +475,5 @@ final class BasicNode implements SilaNode {
 
         Date initDate = Date.from(init.toInstant());
         return new SpinnerDateModel(initDate, startTime, endTime, Calendar.MINUTE);
-    }
-
-    /**
-     * Parses ISO-8601 date-Strings of the form <code>yyyy-MM-dd</code>. Additional
-     * time-zone-offsets are going to be ignored.
-     *
-     * @param isoDateStr a ISO-8601 conform date-String.
-     * @return A LocalDate-date or <code>null</code> on error.
-     */
-    private static LocalDate parseIsoDate(String isoDateStr) {
-        final List<DateTimeFormatter> formatters = Arrays.asList(
-                DateTimeFormatter.ISO_DATE,
-                DateTimeFormatter.ofPattern("uuuu-MM-ddX"),
-                new DateTimeFormatterBuilder()
-                        .appendPattern("uuuuMMdd[X]")
-                        .toFormatter()
-        );
-
-        for (final DateTimeFormatter formatter : formatters) {
-            try {
-                return LocalDate.parse(isoDateStr, formatter);
-            } catch (DateTimeParseException ex) {
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Parses ISO-8601 time-Strings of the form <code>HH:mm:ss</code>.
-     *
-     * @param isoDateTimeStr A ISO-8601 conform time-String.
-     * @return A OffsetTime-timestamp adjusted to the current systems time-offset or
-     * <code>null</code> on error.
-     */
-    private static OffsetTime parseIsoTime(String isoTimeStr) {
-        final List<DateTimeFormatter> formatters = Arrays.asList(
-                DateTimeFormatter.ISO_OFFSET_TIME,
-                new DateTimeFormatterBuilder()
-                        .appendPattern("HH:mm:ss[.SSS][X]")
-                        .parseDefaulting(ChronoField.OFFSET_SECONDS, LOCAL_OFFSET_IN_SEC)
-                        .toFormatter(),
-                new DateTimeFormatterBuilder()
-                        .appendPattern("HHmmss[.SSS][X]")
-                        .parseDefaulting(ChronoField.OFFSET_SECONDS, LOCAL_OFFSET_IN_SEC)
-                        .toFormatter()
-        );
-
-        for (final DateTimeFormatter formatter : formatters) {
-            try {
-                return OffsetTime.parse(isoTimeStr, formatter).withOffsetSameInstant(LOCAL_OFFSET);
-            } catch (DateTimeParseException ex) {
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Parses ISO-8601 timestamps of the form <code>yyyy-MM-ddTHH:mm:ss</code>.
-     *
-     * @param isoDateTimeStr A ISO-8601 conform date-time-String.
-     * @return A OffsetDateTime-timestamp adjusted to UTC or <code>null</code> on error.
-     */
-    private static OffsetDateTime parseIsoDateTime(String isoDateTimeStr) {
-        final List<DateTimeFormatter> formatters = Arrays.asList(
-                DateTimeFormatter.ISO_OFFSET_DATE_TIME,
-                new DateTimeFormatterBuilder()
-                        .appendPattern("uuuu-MM-dd'T'HH:mm:ss[.SSS][X]")
-                        .parseDefaulting(ChronoField.OFFSET_SECONDS, LOCAL_OFFSET_IN_SEC)
-                        .toFormatter(),
-                new DateTimeFormatterBuilder()
-                        .appendPattern("uuuuMMdd'T'HHmmss[.SSS][X]")
-                        .parseDefaulting(ChronoField.OFFSET_SECONDS, LOCAL_OFFSET_IN_SEC)
-                        .toFormatter()
-        );
-
-        for (final DateTimeFormatter fmt : formatters) {
-            try {
-                return OffsetDateTime.parse(isoDateTimeStr, fmt).withOffsetSameInstant(ZoneOffset.UTC);
-            } catch (DateTimeParseException ex) {
-            }
-        }
-        return null;
     }
 }

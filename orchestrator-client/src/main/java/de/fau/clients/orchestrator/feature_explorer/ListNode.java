@@ -34,13 +34,13 @@ final class ListNode implements SilaNode {
     private final SilaNode prototype;
     /// Constraint object holding vaious constraints (e.g. min. and max. list elements).
     private Constraints constraints;
-    private final boolean isReadOnly;
+    private final boolean isEditable;
 
     private ListNode(@NonNull final TypeDefLut typeDefs, @NonNull final SilaNode prototype) {
         this.typeDefs = typeDefs;
         this.prototype = prototype;
         this.constraints = null;
-        this.isReadOnly = false;
+        this.isEditable = true;
         removeBtn = new JButton("Remove", REMOVE_ICON);
         addBtn = new JButton("Add", ADD_ICON);
         listPanel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
@@ -60,17 +60,18 @@ final class ListNode implements SilaNode {
         });
     }
 
-    private ListNode(@NonNull final TypeDefLut typeDefs, boolean isReadOnly) {
+    private ListNode(@NonNull final TypeDefLut typeDefs, boolean isEditable) {
         this.typeDefs = typeDefs;
         this.prototype = null;
         this.constraints = null;
-        this.isReadOnly = isReadOnly;
-        if (this.isReadOnly) {
+        this.isEditable = isEditable;
+        if (!this.isEditable) {
             removeBtn = null;
             addBtn = null;
         } else {
             removeBtn = new JButton("Remove", REMOVE_ICON);
             addBtn = new JButton("Add", ADD_ICON);
+            // FIXME: create prototype and register ActionListeners
         }
         listPanel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.PAGE_AXIS));
@@ -84,7 +85,7 @@ final class ListNode implements SilaNode {
         this.typeDefs = typeDefs;
         this.prototype = prototype;
         this.constraints = constraints;
-        this.isReadOnly = false;
+        this.isEditable = true;
         removeBtn = new JButton("Remove", REMOVE_ICON);
         addBtn = new JButton("Add", ADD_ICON);
         listPanel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
@@ -139,16 +140,16 @@ final class ListNode implements SilaNode {
             @NonNull final TypeDefLut typeDefs,
             @NonNull final ListType type,
             final JsonNode jsonNode,
-            boolean isReadOnly) {
+            boolean isEditable) {
 
-        final ListNode listNode = new ListNode(typeDefs, isReadOnly);
+        final ListNode listNode = new ListNode(typeDefs, isEditable);
         final Iterator<JsonNode> iter = jsonNode.elements();
         while (iter.hasNext()) {
             listNode.nodeList.add(NodeFactory.createFromJson(
                     typeDefs,
                     type.getDataType(),
                     iter.next(),
-                    isReadOnly));
+                    isEditable));
         }
         return listNode;
     }
@@ -159,7 +160,7 @@ final class ListNode implements SilaNode {
             return new ListNode(this.typeDefs, this.prototype, this.constraints);
         }
 
-        if (this.isReadOnly) {
+        if (!this.isEditable) {
             return new ListNode(this.typeDefs, true);
         }
         return new ListNode(this.typeDefs, this.prototype);
@@ -189,7 +190,7 @@ final class ListNode implements SilaNode {
             listPanel.add(node.getComponent());
         }
 
-        if ((constraints == null || constraints.getElementCount() == null) && !isReadOnly) {
+        if ((constraints == null || constraints.getElementCount() == null) && isEditable) {
             // Adding the "Remove" and "Add"-buttons if no fixed element count constraint was given.
             Box hbox = Box.createHorizontalBox();
             hbox.setAlignmentX(JComponent.LEFT_ALIGNMENT);

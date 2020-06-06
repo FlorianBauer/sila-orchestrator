@@ -40,11 +40,15 @@ final class CompositNode implements SilaNode {
             @NonNull final TypeDefLut typeDefs,
             @NonNull final List<SiLAElement> elements,
             @NonNull JsonNode jsonNode,
-            boolean isReadOnly) {
+            boolean isEditable) {
 
         final CompositNode node = new CompositNode(typeDefs, elements);
         for (final SiLAElement elem : node.elements) {
-            node.children.add(NodeFactory.createFromJson(typeDefs, elem.getDataType(), jsonNode.get(elem.getIdentifier()), isReadOnly));
+            node.children.add(NodeFactory.createFromJson(
+                    typeDefs, 
+                    elem.getDataType(),
+                    jsonNode.get(elem.getIdentifier()),
+                    isEditable));
         }
         return node;
     }
