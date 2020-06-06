@@ -358,7 +358,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         serverPanel.add(addServerBtn, gridBagConstraints);
 
-        scanServerBtn.setMnemonic('s');
+        scanServerBtn.setMnemonic('c');
         scanServerBtn.setText("Scan");
         scanServerBtn.setPreferredSize(new java.awt.Dimension(80, 30));
         scanServerBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -482,6 +482,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
 
+        openMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         openMenuItem.setMnemonic('o');
         openMenuItem.setText("Open");
         openMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -513,6 +514,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         fileMenu.add(saveAsMenuItem);
 
+        exitMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         exitMenuItem.setMnemonic('x');
         exitMenuItem.setText("Exit");
         exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
