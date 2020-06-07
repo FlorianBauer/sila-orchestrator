@@ -31,6 +31,11 @@ public class DateTimeUtilsTest {
         assertEquals(exp, DateTimeUtils.parseIsoDate("19990807+0215"));
         assertEquals(exp, DateTimeUtils.parseIsoDate("19990807+23"));
         assertEquals(exp, DateTimeUtils.parseIsoDate("19990807-23"));
+        final String expStr = exp.toString();
+        assertEquals(expStr, DateTimeUtils.parseIsoDate("1999-08-07").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDate("19990807").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDate("1999-08-07Z").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDate("19990807Z").toString());
         // nobody should use this software after this date anymore, but you never know...
         exp = LocalDate.of(90000, 8, 7);
         assertEquals(exp, DateTimeUtils.parseIsoDate("+90000-08-07"));
