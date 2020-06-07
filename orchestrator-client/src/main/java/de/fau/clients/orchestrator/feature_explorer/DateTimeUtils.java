@@ -54,18 +54,28 @@ public final class DateTimeUtils {
      * Parses ISO-8601 time-Strings of the form <code>HH:mm:ss</code>.
      *
      * @param isoTimeStr A ISO-8601 conform time-String.
-     * @return A OffsetTime-timestamp adjusted to the current systems time-offset or
+     * @return A OffsetTime-timestamp adjusted to the time-offset of current system or
      * <code>null</code> on error.
      */
     public static OffsetTime parseIsoTime(String isoTimeStr) {
         final List<DateTimeFormatter> formatters = Arrays.asList(
                 DateTimeFormatter.ISO_OFFSET_TIME,
                 new DateTimeFormatterBuilder()
-                        .appendPattern("HH:mm:ss[.SSS][X]")
+                        .appendPattern("HH:mm:ss")
+                        .optionalStart()
+                        .appendLiteral(".")
+                        .appendFraction(ChronoField.MILLI_OF_SECOND, 1, 3, false)
+                        .optionalEnd()
+                        .optionalStart().appendPattern("[X]").optionalEnd()
                         .parseDefaulting(ChronoField.OFFSET_SECONDS, LOCAL_OFFSET_IN_SEC)
                         .toFormatter(),
                 new DateTimeFormatterBuilder()
-                        .appendPattern("HHmmss[.SSS][X]")
+                        .appendPattern("HHmmss")
+                        .optionalStart()
+                        .appendLiteral(".")
+                        .appendFraction(ChronoField.MILLI_OF_SECOND, 1, 3, false)
+                        .optionalEnd()
+                        .optionalStart().appendPattern("[X]").optionalEnd()
                         .parseDefaulting(ChronoField.OFFSET_SECONDS, LOCAL_OFFSET_IN_SEC)
                         .toFormatter());
 

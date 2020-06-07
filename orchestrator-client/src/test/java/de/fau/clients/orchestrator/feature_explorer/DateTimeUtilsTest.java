@@ -59,7 +59,16 @@ public class DateTimeUtilsTest {
         OffsetTime exp = OffsetTime.of(10, 20, 30, 0, DateTimeUtils.LOCAL_OFFSET);
         assertEquals(exp, DateTimeUtils.parseIsoTime("10:20:30"));
         assertEquals(exp, DateTimeUtils.parseIsoTime("102030"));
-
+        assertEquals(exp.toString(), DateTimeUtils.parseIsoTime("10:20:30").toString());
+        assertEquals(exp.toString(), DateTimeUtils.parseIsoTime("102030").toString());
+        exp = OffsetTime.of(10, 20, 30, 100000000, DateTimeUtils.LOCAL_OFFSET);
+        assertEquals(exp, DateTimeUtils.parseIsoTime("10:20:30.1"));
+        assertEquals(exp, DateTimeUtils.parseIsoTime("102030.1"));
+        assertEquals(exp.toString(), DateTimeUtils.parseIsoTime("10:20:30.1").toString());
+        assertEquals(exp.toString(), DateTimeUtils.parseIsoTime("102030.1").toString());
+        exp = OffsetTime.of(10, 20, 30, 120000000, DateTimeUtils.LOCAL_OFFSET);
+        assertEquals(exp, DateTimeUtils.parseIsoTime("10:20:30.12"));
+        assertEquals(exp, DateTimeUtils.parseIsoTime("102030.12"));
         exp = OffsetTime.of(10, 20, 30, 123000000, DateTimeUtils.LOCAL_OFFSET);
         assertEquals(exp, DateTimeUtils.parseIsoTime("10:20:30.123"));
         assertEquals(exp, DateTimeUtils.parseIsoTime("102030.123"));
@@ -104,11 +113,7 @@ public class DateTimeUtilsTest {
         assertNull(DateTimeUtils.parseIsoTime("1:02:30"));
         assertNull(DateTimeUtils.parseIsoTime("10:2:30"));
         assertNull(DateTimeUtils.parseIsoTime("10:02:3"));
-        assertNull(DateTimeUtils.parseIsoTime("10:02:30.1"));
-        assertNull(DateTimeUtils.parseIsoTime("10:02:30.12"));
         assertNull(DateTimeUtils.parseIsoTime("10:02:30.1234"));
-        assertNull(DateTimeUtils.parseIsoTime("100230.1"));
-        assertNull(DateTimeUtils.parseIsoTime("100230.12"));
         assertNull(DateTimeUtils.parseIsoTime("100230.1234"));
     }
 
