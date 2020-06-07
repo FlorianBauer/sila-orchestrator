@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -303,6 +304,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SiLA Orchestrator");
+        setIconImage(new ImageIcon(getClass().getResource("/icons/sila-orchestrator-16px.png")).getImage());
         setLocationByPlatform(true);
         setPreferredSize(new java.awt.Dimension(1200, 600));
         setSize(new java.awt.Dimension(0, 0));
@@ -342,35 +344,37 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         serverPanel.add(featureScrollPane, gridBagConstraints);
 
+        addServerBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/server-add.png"))); // NOI18N
         addServerBtn.setMnemonic('a');
         addServerBtn.setText("Add");
-        addServerBtn.setPreferredSize(new java.awt.Dimension(80, 30));
+        addServerBtn.setPreferredSize(new java.awt.Dimension(80, 46));
         addServerBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addServerBtnActionPerformed(evt);
+                addServerActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weightx = 0.2;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         serverPanel.add(addServerBtn, gridBagConstraints);
 
+        scanServerBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/network-scan.png"))); // NOI18N
         scanServerBtn.setMnemonic('c');
         scanServerBtn.setText("Scan");
-        scanServerBtn.setPreferredSize(new java.awt.Dimension(80, 30));
+        scanServerBtn.setPreferredSize(new java.awt.Dimension(80, 46));
         scanServerBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                scanServerBtnActionPerformed(evt);
+                scanNetworkActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weightx = 0.8;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         serverPanel.add(scanServerBtn, gridBagConstraints);
 
@@ -483,6 +487,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         fileMenu.setText("File");
 
         openMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        openMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-open-16px.png"))); // NOI18N
         openMenuItem.setMnemonic('o');
         openMenuItem.setText("Open");
         openMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -493,6 +498,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         fileMenu.add(openMenuItem);
 
         saveMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-save-16px.png"))); // NOI18N
         saveMenuItem.setMnemonic('s');
         saveMenuItem.setText("Save");
         saveMenuItem.setEnabled(false);
@@ -515,6 +521,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         fileMenu.add(saveAsMenuItem);
 
         exitMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        exitMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/application-exit-16px.png"))); // NOI18N
         exitMenuItem.setMnemonic('x');
         exitMenuItem.setText("Exit");
         exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -525,6 +532,31 @@ public class OrchestratorGui extends javax.swing.JFrame {
         fileMenu.add(exitMenuItem);
 
         menuBar.add(fileMenu);
+
+        serverMenu.setMnemonic('v');
+        serverMenu.setText("Server");
+
+        addServerMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/server-add-16px.png"))); // NOI18N
+        addServerMenuItem.setMnemonic('a');
+        addServerMenuItem.setText("Add Server");
+        addServerMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addServerActionPerformed(evt);
+            }
+        });
+        serverMenu.add(addServerMenuItem);
+
+        scanNetworkMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/network-scan-16px.png"))); // NOI18N
+        scanNetworkMenuItem.setMnemonic('c');
+        scanNetworkMenuItem.setText("Scan Network");
+        scanNetworkMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                scanNetworkActionPerformed(evt);
+            }
+        });
+        serverMenu.add(scanNetworkMenuItem);
+
+        menuBar.add(serverMenu);
 
         tasksMenu.setMnemonic('t');
         tasksMenu.setText("Tasks");
@@ -539,6 +571,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         tasksMenu.add(clearQueueMenuItem);
 
+        executeAllMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/execute-all-16px.png"))); // NOI18N
         executeAllMenuItem.setMnemonic('e');
         executeAllMenuItem.setText("Execute All");
         executeAllMenuItem.setEnabled(false);
@@ -554,6 +587,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         helpMenu.setMnemonic('h');
         helpMenu.setText("Help");
 
+        aboutMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/sila-orchestrator-16px.png"))); // NOI18N
         aboutMenuItem.setMnemonic('a');
         aboutMenuItem.setText("About");
         aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -648,10 +682,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
         System.exit(0);
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
-    private void addServerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerBtnActionPerformed
+    private void addServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerActionPerformed
         addServerDialog.pack();
         addServerDialog.setVisible(true);
-    }//GEN-LAST:event_addServerBtnActionPerformed
+    }//GEN-LAST:event_addServerActionPerformed
 
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
         aboutDialog.pack();
@@ -667,7 +701,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addSpecificServer();
     }//GEN-LAST:event_serverDialogOkBtnActionPerformed
 
-    private void scanServerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanServerBtnActionPerformed
+    private void scanNetworkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanNetworkActionPerformed
         serverManager.getDiscovery().scanNetwork();
         final List<Server> serverList = ServerFinder.filterBy(ServerFinder.Filter.status(Server.Status.ONLINE)).find();
         if (!serverList.isEmpty()) {
@@ -678,7 +712,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             // show the "No Server Available" string.
             featureTree.setRootVisible(true);
         }
-    }//GEN-LAST:event_scanServerBtnActionPerformed
+    }//GEN-LAST:event_scanNetworkActionPerformed
 
     private void serverPortFormattedTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverPortFormattedTextFieldActionPerformed
         addSpecificServer();
@@ -974,6 +1008,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton addServerBtn = new javax.swing.JButton();
     private final javax.swing.JDialog addServerDialog = new javax.swing.JDialog();
+    private final javax.swing.JMenuItem addServerMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton addTaskToQueueBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem clearQueueMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JScrollPane commandScrollPane = new javax.swing.JScrollPane();
@@ -997,11 +1032,13 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JMenuItem removeTaskFromQueueMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem saveAsMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem saveMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JMenuItem scanNetworkMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton scanServerBtn = new javax.swing.JButton();
     private final javax.swing.JLabel serverAddressLabel = new javax.swing.JLabel();
     private final javax.swing.JTextField serverAddressTextField = new javax.swing.JTextField();
     private final javax.swing.JButton serverDialogCancelBtn = new javax.swing.JButton();
     private final javax.swing.JButton serverDialogOkBtn = new javax.swing.JButton();
+    private final javax.swing.JMenu serverMenu = new javax.swing.JMenu();
     private final javax.swing.JPanel serverPanel = new javax.swing.JPanel();
     private final javax.swing.JFormattedTextField serverPortFormattedTextField = new javax.swing.JFormattedTextField();
     private final javax.swing.JLabel serverPortLabel = new javax.swing.JLabel();
