@@ -135,6 +135,28 @@ public class DateTimeUtilsTest {
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T08:05:30-0215"));
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T08:05:15-02:15:15"));
 
+        // check output string
+        final String expStr = exp.toString();
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-17T10:20:30Z").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("19990817T102030Z").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-17T11:20:30+01").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("19990817T122030+02").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-18T00:20:30+14").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-17T11:20:30+01:00").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("19990817T122030+0200").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-17T12:35:30+02:15").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("19990817T123530+0215").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-17T12:35:45+02:15:15").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-17T09:20:30-01").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("19990817T082030-02").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-16T22:20:30-12").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-17T09:20:30-01:00").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-17T08:20:30-02:00").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("19990817T082030-0200").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-17T08:05:30-02:15").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-17T08:05:30-0215").toString());
+        assertEquals(expStr, DateTimeUtils.parseIsoDateTime("1999-08-17T08:05:15-02:15:15").toString());
+
         // without seconds
         exp = OffsetDateTime.of(1999, 8, 17, 10, 20, 00, 0, ZoneOffset.UTC);
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T10:20Z"));
@@ -158,17 +180,27 @@ public class DateTimeUtilsTest {
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T12:35:45.1+02:15:15"));
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T08:05:30.1-02:15"));
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T08:05:15.1-02:15:15"));
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T102030.1Z"));
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T112030.1+01"));
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T080530.1-0215"));
+        assertEquals(exp.toString(), DateTimeUtils.parseIsoDateTime("19990817T080530.1-0215").toString());
         exp = OffsetDateTime.of(1999, 8, 17, 10, 20, 30, 120000000, ZoneOffset.UTC);
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T10:20:30.12Z"));
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T11:20:30.12+01"));
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T12:35:30.12+02:15"));
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T08:05:30.12-02:15"));
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T102030.12Z"));
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T112030.12+01"));
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T080530.12-0215"));
         exp = OffsetDateTime.of(1999, 8, 17, 10, 20, 30, 123000000, ZoneOffset.UTC);
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T10:20:30.123Z"));
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T102030.123Z"));
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T11:20:30.123+01"));
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T12:35:30.123+02:15"));
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T08:05:30.123-02:15"));
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T102030.123Z"));
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T112030.123+01"));
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T080530.123-0215"));
         exp = OffsetDateTime.of(1999, 8, 17, 10, 20, 30, 123400000, ZoneOffset.UTC);
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T10:20:30.1234Z"));
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T11:20:30.1234+01"));
@@ -180,6 +212,14 @@ public class DateTimeUtilsTest {
         exp = exp.atZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T10:20:30"));
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T102030"));
+        exp = OffsetDateTime.of(1999, 8, 17, 10, 20, 30, 100000000, DateTimeUtils.LOCAL_OFFSET);
+        exp = exp.atZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T10:20:30.1"));
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T102030.1"));
+        exp = OffsetDateTime.of(1999, 8, 17, 10, 20, 30, 120000000, DateTimeUtils.LOCAL_OFFSET);
+        exp = exp.atZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T10:20:30.12"));
+        assertEquals(exp, DateTimeUtils.parseIsoDateTime("19990817T102030.12"));
         exp = OffsetDateTime.of(1999, 8, 17, 10, 20, 30, 123000000, DateTimeUtils.LOCAL_OFFSET);
         exp = exp.atZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
         assertEquals(exp, DateTimeUtils.parseIsoDateTime("1999-08-17T10:20:30.123"));
@@ -208,8 +248,6 @@ public class DateTimeUtilsTest {
         assertNull(DateTimeUtils.parseIsoDateTime("1999-08-17T24:20:30Z")); // invalid hour
         assertNull(DateTimeUtils.parseIsoDateTime("1999-08-17T10:60:30Z")); // invalid minutes
         assertNull(DateTimeUtils.parseIsoDateTime("1999-08-17T10:20:60Z")); // invalid seconds
-        assertNull(DateTimeUtils.parseIsoDateTime("1999-08-17T10:20:30.1"));
-        assertNull(DateTimeUtils.parseIsoDateTime("1999-08-17T10:20:30.12"));
         // SiLA supports only up to three decimal places after seconds.
         assertNull(DateTimeUtils.parseIsoDateTime("1999-08-17T10:20:30.1234"));
         assertNull(DateTimeUtils.parseIsoDateTime("1999-08-17T12:35:30+021"));

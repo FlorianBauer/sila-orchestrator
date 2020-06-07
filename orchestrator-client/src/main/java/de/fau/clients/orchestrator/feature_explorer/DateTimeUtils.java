@@ -88,11 +88,21 @@ public final class DateTimeUtils {
         final List<DateTimeFormatter> formatters = Arrays.asList(
                 DateTimeFormatter.ISO_OFFSET_DATE_TIME,
                 new DateTimeFormatterBuilder()
-                        .appendPattern("uuuu-MM-dd'T'HH:mm:ss[.SSS][X]")
+                        .appendPattern("uuuu-MM-dd'T'HH:mm:ss")
+                        .optionalStart()
+                        .appendLiteral(".")
+                        .appendFraction(ChronoField.MILLI_OF_SECOND, 1, 3, false)
+                        .optionalEnd()
+                        .optionalStart().appendPattern("[X]").optionalEnd()
                         .parseDefaulting(ChronoField.OFFSET_SECONDS, LOCAL_OFFSET_IN_SEC)
                         .toFormatter(),
                 new DateTimeFormatterBuilder()
-                        .appendPattern("uuuuMMdd'T'HHmmss[.SSS][X]")
+                        .appendPattern("uuuuMMdd'T'HHmmss")
+                        .optionalStart()
+                        .appendLiteral(".")
+                        .appendFraction(ChronoField.MILLI_OF_SECOND, 1, 3, false)
+                        .optionalEnd()
+                        .optionalStart().appendPattern("[X]").optionalEnd()
                         .parseDefaulting(ChronoField.OFFSET_SECONDS, LOCAL_OFFSET_IN_SEC)
                         .toFormatter());
 
