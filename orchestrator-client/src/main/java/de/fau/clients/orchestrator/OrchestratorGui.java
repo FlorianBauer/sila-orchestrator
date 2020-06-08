@@ -483,6 +483,37 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         getContentPane().add(serverSplitPane, java.awt.BorderLayout.CENTER);
 
+        toolBar.setFloatable(false);
+        toolBar.setRollover(true);
+
+        openFileBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-open.png"))); // NOI18N
+        openFileBtn.setToolTipText("Open File");
+        openFileBtn.setFocusable(false);
+        openFileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        openFileBtn.setPreferredSize(new java.awt.Dimension(42, 42));
+        openFileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        openFileBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openFileActionPerformed(evt);
+            }
+        });
+        toolBar.add(openFileBtn);
+
+        saveFileBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-save.png"))); // NOI18N
+        saveFileBtn.setToolTipText("Save File");
+        saveFileBtn.setEnabled(false);
+        saveFileBtn.setFocusable(false);
+        saveFileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        saveFileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        saveFileBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveFileActionPerformed(evt);
+            }
+        });
+        toolBar.add(saveFileBtn);
+
+        getContentPane().add(toolBar, java.awt.BorderLayout.PAGE_START);
+
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
 
@@ -492,7 +523,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         openMenuItem.setText("Open");
         openMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openMenuItemActionPerformed(evt);
+                openFileActionPerformed(evt);
             }
         });
         fileMenu.add(openMenuItem);
@@ -504,7 +535,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         saveMenuItem.setEnabled(false);
         saveMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveActionPerformed(evt);
+                saveFileActionPerformed(evt);
             }
         });
         fileMenu.add(saveMenuItem);
@@ -841,7 +872,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         commandScrollPane.setViewportView(null);
     }//GEN-LAST:event_removeTaskFromQueue
 
-    private void saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveActionPerformed
+    private void saveFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveFileActionPerformed
         if (!wasSaved || outFilePath.isEmpty()) {
             saveAsActionPerformed(evt);
         } else {
@@ -859,7 +890,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 log.error(ex.getMessage());
             }
         }
-    }//GEN-LAST:event_saveActionPerformed
+    }//GEN-LAST:event_saveFileActionPerformed
 
     private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
         String outData = getSaveData();
@@ -897,7 +928,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_saveAsActionPerformed
 
-    private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
+    private void openFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileActionPerformed
         int retVal = fileOpenChooser.showOpenDialog(this);
         if (retVal == JFileChooser.APPROVE_OPTION) {
             final File file = fileOpenChooser.getSelectedFile();
@@ -924,7 +955,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         } else {
             log.warn("File access cancelled by user.");
         }
-    }//GEN-LAST:event_openMenuItemActionPerformed
+    }//GEN-LAST:event_openFileActionPerformed
 
     private void clearQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearQueueActionPerformed
         disableTaskQueueOperations();
@@ -941,6 +972,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         executeAllBtn.setEnabled(true);
         executeAllMenuItem.setEnabled(true);
         clearQueueMenuItem.setEnabled(true);
+        saveFileBtn.setEnabled(true);
         saveMenuItem.setEnabled(true);
         saveAsMenuItem.setEnabled(true);
     }
@@ -954,6 +986,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         executeAllBtn.setEnabled(false);
         executeAllMenuItem.setEnabled(false);
         clearQueueMenuItem.setEnabled(false);
+        saveFileBtn.setEnabled(false);
         saveMenuItem.setEnabled(false);
         saveAsMenuItem.setEnabled(false);
         moveTaskUpBtn.setEnabled(false);
@@ -1027,10 +1060,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
     private final javax.swing.JButton moveTaskDownBtn = new javax.swing.JButton();
     private final javax.swing.JButton moveTaskUpBtn = new javax.swing.JButton();
+    private final javax.swing.JButton openFileBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem openMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton removeTaskFromQueueBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem removeTaskFromQueueMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem saveAsMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JButton saveFileBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem saveMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem scanNetworkMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton scanServerBtn = new javax.swing.JButton();
@@ -1048,5 +1083,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JPopupMenu taskQueuePopupMenu = new javax.swing.JPopupMenu();
     private final javax.swing.JScrollPane taskQueueScrollPane = new javax.swing.JScrollPane();
     private final javax.swing.JMenu tasksMenu = new javax.swing.JMenu();
+    private final javax.swing.JToolBar toolBar = new javax.swing.JToolBar();
     // End of variables declaration//GEN-END:variables
 }
