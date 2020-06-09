@@ -62,27 +62,36 @@ final class BasicNodeFactory {
         return new BasicNode(BasicType.BOOLEAN, checkBox, supp);
     }
 
+    /**
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.DATE</code>. If the given
+     * jsonNode is <code>null</code>, the node is initialize with the current date.
+     *
+     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param isEditable Determines wether the user can edit the represented value or not.
+     * @return The initialize BasicNode representing a date value.
+     */
     protected static BasicNode createDateTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
         if (isEditable) {
             final SpinnerDateModel model = new SpinnerDateModel();
             final JSpinner dateSpinner = new JSpinner(model);
             dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
             dateSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
+            final LocalDate localDate;
             if (jsonNode != null) {
-                model.setValue(DateTimeUtils.parseIsoDate(jsonNode.asText()));
+                localDate = DateTimeUtils.parseIsoDate(jsonNode.asText());
+            } else {
+                localDate = LocalDate.now();
             }
+            model.setValue(Date.from(localDate.atStartOfDay().atOffset(DateTimeUtils.LOCAL_OFFSET).toInstant()));
             final Supplier<String> supp = () -> {
-                Date date = (Date) dateSpinner.getValue();
-                return LocalDate.ofInstant(date.toInstant(), DateTimeUtils.LOCAL_OFFSET).toString();
+                return LocalDate.ofInstant(model.getDate().toInstant(), DateTimeUtils.LOCAL_OFFSET).toString();
             };
             return new BasicNode(BasicType.DATE, dateSpinner, supp);
         } else {
-            JTextField strField = new JTextField();
+            final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
-            if (jsonNode != null) {
-                strField.setText(jsonNode.asText());
-            }
+            strField.setText((jsonNode != null) ? jsonNode.asText() : LocalDate.now().toString());
             return new BasicNode(BasicType.DATE, strField, () -> (strField.getText()));
         }
     }
