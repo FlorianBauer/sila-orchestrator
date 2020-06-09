@@ -20,67 +20,86 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+/**
+ * Representation of a SiLA Property in the Feature tree.
+ */
 @Slf4j
 public class PropertyTreeNode extends DefaultMutableTreeNode {
 
+    /**
+     * Index to place and update the contents of the panel.
+     */
     private static final int CONTENT_COMPONENT_IDX = 0;
-    private final UUID serverId;
+    private final UUID serverUuid;
     private final String featureId;
     private final TypeDefLut typeDefs;
     private final Property property;
-    private final JPanel panel = new JPanel();
-    private final JButton refreshBtn = new JButton("Refresh");
-    private boolean isPanelBuilt = false;
+    private JPanel panel;
+    private JButton refreshBtn;
     private SilaNode node;
     private String lastResult = "";
 
+    /**
+     * Constructor.
+     *
+     * @param serverUuid The current UUID of the server where this SiLA Property belongs to.
+     * @param featureId The SiLA Feature identifier of this Property.
+     * @param typeDefs The Look-Up-Table of the data types from the Feature domain.
+     * @param property The actual SiLA Property.
+     */
     public PropertyTreeNode(
-            final UUID serverId,
+            final UUID serverUuid,
             final String featureId,
             final TypeDefLut typeDefs,
             final Property property) {
-
-        super();
-        this.serverId = serverId;
+        this.serverUuid = serverUuid;
         this.featureId = featureId;
         this.typeDefs = typeDefs;
         this.property = property;
-        this.panel.setLayout(new BoxLayout(this.panel, BoxLayout.Y_AXIS));
-        this.panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder(this.property.getDisplayName()),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-        this.refreshBtn.addActionListener((ActionEvent evt) -> {
-            refreshBtnActionPerformed();
-        });
-
     }
 
+    /**
+     * Gets a <code>JPanel</code> populated with GUI components viewing the current SiLA Property.
+     *
+     * @return A <code>JPanel</code> representing the SiLA Property.
+     */
     public JPanel getPanel() {
-        if (!isPanelBuilt) {
-            if (node == null) {
-                // node is null -> show exception message
-                panel.add(new JLabel(lastResult), CONTENT_COMPONENT_IDX);
-            } else {
-                panel.add(node.getComponent(), CONTENT_COMPONENT_IDX);
-            }
-            panel.add(Box.createVerticalStrut(10));
-            panel.add(refreshBtn);
-            isPanelBuilt = true;
+        if (panel == null) {
+            panel = new JPanel();
+            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+            panel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createTitledBorder(property.getDisplayName()),
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+            refreshBtn = new JButton("Refresh");
+            refreshBtn.addActionListener((ActionEvent evt) -> {
+                refreshBtnActionPerformed();
+            });
+        } else {
+            panel.removeAll();
         }
+
+        if (node != null) {
+            panel.add(node.getComponent(), CONTENT_COMPONENT_IDX);
+        } else {
+            // node is null -> show exception message
+            panel.add(new JLabel(lastResult), CONTENT_COMPONENT_IDX);
+        }
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(refreshBtn);
         return panel;
     }
 
-    public boolean isPanelBuild() {
-        return this.isPanelBuilt;
-    }
-
+    /**
+     * Request the current SiLA Property data form the server and updates the internal
+     * <code>SilaNode</code>.
+     */
     public void requestPropertyData() {
         final SiLACall.Type callType = property.getObservable().equalsIgnoreCase("yes")
                 ? SiLACall.Type.OBSERVABLE_PROPERTY
                 : SiLACall.Type.UNOBSERVABLE_PROPERTY;
 
-        SiLACall call = new SiLACall(
-                serverId,
+        final SiLACall call = new SiLACall(
+                serverUuid,
                 featureId,
                 property.getIdentifier(),
                 callType);
@@ -124,10 +143,18 @@ public class PropertyTreeNode extends DefaultMutableTreeNode {
         return property.getDisplayName();
     }
 
+    /**
+     * Requests the current state of the SiLA Property form the server and updates the view of the
+     * GUI components. The internal panel has to be constructed before using this function.
+     */
     private void refreshBtnActionPerformed() {
         requestPropertyData();
         panel.remove(CONTENT_COMPONENT_IDX);
-        panel.add(node.getComponent(), CONTENT_COMPONENT_IDX);
+        if (node != null) {
+            panel.add(node.getComponent(), CONTENT_COMPONENT_IDX);
+        } else {
+            panel.add(new JLabel(lastResult), CONTENT_COMPONENT_IDX);
+        }
         panel.revalidate();
         panel.repaint();
     }
