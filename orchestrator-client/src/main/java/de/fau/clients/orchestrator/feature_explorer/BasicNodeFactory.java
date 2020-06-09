@@ -96,22 +96,26 @@ final class BasicNodeFactory {
         }
     }
 
+    /**
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.INTEGER</code>. If the given
+     * jsonNode is <code>null</code>, the node is initialize with <code>0</code>.
+     *
+     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param isEditable Determines wether the user can edit the represented value or not.
+     * @return The initialize BasicNode representing a integer value.
+     */
     protected static BasicNode createIntegerTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
         if (isEditable) {
             final SpinnerModel model = new SpinnerNumberModel();
             final JSpinner spinner = new JSpinner(model);
             spinner.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
-            if (jsonNode != null) {
-                model.setValue(jsonNode.asLong());
-            }
+            model.setValue((jsonNode != null) ? jsonNode.asLong() : 0L);
             return new BasicNode(BasicType.INTEGER, spinner, () -> (spinner.getValue().toString()));
         } else {
-            JTextField strField = new JTextField();
+            final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
-            if (jsonNode != null) {
-                strField.setText(jsonNode.asText());
-            }
+            strField.setText((jsonNode != null) ? jsonNode.asText() : "0");
             return new BasicNode(BasicType.INTEGER, strField, () -> (strField.getText()));
         }
     }
