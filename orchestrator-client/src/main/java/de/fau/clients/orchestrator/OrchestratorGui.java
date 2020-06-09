@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.ToolTipManager;
@@ -764,21 +765,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
             return;
         }
 
+        boolean isAddBtnToEnable = false;
+        JComponent viewportView = null;
         if (node.isLeaf()) {
             if (node instanceof CommandTreeNode) {
-                addTaskToQueueBtn.setEnabled(true);
-                commandScrollPane.setViewportView(null);
+                isAddBtnToEnable = true;
             } else if (node instanceof PropertyTreeNode) {
                 PropertyTreeNode propNode = (PropertyTreeNode) node;
-                if (!propNode.isPanelBuild()) {
-                    propNode.requestPropertyData();
-                }
-                commandScrollPane.setViewportView(propNode.getPanel());
+                propNode.requestPropertyData();
+                viewportView = propNode.getPanel();
             }
-        } else {
-            addTaskToQueueBtn.setEnabled(false);
-            commandScrollPane.setViewportView(null);
         }
+        addTaskToQueueBtn.setEnabled(isAddBtnToEnable);
+        commandScrollPane.setViewportView(viewportView);
     }//GEN-LAST:event_featureTreeValueChanged
 
     private void addTaskToQueueBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTaskToQueueBtnActionPerformed
