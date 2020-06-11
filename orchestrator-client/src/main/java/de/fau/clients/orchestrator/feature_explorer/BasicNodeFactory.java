@@ -120,22 +120,26 @@ final class BasicNodeFactory {
         }
     }
 
+    /**
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.REAL</code>. If the given
+     * jsonNode is <code>null</code>, the node is initialize with <code>0.0</code>.
+     *
+     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param isEditable Determines wether the user can edit the represented value or not.
+     * @return The initialize BasicNode representing a double value.
+     */
     protected static BasicNode createRealTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
         if (isEditable) {
             final SpinnerModel model = new SpinnerNumberModel(0.0, null, null, REAL_STEP_SIZE);
             final JSpinner spinner = new JSpinner(model);
             spinner.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
-            if (jsonNode != null) {
-                model.setValue(jsonNode.asDouble());
-            }
+            model.setValue((jsonNode != null) ? jsonNode.asDouble() : 0.0);
             return new BasicNode(BasicType.REAL, spinner, () -> (spinner.getValue().toString()));
         } else {
-            JTextField strField = new JTextField();
+            final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
-            if (jsonNode != null) {
-                strField.setText(jsonNode.asText());
-            }
+            strField.setText((jsonNode != null) ? jsonNode.asText() : "0.0");
             return new BasicNode(BasicType.REAL, strField, () -> (strField.getText()));
         }
     }
