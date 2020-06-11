@@ -144,13 +144,19 @@ final class BasicNodeFactory {
         }
     }
 
+    /**
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.STRING</code>. If the given
+     * jsonNode is <code>null</code>, the node is initialize with an empty String.
+     *
+     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param isEditable Determines wether the user can edit the represented value or not.
+     * @return The initialize BasicNode representing a String.
+     */
     protected static BasicNode createStringTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
         final JTextField strField = new JTextField();
         strField.setEditable(isEditable);
         strField.setMaximumSize(MAX_SIZE_TEXT_FIELD);
-        if (jsonNode != null) {
-            strField.setText(jsonNode.asText());
-        }
+        strField.setText((jsonNode != null) ? jsonNode.asText() : "");
         return new BasicNode(BasicType.STRING, strField, () -> (strField.getText()));
     }
 
