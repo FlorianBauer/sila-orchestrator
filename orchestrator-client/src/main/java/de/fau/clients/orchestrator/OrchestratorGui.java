@@ -355,7 +355,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addServerBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/server-add.png"))); // NOI18N
         addServerBtn.setMnemonic('a');
         addServerBtn.setText("Add");
-        addServerBtn.setPreferredSize(new java.awt.Dimension(80, 46));
         addServerBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addServerActionPerformed(evt);
@@ -366,13 +365,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 0.2;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
         serverPanel.add(addServerBtn, gridBagConstraints);
 
         scanServerBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/network-scan.png"))); // NOI18N
         scanServerBtn.setMnemonic('c');
         scanServerBtn.setText("Scan");
-        scanServerBtn.setPreferredSize(new java.awt.Dimension(80, 46));
         scanServerBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 scanNetworkActionPerformed(evt);
@@ -383,7 +381,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 0.8;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
         serverPanel.add(scanServerBtn, gridBagConstraints);
 
         serverSplitPane.setLeftComponent(serverPanel);
@@ -403,6 +401,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addTaskToQueueBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/add-entry.png"))); // NOI18N
         addTaskToQueueBtn.setToolTipText("Add command to task-queue");
         addTaskToQueueBtn.setEnabled(false);
+        addTaskToQueueBtn.setMargin(new java.awt.Insets(4, 2, 4, 2));
         addTaskToQueueBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addTaskToQueueBtnActionPerformed(evt);
@@ -441,6 +440,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         moveTaskUpBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/move-up.png"))); // NOI18N
         moveTaskUpBtn.setToolTipText("Move selcted task one place up in the queue order");
         moveTaskUpBtn.setEnabled(false);
+        moveTaskUpBtn.setMargin(new java.awt.Insets(4, 0, 4, 0));
         moveTaskUpBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveTaskUpBtnActionPerformed(evt);
@@ -456,6 +456,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         moveTaskDownBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/move-down.png"))); // NOI18N
         moveTaskDownBtn.setToolTipText("Move selected task one place down in the queue order");
         moveTaskDownBtn.setEnabled(false);
+        moveTaskDownBtn.setMargin(new java.awt.Insets(4, 0, 4, 0));
         moveTaskDownBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveTaskDownBtnActionPerformed(evt);
@@ -471,6 +472,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         removeTaskFromQueueBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/list-remove.png"))); // NOI18N
         removeTaskFromQueueBtn.setToolTipText("Remove selected task from queue");
         removeTaskFromQueueBtn.setEnabled(false);
+        removeTaskFromQueueBtn.setMargin(new java.awt.Insets(2, 0, 2, 0));
         removeTaskFromQueueBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeTaskFromQueue(evt);
