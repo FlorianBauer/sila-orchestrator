@@ -21,6 +21,7 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
@@ -1008,15 +1009,18 @@ public class OrchestratorGui extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        // Set the GTK+ look and feel
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
+        String laf = "Nimbus";
+        final String osName = System.getProperty("os.name");
+        if (osName.startsWith("Windows")) {
+            laf = "Windows";
+        } else if (osName.startsWith("Linux")) {
+            laf = "GTK+";
+        }
+
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("GTK+".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+            for (final UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if (info.getName().equals(laf)) {
+                    UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
@@ -1026,7 +1030,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 | javax.swing.UnsupportedLookAndFeelException ex) {
             log.error(OrchestratorGui.class.getName(), ex);
         }
-        //</editor-fold>
 
         // Create and display the form
         java.awt.EventQueue.invokeLater(() -> {
