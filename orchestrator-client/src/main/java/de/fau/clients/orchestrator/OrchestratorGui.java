@@ -333,6 +333,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("No Server Available");
         featureTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         featureTree.setCellRenderer(new FeatureTreeRenderer());
+        featureTree.setRowHeight(-1);
         featureTree.setVisibleRowCount(10);
         featureTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         featureTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
