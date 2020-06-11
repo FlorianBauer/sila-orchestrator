@@ -56,14 +56,14 @@ public class OrchestratorGui extends javax.swing.JFrame {
             // do not accept invalid input
             return;
         } catch (Exception ex) {
-            log.warn(OrchestratorGui.class.getName(), ex);
+            log.error(ex.getMessage());
             return;
         }
 
         try {
             serverManager.addServer(addr, port);
         } catch (ServerAdditionException ex) {
-            log.warn(OrchestratorGui.class.getName(), ex);
+            log.warn(ex.getMessage());
             return;
         }
 
@@ -1036,7 +1036,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 | InstantiationException
                 | IllegalAccessException
                 | javax.swing.UnsupportedLookAndFeelException ex) {
-            log.error(OrchestratorGui.class.getName(), ex);
+            log.error(ex.getMessage());
         }
 
         // Create and display the form
