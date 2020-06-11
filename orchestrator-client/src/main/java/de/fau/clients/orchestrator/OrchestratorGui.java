@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import de.fau.clients.orchestrator.file_loader.TaskEntry;
+import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -42,6 +43,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private static ServerManager serverManager;
     private static int taskRowId = 0;
     private final TaskQueueTable taskQueueTable = new TaskQueueTable();
+    private final Image iconImg = new ImageIcon(getClass().getResource("/icons/sila-orchestrator-16px.png")).getImage();
     private boolean wasSaved = false;
     private String outFilePath = "";
 
@@ -163,6 +165,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         addServerDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addServerDialog.setTitle("Add Server");
+        addServerDialog.setIconImage(iconImg);
         addServerDialog.setModal(true);
         addServerDialog.setName("addServerDialog"); // NOI18N
         addServerDialog.setPreferredSize(new java.awt.Dimension(300, 200));
@@ -266,6 +269,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         aboutDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         aboutDialog.setTitle("About");
+        aboutDialog.setIconImage(iconImg);
         aboutDialog.setMinimumSize(new java.awt.Dimension(300, 256));
         aboutDialog.setModal(true);
         aboutDialog.setName("aboutDialog"); // NOI18N
@@ -306,7 +310,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SiLA Orchestrator");
-        setIconImage(new ImageIcon(getClass().getResource("/icons/sila-orchestrator-16px.png")).getImage());
+        setIconImage(iconImg);
         setLocationByPlatform(true);
         setPreferredSize(new java.awt.Dimension(1200, 600));
         setSize(new java.awt.Dimension(0, 0));
