@@ -74,6 +74,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         }
 
+        featureTree.setRootVisible(false);
         addServerDialog.setVisible(false);
         addServerDialog.dispose();
     }
