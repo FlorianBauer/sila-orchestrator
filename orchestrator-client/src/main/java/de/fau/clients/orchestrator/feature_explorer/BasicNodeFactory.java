@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.function.Supplier;
 import javax.swing.JCheckBox;
@@ -160,29 +161,48 @@ final class BasicNodeFactory {
         return new BasicNode(BasicType.STRING, strField, () -> (strField.getText()));
     }
 
+    /**
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.TIME</code>. If the given
+     * jsonNode is <code>null</code>, the node is initialize with the current time.
+     *
+     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param isEditable Determines wether the user can edit the represented value or not.
+     * @return The initialize BasicNode representing a time value.
+     */
     protected static BasicNode createTimeTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
         if (isEditable) {
             final SpinnerDateModel model = new SpinnerDateModel();
             final JSpinner timeSpinner = new JSpinner(model);
             timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
             timeSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
+            final OffsetDateTime dateTime;
             if (jsonNode != null) {
-                model.setValue(DateTimeUtils.parseIsoTime(jsonNode.asText()));
+                dateTime = DateTimeUtils.parseIsoTime(jsonNode.asText()).atDate(LocalDate.now());
+            } else {
+                dateTime = OffsetDateTime.now();
             }
+            model.setValue(Date.from(dateTime.toInstant()));
             final Supplier<String> supp = () -> {
-                Date time = (Date) timeSpinner.getValue();
-                return OffsetTime.ofInstant(time.toInstant(), DateTimeUtils.LOCAL_OFFSET)
+                return OffsetTime.ofInstant(model.getDate().toInstant(), DateTimeUtils.LOCAL_OFFSET)
                         .withOffsetSameInstant(ZoneOffset.UTC)
+                        .truncatedTo(ChronoUnit.MILLIS)
                         .toString();
             };
             return new BasicNode(BasicType.TIME, timeSpinner, supp);
         } else {
-            JTextField strField = new JTextField();
+            final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
+            final String txt;
             if (jsonNode != null) {
-                strField.setText(jsonNode.asText());
+                txt = jsonNode.asText();
+            } else {
+                txt = OffsetTime.now()
+                        .withOffsetSameInstant(ZoneOffset.UTC)
+                        .truncatedTo(ChronoUnit.MILLIS)
+                        .toString();
             }
+            strField.setText(txt);
             return new BasicNode(BasicType.TIME, strField, () -> (strField.getText()));
         }
     }
