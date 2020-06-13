@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -654,35 +653,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         taskQueueScrollPane.setViewportView(taskQueueTable);
-
-        for (int i = 0; i < TaskQueueTable.COLUMN_TITLES.length; i++) {
-            if (i == TaskQueueTable.COLUMN_COMMAND_IDX) {
-                // Do not allow the user to hide the command column.
-                continue;
-            }
-            final int colIdx = i;
-            final JCheckBoxMenuItem item = new JCheckBoxMenuItem();
-            item.setSelected(true);
-            item.setText(TaskQueueTable.COLUMN_TITLES[colIdx]);
-            item.addActionListener(evt -> {
-                if (item.isSelected()) {
-                    taskQueueTable.showColumn(colIdx);
-                } else {
-                    taskQueueTable.hideColumn(colIdx);
-                }
-            });
-            taskQueueHeaderPopupMenu.add(item);
-        }
-
-        taskQueueTable.getTableHeader().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent evt) {
-                // show popup-menu on right-click
-                if (evt.getButton() == MouseEvent.BUTTON3) {
-                    taskQueueHeaderPopupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-                }
-            }
-        });
     }
 
     private void taskQueueTableMouseClicked(final MouseEvent evt) {
@@ -1088,7 +1058,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JFormattedTextField serverPortFormattedTextField = new javax.swing.JFormattedTextField();
     private final javax.swing.JLabel serverPortLabel = new javax.swing.JLabel();
     private final javax.swing.JSplitPane serverSplitPane = new javax.swing.JSplitPane();
-    private final javax.swing.JPopupMenu taskQueueHeaderPopupMenu = new javax.swing.JPopupMenu();
     private final javax.swing.JPanel taskQueuePanel = new javax.swing.JPanel();
     private final javax.swing.JPopupMenu taskQueuePopupMenu = new javax.swing.JPopupMenu();
     private final javax.swing.JScrollPane taskQueueScrollPane = new javax.swing.JScrollPane();

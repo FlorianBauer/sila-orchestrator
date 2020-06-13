@@ -68,6 +68,8 @@ public class TaskQueueTableModel extends DefaultTableModel {
                             tableEntry,
                             tableEntry.getState(),
                             tableEntry.getStartTimeStamp(),
+                            tableEntry.getEndTimeStamp(),
+                            tableEntry.getDuration(),
                             tableEntry.getLastExecResult()});
                         addStateListener(tableEntry);
                         log.info("Row added");
@@ -96,6 +98,8 @@ public class TaskQueueTableModel extends DefaultTableModel {
             cmdEntry,
             cmdEntry.getState(),
             cmdEntry.getStartTimeStamp(),
+            cmdEntry.getEndTimeStamp(),
+            cmdEntry.getDuration(),
             cmdEntry.getLastExecResult()
         });
         addStateListener(cmdEntry);
@@ -127,6 +131,8 @@ public class TaskQueueTableModel extends DefaultTableModel {
                     case FINISHED_SUCCESS:
                     case FINISHED_ERROR:
                         this.setValueAt(cmdEntry.getLastExecResult(), rowIdx, TaskQueueTable.COLUMN_RESULT_IDX);
+                        this.setValueAt(cmdEntry.getEndTimeStamp(), rowIdx, TaskQueueTable.COLUMN_END_TIME_IDX);
+                        this.setValueAt(cmdEntry.getDuration(), rowIdx, TaskQueueTable.COLUMN_DURATION_IDX);
                         break;
                     default:
                 }
@@ -146,7 +152,14 @@ public class TaskQueueTableModel extends DefaultTableModel {
 
     @Override
     public Class getColumnClass(int col) {
-        return getValueAt(0, col).getClass();
+        switch (col) {
+            case TaskQueueTable.COLUMN_TASK_ID_IDX:
+                return Integer.class;
+            case TaskQueueTable.COLUMN_COMMAND_IDX:
+                return CommandTableEntry.class;
+            default:
+                return String.class;
+        }
     }
 
     @Override

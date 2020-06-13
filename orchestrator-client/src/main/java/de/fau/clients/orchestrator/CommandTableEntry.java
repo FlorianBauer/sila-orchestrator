@@ -7,6 +7,7 @@ import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -152,6 +153,21 @@ public class CommandTableEntry implements Runnable {
     public String getEndTimeStamp() {
         if (endTimeStamp != null) {
             return endTimeStamp.format(TIME_STAMP_FORMAT);
+        }
+        return "-";
+    }
+
+    public String getDuration() {
+        if (startTimeStamp != null && endTimeStamp != null) {
+            final Duration dur = Duration.between(
+                    startTimeStamp.toLocalDateTime(),
+                    endTimeStamp.toLocalDateTime());
+
+            return String.format("%d:%02d:%02d.%03d",
+                    dur.toHoursPart(),
+                    dur.toMinutesPart(),
+                    dur.toSecondsPart(),
+                    dur.toMillisPart());
         }
         return "-";
     }
