@@ -7,6 +7,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
+@SuppressWarnings("serial")
 class FeatureTreeRenderer extends DefaultTreeCellRenderer {
 
     private static final Icon serverIcon = new ImageIcon("src/main/resources/icons/server-online.png");

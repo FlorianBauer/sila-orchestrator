@@ -1,10 +1,10 @@
 package de.fau.clients.orchestrator;
 
-import de.fau.clients.orchestrator.file_loader.TaskQueueData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import de.fau.clients.orchestrator.file_loader.TaskEntry;
+import de.fau.clients.orchestrator.file_loader.TaskQueueData;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -29,12 +29,12 @@ import javax.swing.tree.TreeSelectionModel;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Feature;
 import sila_java.library.core.models.Feature.Command;
+import sila_java.library.core.models.Feature.Metadata;
 import sila_java.library.core.models.Feature.Property;
 import sila_java.library.manager.ServerAdditionException;
+import sila_java.library.manager.ServerFinder;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
-import sila_java.library.core.models.Feature.Metadata;
-import sila_java.library.manager.ServerFinder;
 
 @Slf4j
 @SuppressWarnings("serial")

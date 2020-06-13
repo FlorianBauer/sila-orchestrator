@@ -1,29 +1,30 @@
 package de.fau.clients.orchestrator;
 
-import de.fau.clients.orchestrator.feature_explorer.SilaNode;
-import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
-import java.util.UUID;
-import javax.swing.tree.DefaultMutableTreeNode;
-import lombok.extern.slf4j.Slf4j;
-import sila_java.library.core.models.Feature.Property;
-import sila_java.library.manager.ServerManager;
-import sila_java.library.manager.models.SiLACall;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.feature_explorer.NodeFactory;
+import de.fau.clients.orchestrator.feature_explorer.SilaNode;
+import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.UUID;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import lombok.extern.slf4j.Slf4j;
+import sila_java.library.core.models.Feature.Property;
+import sila_java.library.manager.ServerManager;
+import sila_java.library.manager.models.SiLACall;
 
 /**
  * Representation of a SiLA Property in the Feature tree.
  */
 @Slf4j
+@SuppressWarnings("serial")
 public class PropertyTreeNode extends DefaultMutableTreeNode {
 
     /**
