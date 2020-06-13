@@ -28,20 +28,20 @@ public class CommandEntry {
 
     @JsonCreator
     public CommandEntry(
-            @JsonProperty("serverUuid") String serverUuid,
+            @JsonProperty("serverUuid") UUID serverUuid,
             @JsonProperty("featureId") String featureId,
             @JsonProperty("commandId") String commandId) {
-        this.serverUuid = UUID.fromString(serverUuid);
+        this.serverUuid = serverUuid;
         this.featureId = featureId;
         this.commandId = commandId;
     }
 
     public CommandEntry(
-            String serverUuid,
+            UUID serverUuid,
             String featureId,
             String commandId,
             String commandParams) {
-        this.serverUuid = UUID.fromString(serverUuid);
+        this.serverUuid = serverUuid;
         this.featureId = featureId;
         this.commandId = commandId;
         this.commandParams = commandParams;

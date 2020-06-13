@@ -33,7 +33,7 @@ public class TaskQueueData {
             taskId = (int) model.getValueAt(i, TaskQueueTable.COLUMN_TASK_ID_IDX);
             tableEntry = (CommandTableEntry) model.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX);
             cmdEntry = new CommandEntry(
-                    tableEntry.getServerId(),
+                    tableEntry.getServerUuid(),
                     tableEntry.getFeatureId(),
                     tableEntry.getCommandId(),
                     tableEntry.getCommandParams());

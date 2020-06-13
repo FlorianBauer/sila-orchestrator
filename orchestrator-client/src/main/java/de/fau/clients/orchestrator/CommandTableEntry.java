@@ -1,10 +1,3 @@
-/**
- * Class which represents a SiLA-Command entry in the JTable of the task-queue.
- *
- * This class implements the `Runnable`-interface which allows the execution of the corresponding
- * SiLA-Command in a dedicated thread. Due to its GUI-Components however, thread-safety
- * for parallel usage is not given.
- */
 package de.fau.clients.orchestrator;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,6 +23,13 @@ import sila_java.library.core.models.SiLAElement;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.SiLACall;
 
+/**
+ * Class which represents a SiLA-Command entry in the the task-queue.
+ *
+ * This class implements the <code>Runnable</code>-interface which allows the execution of the
+ * corresponding SiLA-Command in a dedicated thread. Due to its GUI components however,
+ * thread-safety for parallel usage is not given.
+ */
 @Slf4j
 public class CommandTableEntry implements Runnable {
 
@@ -38,7 +38,7 @@ public class CommandTableEntry implements Runnable {
     private static final ImageIcon EXECUTE_ICON = new ImageIcon("src/main/resources/icons/execute.png");
     private JPanel panel = null;
     private JButton execBtn = null;
-    private final UUID serverId;
+    private final UUID serverUuid;
     private final String featureId;
     private final TypeDefLut typeDefs;
     private final Feature.Command command;
@@ -52,12 +52,11 @@ public class CommandTableEntry implements Runnable {
     private TaskState state = TaskState.NEUTRAL;
 
     public CommandTableEntry(
-            final UUID serverId,
+            final UUID serverUuid,
             final String featureId,
             final TypeDefLut typeDefs,
             final Feature.Command command) {
-
-        this.serverId = serverId;
+        this.serverUuid = serverUuid;
         this.featureId = featureId;
         this.typeDefs = typeDefs;
         this.command = command;
@@ -69,8 +68,7 @@ public class CommandTableEntry implements Runnable {
             final TypeDefLut typeDefs,
             final Feature.Command command,
             final JsonNode cmdParams) {
-
-        this.serverId = serverId;
+        this.serverUuid = serverId;
         this.featureId = featureId;
         this.typeDefs = typeDefs;
         this.command = command;
@@ -128,8 +126,8 @@ public class CommandTableEntry implements Runnable {
         }
     }
 
-    public String getServerId() {
-        return serverId.toString();
+    public UUID getServerUuid() {
+        return serverUuid;
     }
 
     public String getFeatureId() {
@@ -216,7 +214,7 @@ public class CommandTableEntry implements Runnable {
         state = TaskState.RUNNING;
         stateChanges.firePropertyChange(TaskQueueTableModel.TASK_STATE_PROPERTY, tmpState, state);
 
-        SiLACall call = new SiLACall(serverId,
+        SiLACall call = new SiLACall(serverUuid,
                 featureId,
                 command.getIdentifier(),
                 callType,
