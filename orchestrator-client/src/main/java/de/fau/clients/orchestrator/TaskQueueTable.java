@@ -18,6 +18,7 @@ public class TaskQueueTable extends JTable {
     public static final int COLUMN_END_TIME_IDX = 4;
     public static final int COLUMN_DURATION_IDX = 5;
     public static final int COLUMN_RESULT_IDX = 6;
+    public static final int COLUMN_SERVER_UUID_IDX = 7;
 
     public static final String[] COLUMN_TITLES = {
         "ID",
@@ -26,7 +27,8 @@ public class TaskQueueTable extends JTable {
         "Start Time",
         "End Time",
         "Duration",
-        "Result"
+        "Result",
+        "Server UUID"
     };
 
     private final TableColumnHider tch;
@@ -48,6 +50,7 @@ public class TaskQueueTable extends JTable {
         tch.hideColumn(COLUMN_START_TIME_IDX);
         tch.hideColumn(COLUMN_END_TIME_IDX);
         tch.hideColumn(COLUMN_RESULT_IDX);
+        tch.hideColumn(COLUMN_SERVER_UUID_IDX);
 
         for (int i = 0; i < TaskQueueTable.COLUMN_TITLES.length; i++) {
             if (i == COLUMN_COMMAND_IDX) {
@@ -60,7 +63,8 @@ public class TaskQueueTable extends JTable {
             final boolean isChecked;
             if (colIdx == COLUMN_START_TIME_IDX
                     || colIdx == COLUMN_END_TIME_IDX
-                    || colIdx == COLUMN_RESULT_IDX) {
+                    || colIdx == COLUMN_RESULT_IDX
+                    || colIdx == COLUMN_SERVER_UUID_IDX) {
                 // uncheck hidden columns
                 isChecked = false;
             } else {

@@ -70,7 +70,8 @@ public class TaskQueueTableModel extends DefaultTableModel {
                             tableEntry.getStartTimeStamp(),
                             tableEntry.getEndTimeStamp(),
                             tableEntry.getDuration(),
-                            tableEntry.getLastExecResult()});
+                            tableEntry.getLastExecResult(),
+                            tableEntry.getServerUuid()});
                         addStateListener(tableEntry);
                         log.info("Row added");
                         return true;
@@ -100,8 +101,8 @@ public class TaskQueueTableModel extends DefaultTableModel {
             cmdEntry.getStartTimeStamp(),
             cmdEntry.getEndTimeStamp(),
             cmdEntry.getDuration(),
-            cmdEntry.getLastExecResult()
-        });
+            cmdEntry.getLastExecResult(),
+            cmdEntry.getServerUuid()});
         addStateListener(cmdEntry);
     }
 
