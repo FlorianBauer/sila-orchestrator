@@ -111,19 +111,21 @@ public class CommandTableEntry implements Runnable {
         return panel;
     }
 
-    public void buildNode() {
-        if (cmdNode == null) {
-            final List<SiLAElement> params = command.getParameter();
-            if (params.isEmpty()) {
-                log.warn("Parameter list for command is empty.");
-                return;
-            }
+    /**
+     * Builds up the <code>SilaNode</code>. This method shall only be called once an must be used
+     * before proceeding any actions with the internal <code>cmdNode</code>.
+     */
+    private void buildNode() {
+        final List<SiLAElement> params = command.getParameter();
+        if (params.isEmpty()) {
+            log.warn("Parameter list for command is empty.");
+            return;
+        }
 
-            if (cmdParams == null) {
-                cmdNode = NodeFactory.createFromElements(typeDefs, params);
-            } else {
-                cmdNode = NodeFactory.createFromElementsWithJson(typeDefs, params, cmdParams);
-            }
+        if (cmdParams == null) {
+            cmdNode = NodeFactory.createFromElements(typeDefs, params);
+        } else {
+            cmdNode = NodeFactory.createFromElementsWithJson(typeDefs, params, cmdParams);
         }
     }
 
@@ -140,6 +142,9 @@ public class CommandTableEntry implements Runnable {
     }
 
     public String getCommandParams() {
+        if (cmdNode == null) {
+            buildNode();
+        }
         return cmdNode.toJsonString();
     }
 
@@ -175,7 +180,7 @@ public class CommandTableEntry implements Runnable {
     /**
      * Gets the result of the last execution. The result-value gets overwritten on each execution.
      *
-     * @return The last result as String.
+     * @return The last result as String or empty string on if no result was available.
      */
     public String getLastExecResult() {
         return lastExecResult;
@@ -186,7 +191,7 @@ public class CommandTableEntry implements Runnable {
     }
 
     /**
-     * Adds a listener which gets notified when the TaskState changes.
+     * Adds a Listener which gets notified when the TaskState changes.
      *
      * @param listener The listener which gets notified when the TaskeState changes.
      */
