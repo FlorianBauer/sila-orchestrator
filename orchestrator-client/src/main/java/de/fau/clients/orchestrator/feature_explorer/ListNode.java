@@ -196,7 +196,6 @@ final class ListNode implements SilaNode {
             hbox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             hbox.add(addBtn);
             hbox.add(removeBtn);
-            hbox.add(Box.createHorizontalGlue());
             listPanel.add(hbox);
         }
         return listPanel;

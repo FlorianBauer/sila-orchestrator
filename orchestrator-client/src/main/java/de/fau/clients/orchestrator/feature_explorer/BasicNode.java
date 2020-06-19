@@ -290,7 +290,8 @@ final class BasicNode implements SilaNode {
 
     @Override
     public JComponent getComponent() {
-        return this.component;
+        component.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+        return component;
     }
 
     protected BasicType getType() {
