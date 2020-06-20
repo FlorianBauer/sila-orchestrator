@@ -43,10 +43,13 @@ public final class NodeFactory {
                 if (conType != null) {
                     if (conType.getBasic() != null) {
                         return ConstraintBasicNode.create(conType.getBasic(),
-                                type.getConstrained().getConstraints(), null);
+                                type.getConstrained().getConstraints(),
+                                null);
                     } else if (type.getConstrained().getDataType().getList() != null) {
-                        return ListNode.createWithConstraint(typeDefs, conType.getList(),
-                                type.getConstrained().getConstraints());
+                        return ListNode.createWithConstraint(typeDefs,
+                                conType.getList(),
+                                type.getConstrained().getConstraints(),
+                                null);
                     } else {
                         log.error("A Constrained type can only contain a Basic- or a List-type");
                     }
@@ -82,10 +85,13 @@ public final class NodeFactory {
                 if (conType != null) {
                     if (conType.getBasic() != null) {
                         return ConstraintBasicNode.create(conType.getBasic(),
-                                type.getConstrained().getConstraints(), jsonNode.get("value"));
+                                type.getConstrained().getConstraints(),
+                                jsonNode.get("value"));
                     } else if (type.getConstrained().getDataType().getList() != null) {
-                        return ListNode.createWithConstraint(typeDefs, conType.getList(),
-                                type.getConstrained().getConstraints());
+                        return ListNode.createWithConstraint(typeDefs,
+                                conType.getList(),
+                                type.getConstrained().getConstraints(),
+                                jsonNode);
                     } else {
                         log.error("A Constrained type can only contain a Basic- or a List-type");
                     }

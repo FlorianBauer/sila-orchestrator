@@ -12,128 +12,102 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Constraints;
 import sila_java.library.core.models.ListType;
 
+/**
+ * A Node representing a list consisting of other <code>SilaNode</code>s.
+ *
+ * @see SilaNode
+ */
+@Slf4j
 final class ListNode implements SilaNode {
 
     private static final ImageIcon REMOVE_ICON = new ImageIcon("src/main/resources/icons/list-remove.png");
     private static final ImageIcon ADD_ICON = new ImageIcon("src/main/resources/icons/list-add.png");
 
-    /// A panel to place additional components on.
-    private final JPanel listPanel = new JPanel();
-    /// The button to trigger the removal of unnecessary list elements.
-    private final JButton removeBtn;
-    /// The button to trigger the addition of extra list elements.
-    private final JButton addBtn;
-    /// The look-up table for type definitions of this SiLA-feature.
+    /**
+     * Look-up table for data-types defined by the corresponding SiLA-Feature.
+     */
     private final TypeDefLut typeDefs;
-    /// List holding the SilaNode elements.
+    /**
+     * List holding the SilaNode elements.
+     */
     private final ArrayList<SilaNode> nodeList = new ArrayList<>();
-    /// Prototype node to clone the list element on a add-operations.
+    /**
+     * Prototype node to clone and add a list item from. If the prototype is <code>null</code>, no
+     * add- and remove-operations of items on the list are allowed.
+     */
     private final SilaNode prototype;
-    /// Constraint object holding vaious constraints (e.g. min. and max. list elements).
-    private Constraints constraints;
+    /**
+     * A panel to place additional components on.
+     */
+    private JPanel listPanel;
+    /**
+     * The button to trigger the removal of unnecessary list elements.
+     */
+    private JButton removeBtn;
+    /**
+     * The button to trigger the addition of extra list elements.
+     */
+    private JButton addBtn;
+    /**
+     * Determines wether the values hold by the components are adjustable by the user or not.
+     */
     private final boolean isEditable;
+    /**
+     * Constraint object holding various constraints (e.g. min. and max. list elements).
+     */
+    private Constraints constraints;
 
-    private ListNode(@NonNull final TypeDefLut typeDefs, @NonNull final SilaNode prototype) {
+    private ListNode(
+            @NonNull final TypeDefLut typeDefs,
+            final SilaNode prototype,
+            boolean isEditable) {
         this.typeDefs = typeDefs;
         this.prototype = prototype;
-        this.constraints = null;
-        this.isEditable = true;
-        removeBtn = new JButton("Remove", REMOVE_ICON);
-        addBtn = new JButton("Add", ADD_ICON);
-        listPanel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.PAGE_AXIS));
-        listPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEtchedBorder(),
-                BorderFactory.createEmptyBorder(4, 16, 4, 4))
-        );
-        nodeList.add(this.prototype.cloneNode());
-
-        removeBtn.addActionListener((ActionEvent evt) -> {
-            removeBtnActionPerformed();
-        });
-
-        addBtn.addActionListener((ActionEvent evt) -> {
-            addBtnActionPerformed();
-        });
-    }
-
-    private ListNode(@NonNull final TypeDefLut typeDefs, boolean isEditable) {
-        this.typeDefs = typeDefs;
-        this.prototype = null;
-        this.constraints = null;
         this.isEditable = isEditable;
-        if (!this.isEditable) {
-            removeBtn = null;
-            addBtn = null;
-        } else {
-            removeBtn = new JButton("Remove", REMOVE_ICON);
-            addBtn = new JButton("Add", ADD_ICON);
-            // FIXME: create prototype and register ActionListeners
-        }
-        listPanel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.PAGE_AXIS));
-        listPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEtchedBorder(),
-                BorderFactory.createEmptyBorder(4, 16, 4, 4))
-        );
+        this.constraints = null;
     }
 
-    private ListNode(TypeDefLut typeDefs, @NonNull final SilaNode prototype, final Constraints constraints) {
+    private ListNode(
+            @NonNull final TypeDefLut typeDefs,
+            final SilaNode prototype,
+            final Constraints constraints) {
         this.typeDefs = typeDefs;
         this.prototype = prototype;
-        this.constraints = constraints;
+        // constraining the list makes only sense if the list is editable in the first place
         this.isEditable = true;
-        removeBtn = new JButton("Remove", REMOVE_ICON);
-        addBtn = new JButton("Add", ADD_ICON);
-        listPanel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.PAGE_AXIS));
-        listPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEtchedBorder(),
-                BorderFactory.createEmptyBorder(4, 16, 4, 4))
-        );
-
-        if (constraints.getElementCount() != null) {
-            for (int i = 0; i < constraints.getElementCount().intValue(); i++) {
-                nodeList.add(this.prototype.cloneNode());
-            }
-            // everything is fixed, so registering button-listeners can be omitted
-            return;
-        } else if (constraints.getMinimalElementCount() != null) {
-            for (int i = 0; i < constraints.getMinimalElementCount().intValue(); i++) {
-                removeBtn.setEnabled(false);
-                nodeList.add(this.prototype.cloneNode());
-            }
-        } else {
-            nodeList.add(this.prototype.cloneNode());
-        }
-
-        removeBtn.addActionListener((ActionEvent evt) -> {
-            removeBtnActionPerformed();
-        });
-
-        addBtn.addActionListener((ActionEvent evt) -> {
-            addBtnActionPerformed();
-        });
+        this.constraints = constraints;
     }
 
     protected static ListNode create(
             @NonNull final TypeDefLut typeDefs,
             @NonNull final ListType type) {
-
         final SilaNode prototype = NodeFactory.createFromDataType(typeDefs, type.getDataType());
-        return new ListNode(typeDefs, prototype);
+        return new ListNode(typeDefs, prototype, true);
     }
 
     protected static ListNode createWithConstraint(
             @NonNull final TypeDefLut typeDefs,
             @NonNull final ListType type,
-            final Constraints con) {
-
+            final Constraints con,
+            final JsonNode jsonNode) {
         final SilaNode prototype = NodeFactory.createFromDataType(typeDefs, type.getDataType());
-        return new ListNode(typeDefs, prototype, con);
+        final ListNode listNode = new ListNode(typeDefs, prototype, con);
+        if (jsonNode != null) {
+            final boolean isEditable = listNode.isEditable;
+            final Iterator<JsonNode> iter = jsonNode.elements();
+            while (iter.hasNext()) {
+                listNode.nodeList.add(NodeFactory.createFromJson(
+                        typeDefs,
+                        type.getDataType(),
+                        iter.next(),
+                        isEditable));
+            }
+        }
+        return listNode;
     }
 
     protected static ListNode createFromJson(
@@ -141,8 +115,8 @@ final class ListNode implements SilaNode {
             @NonNull final ListType type,
             final JsonNode jsonNode,
             boolean isEditable) {
-
-        final ListNode listNode = new ListNode(typeDefs, isEditable);
+        final SilaNode prototype = NodeFactory.createFromDataType(typeDefs, type.getDataType());
+        final ListNode listNode = new ListNode(typeDefs, prototype, isEditable);
         final Iterator<JsonNode> iter = jsonNode.elements();
         while (iter.hasNext()) {
             listNode.nodeList.add(NodeFactory.createFromJson(
@@ -156,14 +130,10 @@ final class ListNode implements SilaNode {
 
     @Override
     public ListNode cloneNode() {
-        if (this.constraints != null) {
-            return new ListNode(this.typeDefs, this.prototype, this.constraints);
+        if (constraints != null) {
+            return new ListNode(typeDefs, prototype, constraints);
         }
-
-        if (!this.isEditable) {
-            return new ListNode(this.typeDefs, true);
-        }
-        return new ListNode(this.typeDefs, this.prototype);
+        return new ListNode(typeDefs, prototype, isEditable);
     }
 
     @Override
@@ -186,25 +156,86 @@ final class ListNode implements SilaNode {
 
     @Override
     public JComponent getComponent() {
-        for (final SilaNode node : nodeList) {
-            listPanel.add(node.getComponent());
-        }
+        if (listPanel == null) {
+            listPanel = new JPanel();
+            listPanel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.PAGE_AXIS));
+            listPanel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createEtchedBorder(),
+                    BorderFactory.createEmptyBorder(4, 16, 4, 4)));
+            // Adding the "Remove" and "Add"-buttons only if no absolute element-count constraint was given.
+            boolean isAddAndRemoveBtnNeeded = false;
+            boolean isAddBtnEnabled = true;
+            boolean isRemoveBtnEnabled = true;
+            if (isEditable && prototype != null) {
+                if (constraints != null) {
+                    if (constraints.getElementCount() != null) {
+                        for (int i = nodeList.size(); i < constraints.getElementCount().intValue(); i++) {
+                            nodeList.add(prototype.cloneNode());
+                        }
+                        // everything is fixed, so registering button-listeners can be omitted
+                    } else {
+                        if (constraints.getMinimalElementCount() != null) {
+                            final int elemSize = nodeList.size();
+                            final int minSize = constraints.getMinimalElementCount().intValue();
+                            for (int i = elemSize; i < minSize; i++) {
+                                nodeList.add(prototype.cloneNode());
+                            }
+                            isRemoveBtnEnabled = (elemSize > minSize);
+                        }
+                        if (constraints.getMaximalElementCount() != null) {
+                            if (nodeList.size() >= constraints.getMaximalElementCount().intValue()) {
+                                isAddBtnEnabled = false;
+                            }
+                            if (nodeList.isEmpty()) {
+                                nodeList.add(prototype.cloneNode());
+                            }
+                        }
+                        isAddAndRemoveBtnNeeded = true;
+                    }
+                } else {
+                    if (nodeList.isEmpty()) {
+                        nodeList.add(prototype.cloneNode());
+                    }
+                    isAddAndRemoveBtnNeeded = true;
+                }
+            }
 
-        if ((constraints == null || constraints.getElementCount() == null) && isEditable) {
-            // Adding the "Remove" and "Add"-buttons if no fixed element count constraint was given.
-            Box hbox = Box.createHorizontalBox();
-            hbox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-            hbox.add(addBtn);
-            hbox.add(removeBtn);
-            listPanel.add(hbox);
+            for (final SilaNode node : nodeList) {
+                listPanel.add(node.getComponent());
+            }
+
+            if (isAddAndRemoveBtnNeeded) {
+                addBtn = new JButton("Add", ADD_ICON);
+                addBtn.setEnabled(isAddBtnEnabled);
+                addBtn.addActionListener((ActionEvent evt) -> {
+                    addBtnActionPerformed();
+                });
+
+                removeBtn = new JButton("Remove", REMOVE_ICON);
+                removeBtn.setEnabled(isRemoveBtnEnabled);
+                removeBtn.addActionListener((ActionEvent evt) -> {
+                    removeBtnActionPerformed();
+                });
+
+                Box hbox = Box.createHorizontalBox();
+                hbox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+                hbox.add(addBtn);
+                hbox.add(removeBtn);
+                listPanel.add(hbox);
+            }
         }
         return listPanel;
     }
 
+    /**
+     * Removes the last item of the current list.
+     */
     private void removeBtnActionPerformed() {
         if (constraints != null) {
             if (constraints.getElementCount() != null) {
                 // The element count is fixed, so there is nothing to remove.
+                log.error("Removal of list-item was called on an absolute constraint list.");
                 return;
             }
 
@@ -238,10 +269,15 @@ final class ListNode implements SilaNode {
         addBtn.setEnabled(true);
     }
 
+    /**
+     * Appends a new item to the current list. This is done by cloning one element form the given
+     * prototype and inserting it at the and of the list.
+     */
     private void addBtnActionPerformed() {
         if (constraints != null) {
             if (constraints.getElementCount() != null) {
                 // The element count is fixed, so there is nothing to add.
+                log.error("Adding of list-item was called on an absolute constraint list.");
                 return;
             }
 
@@ -270,7 +306,6 @@ final class ListNode implements SilaNode {
         listPanel.add(clone.getComponent(), nodeList.size() - 1);
         listPanel.revalidate();
         listPanel.repaint();
-
         // re-enable the "Remove"-button
         removeBtn.setEnabled(true);
     }
