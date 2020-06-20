@@ -26,7 +26,6 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JCheckBox) actual.getComponent()).isEnabled());
         assertEquals("false", actual.getValue());
         assertEquals(jsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createBooleanTypeFromJson(jsonNode, isEditable);
         assertEquals(BasicType.BOOLEAN, actual.getType());
@@ -34,7 +33,6 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JCheckBox) actual.getComponent()).isEnabled());
         assertEquals("false", actual.getValue());
         assertEquals(jsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
 
         jsonStr = "{\"value\":\"false\"}";
         jsonNode = mapper.readTree(jsonStr);
@@ -45,7 +43,6 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JCheckBox) actual.getComponent()).isEnabled());
         assertEquals("false", actual.getValue());
         assertEquals(jsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createBooleanTypeFromJson(jsonNode, isEditable);
         assertEquals(BasicType.BOOLEAN, actual.getType());
@@ -53,7 +50,6 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JCheckBox) actual.getComponent()).isEnabled());
         assertEquals("false", actual.getValue());
         assertEquals(jsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
 
         jsonStr = "{\"value\":\"true\"}";
         jsonNode = mapper.readTree(jsonStr);
@@ -64,7 +60,6 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JCheckBox) actual.getComponent()).isEnabled());
         assertEquals("true", actual.getValue());
         assertEquals(jsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createBooleanTypeFromJson(jsonNode.get("value"), isEditable);
         assertEquals(BasicType.BOOLEAN, actual.getType());
@@ -72,7 +67,6 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JCheckBox) actual.getComponent()).isEnabled());
         assertEquals("true", actual.getValue());
         assertEquals(jsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
     }
 
     @Test
@@ -85,14 +79,12 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertTrue(actual.getValue().matches("\\d{4}-\\d{2}-\\d{2}"), actual.getValue());
         assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}\"\\}"), actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createDateTypeFromJson(jsonNode, isEditable);
         assertEquals(BasicType.DATE, actual.getType());
         assertEquals(JSpinner.class, actual.getComponent().getClass());
         assertTrue(actual.getValue().matches("\\d{4}-\\d{2}-\\d{2}"), actual.getValue());
         assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}\"\\}"), actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
 
         String expValue = "2020-06-29";
         String expJsonStr = "{\"value\":\"" + expValue + "\"}";
@@ -104,14 +96,12 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createDateTypeFromJson(jsonNode.get("value"), isEditable);
         assertEquals(BasicType.DATE, actual.getType());
         assertEquals(JSpinner.class, actual.getComponent().getClass());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
     }
 
     @Test
@@ -126,7 +116,6 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createIntegerTypeFromJson(jsonNode, isEditable);
         assertEquals(BasicType.INTEGER, actual.getType());
@@ -144,14 +133,12 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createIntegerTypeFromJson(jsonNode.get("value"), isEditable);
         assertEquals(BasicType.INTEGER, actual.getType());
         assertEquals(JSpinner.class, actual.getComponent().getClass());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
     }
 
     @Test
@@ -166,7 +153,6 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createRealTypeFromJson(jsonNode, isEditable);
         assertEquals(BasicType.REAL, actual.getType());
@@ -184,14 +170,12 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createRealTypeFromJson(jsonNode.get("value"), isEditable);
         assertEquals(BasicType.REAL, actual.getType());
         assertEquals(JSpinner.class, actual.getComponent().getClass());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
     }
 
     @Test
@@ -206,7 +190,6 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createStringTypeFromJson(jsonNode, isEditable);
         assertEquals(BasicType.STRING, actual.getType());
@@ -214,7 +197,6 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
 
         expValue = "Lorem ipsum dolor sit amet";
         expJsonStr = "{\"value\":\"" + expValue + "\"}";
@@ -226,7 +208,6 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createStringTypeFromJson(jsonNode.get("value"), isEditable);
         assertEquals(BasicType.STRING, actual.getType());
@@ -234,7 +215,6 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
     }
 
     @Test
@@ -247,14 +227,12 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertTrue(actual.getValue().matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"), actual.getValue());
         assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\"\\}"), actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createTimeTypeFromJson(jsonNode, isEditable);
         assertEquals(BasicType.TIME, actual.getType());
         assertEquals(JSpinner.class, actual.getComponent().getClass());
         assertTrue(actual.getValue().matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"), actual.getValue());
         assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\"\\}"), actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
 
         String expValue = "20:15:10.123Z";
         String expJsonStr = "{\"value\":\"" + expValue + "\"}";
@@ -266,14 +244,12 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createTimeTypeFromJson(jsonNode.get("value"), isEditable);
         assertEquals(BasicType.TIME, actual.getType());
         assertEquals(JSpinner.class, actual.getComponent().getClass());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
     }
 
     @Test
@@ -286,14 +262,12 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertTrue(actual.getValue().matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"), actual.getValue());
         assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\"\\}"), actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createTimestampTypeFromJson(jsonNode, isEditable);
         assertEquals(BasicType.TIMESTAMP, actual.getType());
         assertEquals(JSpinner.class, actual.getComponent().getClass());
         assertTrue(actual.getValue().matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"), actual.getValue());
         assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\"\\}"), actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
 
         String expValue = "2020-06-29T20:15:10.123Z";
         String expJsonStr = "{\"value\":\"" + expValue + "\"}";
@@ -305,13 +279,11 @@ public class BasicNodeFactoryTest {
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
         isEditable = true;
         actual = BasicNodeFactory.createTimestampTypeFromJson(jsonNode.get("value"), isEditable);
         assertEquals(BasicType.TIMESTAMP, actual.getType());
         assertEquals(JSpinner.class, actual.getComponent().getClass());
         assertEquals(expValue, actual.getValue());
         assertEquals(expJsonStr, actual.toJsonString());
-        assertEquals(null, actual.getConstaint());
     }
 }
