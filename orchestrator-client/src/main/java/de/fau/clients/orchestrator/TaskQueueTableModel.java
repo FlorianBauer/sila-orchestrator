@@ -21,6 +21,9 @@ import sila_java.library.manager.models.Server;
 @SuppressWarnings("serial")
 public class TaskQueueTableModel extends DefaultTableModel {
 
+    /**
+     * Identifier for signaling change events on the task state property.
+     */
     public static final String TASK_STATE_PROPERTY = "taskState";
     private static final ServerManager serverManager = ServerManager.getInstance();
 
@@ -73,7 +76,6 @@ public class TaskQueueTableModel extends DefaultTableModel {
                             tableEntry.getLastExecResult(),
                             tableEntry.getServerUuid()});
                         addStateListener(tableEntry);
-                        log.info("Row added");
                         return true;
                     }
                 }
@@ -113,8 +115,8 @@ public class TaskQueueTableModel extends DefaultTableModel {
                 // Find the row of the changed entry. This has to be done dynamically, since 
                 // the order of rows might change during runtime.
                 int rowIdx = -1;
-                for (int i = 0; i < this.getRowCount(); i++) {
-                    if (this.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX).equals(cmdEntry)) {
+                for (int i = 0; i < getRowCount(); i++) {
+                    if (getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX).equals(cmdEntry)) {
                         rowIdx = i;
                         break;
                     }
@@ -124,18 +126,19 @@ public class TaskQueueTableModel extends DefaultTableModel {
                     log.error("Could not find entry in table");
                     return;
                 }
-                this.setValueAt(state, rowIdx, TaskQueueTable.COLUMN_STATE_IDX);
+                setValueAt(state, rowIdx, TaskQueueTable.COLUMN_STATE_IDX);
                 switch (state) {
                     case RUNNING:
-                        this.setValueAt(cmdEntry.getStartTimeStamp(), rowIdx, TaskQueueTable.COLUMN_START_TIME_IDX);
+                        setValueAt(cmdEntry.getStartTimeStamp(), rowIdx, TaskQueueTable.COLUMN_START_TIME_IDX);
                         break;
                     case FINISHED_SUCCESS:
                     case FINISHED_ERROR:
-                        this.setValueAt(cmdEntry.getLastExecResult(), rowIdx, TaskQueueTable.COLUMN_RESULT_IDX);
-                        this.setValueAt(cmdEntry.getEndTimeStamp(), rowIdx, TaskQueueTable.COLUMN_END_TIME_IDX);
-                        this.setValueAt(cmdEntry.getDuration(), rowIdx, TaskQueueTable.COLUMN_DURATION_IDX);
+                        setValueAt(cmdEntry.getLastExecResult(), rowIdx, TaskQueueTable.COLUMN_RESULT_IDX);
+                        setValueAt(cmdEntry.getEndTimeStamp(), rowIdx, TaskQueueTable.COLUMN_END_TIME_IDX);
+                        setValueAt(cmdEntry.getDuration(), rowIdx, TaskQueueTable.COLUMN_DURATION_IDX);
                         break;
                     default:
+                        log.warn("Unhandled state change");
                 }
             }
         });

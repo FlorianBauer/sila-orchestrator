@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * Class responsible to importing and exporting the task-queue from/to a JSON-file.
+ * Class responsible for importing and exporting the task-queue from/to a JSON-file.
  */
 @JsonPropertyOrder({"siloFileVersion", "tasks"})
 public class TaskQueueData {
@@ -20,11 +20,17 @@ public class TaskQueueData {
     private ArrayList<TaskEntry> tasks = null;
     private String versionOfLoadedFile = "";
 
+    /**
+     * Creates a <code>TaskQueueData</code> object and populates it with the task-entry data for
+     * serialization in JSON.
+     *
+     * @param queue The queue instance to extract the data from.
+     * @return A populated <code>TaskQueueData</code> object for JSON serialization.
+     */
     public static TaskQueueData createFromTaskQueue(final TaskQueueTable queue) {
-        TaskQueueData data = new TaskQueueData();
-
         final DefaultTableModel model = (DefaultTableModel) queue.getModel();
         final int rows = model.getRowCount();
+        final TaskQueueData data = new TaskQueueData();
         data.tasks = new ArrayList<>(rows);
         int taskId;
         CommandTableEntry tableEntry;
@@ -39,7 +45,6 @@ public class TaskQueueData {
                     tableEntry.getCommandParams());
             data.tasks.add(new TaskEntry(taskId, cmdEntry));
         }
-
         return data;
     }
 
