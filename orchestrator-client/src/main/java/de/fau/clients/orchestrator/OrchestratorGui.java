@@ -712,17 +712,27 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addSpecificServer();
     }//GEN-LAST:event_serverDialogOkBtnActionPerformed
 
+    /**
+     * Scans the network for available SiLA-Servers which are enabled for discovery. This method is
+     * not thread safe. The scan-routine runs in a dedicated thread just to prevent the GUI from
+     * freezing while scanning.
+     */
     private void scanNetworkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanNetworkActionPerformed
-        serverManager.getDiscovery().scanNetwork();
-        final List<Server> serverList = ServerFinder.filterBy(ServerFinder.Filter.status(Server.Status.ONLINE)).find();
-        if (!serverList.isEmpty()) {
-            // hide the "No Server Available" string.
-            featureTree.setRootVisible(false);
-            addFeaturesToTree(serverList);
-        } else {
-            // show the "No Server Available" string.
-            featureTree.setRootVisible(true);
-        }
+        final Runnable scan = () -> {
+            scanServerBtn.setEnabled(false);
+            serverManager.getDiscovery().scanNetwork();
+            final List<Server> serverList = ServerFinder.filterBy(ServerFinder.Filter.status(Server.Status.ONLINE)).find();
+            if (!serverList.isEmpty()) {
+                // hide the "No Server Available" string.
+                featureTree.setRootVisible(false);
+                addFeaturesToTree(serverList);
+            } else {
+                // show the "No Server Available" string.
+                featureTree.setRootVisible(true);
+            }
+            scanServerBtn.setEnabled(true);
+        };
+        new Thread(scan).start();
     }//GEN-LAST:event_scanNetworkActionPerformed
 
     private void serverPortFormattedTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverPortFormattedTextFieldActionPerformed
@@ -921,7 +931,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
             if (tqd != null) {
                 clearQueueActionPerformed(evt);
-                log.info("File Version: " + tqd.getSiloFileVersion());
+                log.info("Silo-file version: " + tqd.getSiloFileVersion());
                 final TaskQueueTableModel model = taskQueueTable.getModel();
                 for (TaskEntry entry : tqd.getTasks()) {
                     log.info("Import task: " + entry);
