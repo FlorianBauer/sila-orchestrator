@@ -893,7 +893,7 @@
         <MenuItem class="javax.swing.JMenuItem" name="removeTaskFromQueueMenuItem">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/icons/list-remove-16px.png"/>
+              <Image iconType="3" name="/icons/task-remove-16px.png"/>
             </Property>
             <Property name="mnemonic" type="int" value="114"/>
             <Property name="text" type="java.lang.String" value="Remove Entry"/>
@@ -1093,7 +1093,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="executeAllMenuItem">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/icons/execute-all-16px.png"/>
+                  <Image iconType="3" name="/icons/execute-all-start-16px.png"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="101"/>
                 <Property name="text" type="java.lang.String" value="Execute All"/>
@@ -1714,10 +1714,12 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="executeAllBtn">
                       <Properties>
-                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/icons/execute-all.png"/>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="START_QUEUE_EXEC_ICON" type="code"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Execute All"/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="START_QUEUE_EXEC_LABEL" type="code"/>
+                        </Property>
                         <Property name="toolTipText" type="java.lang.String" value="Execute all tasks in queue"/>
                         <Property name="enabled" type="boolean" value="false"/>
                       </Properties>
@@ -1794,7 +1796,7 @@
                     <Component class="javax.swing.JButton" name="removeTaskFromQueueBtn">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/icons/list-remove.png"/>
+                          <Image iconType="3" name="/icons/task-remove.png"/>
                         </Property>
                         <Property name="toolTipText" type="java.lang.String" value="Remove selected task from queue"/>
                         <Property name="enabled" type="boolean" value="false"/>

@@ -40,9 +40,14 @@ import sila_java.library.manager.models.Server;
 public class OrchestratorGui extends javax.swing.JFrame {
 
     private static final Image ICON_IMG = new ImageIcon("src/main/resources/icons/sila-orchestrator-16px.png").getImage();
+    private static final ImageIcon START_QUEUE_EXEC_ICON = new ImageIcon("src/main/resources/icons/execute-all-start.png");
+    private static final ImageIcon STOP_QUEUE_EXEC_ICON = new ImageIcon("src/main/resources/icons/execute-all-stop.png");
+    private static final String START_QUEUE_EXEC_LABEL = "Start Execute All";
+    private static final String STOP_QUEUE_EXEC_LABEL = "Stop Execute All";
     private static ServerManager serverManager;
     private static int taskRowId = 0;
     private final TaskQueueTable taskQueueTable = new TaskQueueTable();
+    private boolean isOnExecution = false;
     private boolean wasSaved = false;
     private String outFilePath = "";
 
@@ -282,7 +287,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         aboutDialog.getAccessibleContext().setAccessibleParent(this);
 
-        removeTaskFromQueueMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/list-remove-16px.png"))); // NOI18N
+        removeTaskFromQueueMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/task-remove-16px.png"))); // NOI18N
         removeTaskFromQueueMenuItem.setMnemonic('r');
         removeTaskFromQueueMenuItem.setText("Remove Entry");
         removeTaskFromQueueMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -413,8 +418,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         taskQueuePanel.add(addTaskToQueueBtn, gridBagConstraints);
 
-        executeAllBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/execute-all.png"))); // NOI18N
-        executeAllBtn.setText("Execute All");
+        executeAllBtn.setIcon(START_QUEUE_EXEC_ICON);
+        executeAllBtn.setText(START_QUEUE_EXEC_LABEL);
         executeAllBtn.setToolTipText("Execute all tasks in queue");
         executeAllBtn.setEnabled(false);
         executeAllBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -468,7 +473,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.weighty = 0.5;
         taskQueuePanel.add(moveTaskDownBtn, gridBagConstraints);
 
-        removeTaskFromQueueBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/list-remove.png"))); // NOI18N
+        removeTaskFromQueueBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/task-remove.png"))); // NOI18N
         removeTaskFromQueueBtn.setToolTipText("Remove selected task from queue");
         removeTaskFromQueueBtn.setEnabled(false);
         removeTaskFromQueueBtn.setMargin(new java.awt.Insets(2, 0, 2, 0));
@@ -611,7 +616,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         tasksMenu.add(clearQueueMenuItem);
 
-        executeAllMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/execute-all-16px.png"))); // NOI18N
+        executeAllMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/execute-all-start-16px.png"))); // NOI18N
         executeAllMenuItem.setMnemonic('e');
         executeAllMenuItem.setText("Execute All");
         executeAllMenuItem.setEnabled(false);
@@ -787,14 +792,26 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_addTaskToQueueBtnActionPerformed
 
+    /**
+     * Starts/stops the execution of all entries in the task queue.
+     *
+     * @param evt The fired event.
+     */
     private void executeAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeAllActionPerformed
-        executeAllBtn.setEnabled(false);
+        isOnExecution = !isOnExecution;
+        executeAllBtn.setIcon(STOP_QUEUE_EXEC_ICON);
+        executeAllBtn.setText(STOP_QUEUE_EXEC_LABEL);
         executeAllMenuItem.setEnabled(false);
 
-        Runnable queueRunner = () -> {
+        final Runnable queueRunner = () -> {
             Thread entryThread;
             final TaskQueueTableModel model = taskQueueTable.getModel();
             for (int i = 0; i < taskQueueTable.getRowCount(); i++) {
+                if (!isOnExecution) {
+                    log.info("Aborted queue execution by user");
+                    break;
+                }
+
                 entryThread = new Thread((CommandTableEntry) model.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX));
                 entryThread.start();
                 try {
@@ -803,8 +820,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     log.error(ex.getMessage());
                 }
             }
-            executeAllBtn.setEnabled(true);
+            executeAllBtn.setIcon(START_QUEUE_EXEC_ICON);
+            executeAllBtn.setText(START_QUEUE_EXEC_LABEL);
             executeAllMenuItem.setEnabled(true);
+            isOnExecution = false;
         };
         new Thread(queueRunner).start();
     }//GEN-LAST:event_executeAllActionPerformed
@@ -857,6 +876,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
         removeTaskFromQueueMenuItem.setEnabled(false);
         final TaskQueueTableModel model = taskQueueTable.getModel();
         model.removeRow(selectedRowIdx);
+        if (model.getRowCount() <= 0) {
+            // task queue is now empty
+            disableTaskQueueOperations();
+        }
         commandScrollPane.setViewportView(null);
     }//GEN-LAST:event_removeTaskFromQueue
 
