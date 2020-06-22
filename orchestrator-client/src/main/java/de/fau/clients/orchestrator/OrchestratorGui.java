@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -46,6 +47,24 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private static final String STOP_QUEUE_EXEC_LABEL = "Stop Execute All";
     private static ServerManager serverManager;
     private static int taskRowId = 0;
+    private static String silaOrchestratorVersion;
+    private static String gitCommit;
+    private static String gitCommitTimestamp;
+    private static String gitRepositoryUrl;
+    private final String aboutInfo = "<html>"
+            + "<center>"
+            + "<h1>sila-orchestrator</h1>"
+            + "<p>Copyright © 2020 Florian Bauer</p>"
+            + "</center>"
+            + "<p></p>"
+            + "<p>Version: <b>" + silaOrchestratorVersion + "</b></p>"
+            + "<p></p>"
+            + "<p>Git Commit: " + gitCommit + "</p>"
+            + "<p>Timestamp: " + gitCommitTimestamp + "</p>"
+            + "<p>Repository: " + gitRepositoryUrl + "</p>"
+            + "<p>E-Mail: florian.bauer.dev@gmail.com</p>"
+            + "<p>License: Apache-2.0</p>"
+            + "</html>";
     private final TaskQueueTable taskQueueTable = new TaskQueueTable();
     private boolean isOnExecution = false;
     private boolean wasSaved = false;
@@ -281,8 +300,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         aboutDialog.setLocationRelativeTo(null);
 
         aboutLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        aboutLabel.setText("<html>\n<center>\n<h1>sila-orchestrator</h1>\n<p>Copyright © 2020 Florian Bauer</p>\n</center>\n<p></p>\n<p>E-Mail: florian.bauer.dev@gmail.com</p>\n<p>License: Apache-2.0</p>\n<html>");
-        aboutLabel.setName(""); // NOI18N
+        aboutLabel.setText(aboutInfo);
         aboutDialog.getContentPane().add(aboutLabel, java.awt.BorderLayout.CENTER);
 
         aboutDialog.getAccessibleContext().setAccessibleParent(this);
@@ -1020,6 +1038,40 @@ public class OrchestratorGui extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        final Properties properties = new Properties();
+        try {
+            // retrieve version info from the maven git plug-in
+            properties.load(OrchestratorGui.class.getClassLoader().getResourceAsStream("git.properties"));
+        } catch (IOException ex) {
+            log.error(ex.getMessage());
+            System.exit(1);
+        }
+
+        OrchestratorGui.silaOrchestratorVersion = properties.getProperty("git.build.version")
+                + "-" + properties.getProperty("git.commit.id.abbrev");
+        OrchestratorGui.gitCommit = properties.getProperty("git.commit.id");
+        OrchestratorGui.gitCommitTimestamp = properties.getProperty("git.commit.time");
+        OrchestratorGui.gitRepositoryUrl = properties.getProperty("git.remote.origin.url");
+
+        if (args.length > 0) {
+            // arguments were set, so we handel erverything in command line and ditch the GUI stuff
+            for (final String arg : args) {
+                if (arg.equalsIgnoreCase("-v") || arg.equalsIgnoreCase("--version")) {
+                    System.out.println(silaOrchestratorVersion);
+                } else if (arg.equalsIgnoreCase("--about") || arg.equalsIgnoreCase("--info")) {
+                    System.out.println("sila-orchestrator\n"
+                            + "Copyright © 2020 Florian Bauer\n"
+                            + "Version: " + silaOrchestratorVersion + "\n"
+                            + "Git Commit: " + gitCommit + "\n"
+                            + "Timestamp: " + gitCommitTimestamp + "\n"
+                            + "Git Repository: " + gitRepositoryUrl + "\n"
+                            + "E-Mail: florian.bauer.dev@gmail.com\n"
+                            + "License: Apache-2.0");
+                }
+            }
+            System.exit(0);
+        }
+
         String laf = "Nimbus";
         final String osName = System.getProperty("os.name");
         if (osName.startsWith("Windows")) {

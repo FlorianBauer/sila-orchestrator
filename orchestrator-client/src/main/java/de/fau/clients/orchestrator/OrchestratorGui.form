@@ -867,8 +867,9 @@
         <Component class="javax.swing.JLabel" name="aboutLabel">
           <Properties>
             <Property name="horizontalAlignment" type="int" value="0"/>
-            <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;&lt;center&gt;&#xa;&lt;h1&gt;sila-orchestrator&lt;/h1&gt;&#xa;&lt;p&gt;Copyright &#xa9; 2020 Florian Bauer&lt;/p&gt;&#xa;&lt;/center&gt;&#xa;&lt;p&gt;&lt;/p&gt;&#xa;&lt;p&gt;E-Mail: florian.bauer.dev@gmail.com&lt;/p&gt;&#xa;&lt;p&gt;License: Apache-2.0&lt;/p&gt;&#xa;&lt;html&gt;"/>
-            <Property name="name" type="java.lang.String" value="" noResource="true"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="aboutInfo" type="code"/>
+            </Property>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="18"/>
