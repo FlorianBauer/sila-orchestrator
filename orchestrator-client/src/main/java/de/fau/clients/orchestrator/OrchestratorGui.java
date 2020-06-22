@@ -1056,17 +1056,25 @@ public class OrchestratorGui extends javax.swing.JFrame {
         if (args.length > 0) {
             // arguments were set, so we handel erverything in command line and ditch the GUI stuff
             for (final String arg : args) {
-                if (arg.equalsIgnoreCase("-v") || arg.equalsIgnoreCase("--version")) {
+                if (arg.equalsIgnoreCase("-h") || arg.equalsIgnoreCase("--help")) {
+                    System.out.println("Usage: java -jar orchestrator-client-exec.jar [args]"
+                            + "\n -h, --help"
+                            + "\n\t Print this help message."
+                            + "\n -v, --version"
+                            + "\n\t Print the version number."
+                            + "\n --about, --info"
+                            + "\n\t Print some general information about this software.");
+                } else if (arg.equalsIgnoreCase("-v") || arg.equalsIgnoreCase("--version")) {
                     System.out.println(silaOrchestratorVersion);
                 } else if (arg.equalsIgnoreCase("--about") || arg.equalsIgnoreCase("--info")) {
-                    System.out.println("sila-orchestrator\n"
-                            + "Copyright © 2020 Florian Bauer\n"
-                            + "Version: " + silaOrchestratorVersion + "\n"
-                            + "Git Commit: " + gitCommit + "\n"
-                            + "Timestamp: " + gitCommitTimestamp + "\n"
-                            + "Git Repository: " + gitRepositoryUrl + "\n"
-                            + "E-Mail: florian.bauer.dev@gmail.com\n"
-                            + "License: Apache-2.0");
+                    System.out.println("sila-orchestrator"
+                            + "\n Copyright © 2020 Florian Bauer"
+                            + "\n Version: " + silaOrchestratorVersion
+                            + "\n Git Commit: " + gitCommit
+                            + "\n Timestamp: " + gitCommitTimestamp
+                            + "\n Git Repository: " + gitRepositoryUrl
+                            + "\n E-Mail: florian.bauer.dev@gmail.com"
+                            + "\n License: Apache-2.0");
                 }
             }
             System.exit(0);
