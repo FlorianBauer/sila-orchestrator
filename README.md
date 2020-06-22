@@ -16,8 +16,6 @@ After that, the resulting `*.jar`-file is located in the `orchestrator-client/ta
 ### Usage
 
 Run the SiLA 2 service: `java -jar orchestrator-client-exec.jar`.
-List the available network interfaces: `java -jar orchestrator-client-exec.jar -l yes`
-Enable network discovery (e.g. on localhost): `java -jar orchestrator-client-exec.jar -n lo`
 
 A SiLA 2 conform browser to inspect the available service(s) can be found here:
 https://gitlab.com/SiLA2/sila_base/-/wikis/SiLA-Browser-Quickstart#run-the-sila-2-browser
