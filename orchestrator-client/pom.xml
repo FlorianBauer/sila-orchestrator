@@ -72,7 +72,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>de.fau.clients.orchestrator.OrchTester</mainClass>
+                    <mainClass>de.fau.clients.orchestrator.OrchestratorGui</mainClass>
                 </configuration>
             </plugin>
             <plugin>
