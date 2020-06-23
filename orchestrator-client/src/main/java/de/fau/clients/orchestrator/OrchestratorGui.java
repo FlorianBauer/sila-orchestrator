@@ -52,19 +52,14 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private static String gitCommitTimestamp;
     private static String gitRepositoryUrl;
     private final String aboutInfo = "<html>"
-            + "<center>"
-            + "<h1>sila-orchestrator</h1>"
-            + "<p>Copyright © 2020 Florian Bauer</p>"
-            + "</center>"
-            + "<p></p>"
             + "<p>Version: <b>" + silaOrchestratorVersion + "</b></p>"
-            + "<p></p>"
-            + "<p>Git Commit: " + gitCommit + "</p>"
-            + "<p>Timestamp: " + gitCommitTimestamp + "</p>"
-            + "<p>Repository: " + gitRepositoryUrl + "</p>"
-            + "<p>E-Mail: florian.bauer.dev@gmail.com</p>"
-            + "<p>License: Apache-2.0</p>"
-            + "</html>";
+            + "<p>"
+            + "Git Commit: " + gitCommit + "<br>"
+            + "Timestamp: " + gitCommitTimestamp + "<br>"
+            + "Repository: " + gitRepositoryUrl + "<br>"
+            + "E-Mail: florian.bauer.dev@gmail.com<br>"
+            + "License: Apache-2.0<br>"
+            + "</p></html>";
     private final TaskQueueTable taskQueueTable = new TaskQueueTable();
     private boolean isOnExecution = false;
     private boolean wasSaved = false;
@@ -293,15 +288,55 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         aboutDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         aboutDialog.setTitle("About");
+        aboutDialog.setAlwaysOnTop(true);
         aboutDialog.setIconImage(ICON_IMG);
         aboutDialog.setMinimumSize(new java.awt.Dimension(300, 256));
         aboutDialog.setModal(true);
         aboutDialog.setName("aboutDialog"); // NOI18N
+        aboutDialog.setResizable(false);
         aboutDialog.setLocationRelativeTo(null);
+        java.awt.GridBagLayout aboutDialogLayout = new java.awt.GridBagLayout();
+        aboutDialogLayout.columnWidths = new int[] {1};
+        aboutDialogLayout.rowHeights = new int[] {3};
+        aboutDialog.getContentPane().setLayout(aboutDialogLayout);
 
         aboutLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        aboutLabel.setText(aboutInfo);
-        aboutDialog.getContentPane().add(aboutLabel, java.awt.BorderLayout.CENTER);
+        aboutLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/sila-orchestrator-128px.png"))); // NOI18N
+        aboutLabel.setText("<html><h1>sila-orchestrator</h1<p>Copyright © 2020 Florian Bauer</p></html>"); // NOI18N
+        aboutLabel.setAlignmentX(0.5F);
+        aboutLabel.setIconTextGap(32);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        aboutDialog.getContentPane().add(aboutLabel, gridBagConstraints);
+
+        aboutInfoTextPane.setEditable(false);
+        aboutInfoTextPane.setContentType("text/html"); // NOI18N
+        aboutInfoTextPane.setText(aboutInfo);
+        aboutInfoTextPane.setMargin(new java.awt.Insets(15, 15, 15, 15));
+        aboutInfoTextPane.putClientProperty(javax.swing.JTextPane.HONOR_DISPLAY_PROPERTIES, true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(15, 15, 15, 15);
+        aboutDialog.getContentPane().add(aboutInfoTextPane, gridBagConstraints);
+
+        aboutDialogCloseBtn.setText("Close");
+        aboutDialogCloseBtn.setMargin(new java.awt.Insets(5, 15, 5, 15));
+        aboutDialogCloseBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aboutDialogCloseBtnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 15, 5, 15);
+        aboutDialog.getContentPane().add(aboutDialogCloseBtn, gridBagConstraints);
 
         aboutDialog.getAccessibleContext().setAccessibleParent(this);
 
@@ -992,6 +1027,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
         taskQueueTable.getModel().removeAllRows();
     }//GEN-LAST:event_clearQueueActionPerformed
 
+    private void aboutDialogCloseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutDialogCloseBtnActionPerformed
+        aboutDialog.setVisible(false);
+        aboutDialog.dispose();
+    }//GEN-LAST:event_aboutDialogCloseBtnActionPerformed
+
     /**
      * Enables all the GUI controls which actions can be applied on entries in the task queue. This
      * function is to enable user interaction after the task queue was set to a valid state (e.g.
@@ -1110,6 +1150,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private final javax.swing.JDialog aboutDialog = new javax.swing.JDialog();
+    private final javax.swing.JButton aboutDialogCloseBtn = new javax.swing.JButton();
+    private final javax.swing.JTextPane aboutInfoTextPane = new javax.swing.JTextPane();
     private final javax.swing.JLabel aboutLabel = new javax.swing.JLabel();
     private final javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton addServerBtn = new javax.swing.JButton();
