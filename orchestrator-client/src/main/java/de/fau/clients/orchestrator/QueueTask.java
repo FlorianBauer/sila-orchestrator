@@ -5,10 +5,16 @@ import java.beans.PropertyChangeSupport;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 public abstract class QueueTask implements Runnable {
 
+    public static final ImageIcon EXECUTE_ICON = new ImageIcon("src/main/resources/icons/execute.png");
+    /**
+     * Identifier for signaling change events on the task state property.
+     */
+    public static final String TASK_STATE_PROPERTY = "taskState";
     /**
      * Use a "ISO 8601-ish" date-time representation.
      */
@@ -104,7 +110,7 @@ public abstract class QueueTask implements Runnable {
      * The implementing <code>run()</code> method should thereby set the state accordingly like e.g. <code>
      * TaskState oldState = state;
      * state = TaskState.RUNNING;
-     * stateChanges.firePropertyChange(TaskQueueTableModel.TASK_STATE_PROPERTY, oldState, state);
+     * stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
      * oldState = state;
      * </code>
      *
@@ -120,7 +126,7 @@ public abstract class QueueTask implements Runnable {
      * Adds a Listener which gets notified when the <code>TaskState</code> changes. Therefore the
      * signaled in the implementation of the <code>run()</code> method by firing the changed state
      * like e.g.<code>
-     * stateChanges.firePropertyChange(TaskQueueTableModel.TASK_STATE_PROPERTY, oldState, newState);
+     * stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, newState);
      * </code>
      *
      * @param listener The listener which gets notified when the TaskeState changes.

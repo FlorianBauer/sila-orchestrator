@@ -11,7 +11,6 @@ import java.util.UUID;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,6 @@ import sila_java.library.manager.models.SiLACall;
 @Slf4j
 public class CommandTask extends QueueTask {
 
-    private static final ImageIcon EXECUTE_ICON = new ImageIcon("src/main/resources/icons/execute.png");
     private JPanel panel = null;
     private JButton execBtn = null;
     private final UUID serverUuid;
@@ -169,7 +167,7 @@ public class CommandTask extends QueueTask {
         startTimeStamp = OffsetDateTime.now();
         TaskState oldState = state;
         state = TaskState.RUNNING;
-        stateChanges.firePropertyChange(TaskQueueTableModel.TASK_STATE_PROPERTY, oldState, state);
+        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
         oldState = state;
 
         SiLACall call = new SiLACall(serverUuid,
@@ -195,7 +193,7 @@ public class CommandTask extends QueueTask {
         if (isPanelBuilt) {
             execBtn.setEnabled(true);
         }
-        stateChanges.firePropertyChange(TaskQueueTableModel.TASK_STATE_PROPERTY, oldState, state);
+        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
     }
 
     /**

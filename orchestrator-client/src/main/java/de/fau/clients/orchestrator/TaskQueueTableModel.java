@@ -21,10 +21,6 @@ import sila_java.library.manager.models.Server;
 @SuppressWarnings("serial")
 public class TaskQueueTableModel extends DefaultTableModel {
 
-    /**
-     * Identifier for signaling change events on the task state property.
-     */
-    public static final String TASK_STATE_PROPERTY = "taskState";
     private static final ServerManager serverManager = ServerManager.getInstance();
 
     /**
@@ -123,7 +119,7 @@ public class TaskQueueTableModel extends DefaultTableModel {
 
     private void addStateListener(final QueueTask taskEntry) {
         taskEntry.addStatusChangeListener((PropertyChangeEvent pcEvt) -> {
-            if (pcEvt.getPropertyName().equals(TASK_STATE_PROPERTY)) {
+            if (pcEvt.getPropertyName().equals(QueueTask.TASK_STATE_PROPERTY)) {
                 final TaskState state = (TaskState) pcEvt.getNewValue();
                 // Find the row of the changed entry. This has to be done dynamically, since 
                 // the order of rows might change during runtime.
