@@ -30,8 +30,8 @@ public class CommandTreeNode extends DefaultMutableTreeNode {
      *
      * @return The command used for the task queue table.
      */
-    public CommandTableEntry createTableEntry() {
-        return new CommandTableEntry(this.serverId, this.featureId, this.typeDefs, this.command);
+    public CommandTask createTableEntry() {
+        return new CommandTask(this.serverId, this.featureId, this.typeDefs, this.command);
     }
 
     @Override

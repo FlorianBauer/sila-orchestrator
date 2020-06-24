@@ -99,7 +99,7 @@ public class TaskQueueTable extends JTable {
         return (TaskQueueTableModel) this.dataModel;
     }
 
-    public CommandTableEntry getFromRow(int rowIdx) {
-        return (CommandTableEntry) this.dataModel.getValueAt(rowIdx, COLUMN_COMMAND_IDX);
+    public CommandTask getFromRow(int rowIdx) {
+        return (CommandTask) this.dataModel.getValueAt(rowIdx, COLUMN_COMMAND_IDX);
     }
 }

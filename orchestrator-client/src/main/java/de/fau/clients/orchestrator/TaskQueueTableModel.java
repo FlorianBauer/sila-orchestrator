@@ -60,7 +60,7 @@ public class TaskQueueTableModel extends DefaultTableModel {
                 final List<Command> commandList = feat.getCommand();
                 for (final Command cmd : commandList) {
                     if (cmd.getIdentifier().equalsIgnoreCase(entry.getCommand().getCommandId())) {
-                        CommandTableEntry tableEntry = new CommandTableEntry(serverUuid,
+                        CommandTask tableEntry = new CommandTask(serverUuid,
                                 feat.getIdentifier(),
                                 new TypeDefLut(feat),
                                 cmd,
@@ -93,9 +93,9 @@ public class TaskQueueTableModel extends DefaultTableModel {
      * @param taskId The task ID to use for this entry.
      * @param cmdEntry The command entry to add.
      *
-     * See also {@link #importTaskEntry(de.fau.clients.orchestrator.file_loader.TaskEntry)}
+     * @see #importTaskEntry(de.fau.clients.orchestrator.file_loader.TaskEntry)}
      */
-    protected void addCommandTableEntry(int taskId, final CommandTableEntry cmdEntry) {
+    protected void addCommandTableEntry(int taskId, final CommandTask cmdEntry) {
         addRow(new Object[]{
             taskId,
             cmdEntry,
@@ -173,7 +173,7 @@ public class TaskQueueTableModel extends DefaultTableModel {
             case TaskQueueTable.COLUMN_TASK_ID_IDX:
                 return Integer.class;
             case TaskQueueTable.COLUMN_COMMAND_IDX:
-                return CommandTableEntry.class;
+                return CommandTask.class;
             default:
                 return String.class;
         }

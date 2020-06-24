@@ -28,7 +28,7 @@ import sila_java.library.manager.models.SiLACall;
  * thread-safety for parallel usage is not given.
  */
 @Slf4j
-public class CommandTableEntry extends QueueTask {
+public class CommandTask extends QueueTask {
 
     private static final ImageIcon EXECUTE_ICON = new ImageIcon("src/main/resources/icons/execute.png");
     private JPanel panel = null;
@@ -41,7 +41,7 @@ public class CommandTableEntry extends QueueTask {
     private SilaNode cmdNode = null;
     private JsonNode cmdParams = null;
 
-    public CommandTableEntry(
+    public CommandTask(
             final UUID serverUuid,
             final String featureId,
             final TypeDefLut typeDefs,
@@ -52,7 +52,7 @@ public class CommandTableEntry extends QueueTask {
         this.command = command;
     }
 
-    public CommandTableEntry(
+    public CommandTask(
             final UUID serverId,
             final String featureId,
             final TypeDefLut typeDefs,

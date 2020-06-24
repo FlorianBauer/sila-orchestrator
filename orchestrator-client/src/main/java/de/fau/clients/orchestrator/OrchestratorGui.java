@@ -837,7 +837,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             if (node instanceof CommandTreeNode) {
                 final CommandTreeNode cmdNode = (CommandTreeNode) node;
                 // use the selected node to create a new table entry.
-                final CommandTableEntry cmdEntry = cmdNode.createTableEntry();
+                final CommandTask cmdEntry = cmdNode.createTableEntry();
                 final TaskQueueTableModel model = taskQueueTable.getModel();
                 model.addCommandTableEntry(++taskRowId, cmdEntry);
                 enableTaskQueueOperations();
