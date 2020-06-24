@@ -42,7 +42,7 @@ public class TaskQueueData {
                     tableEntry.getServerUuid(),
                     tableEntry.getFeatureId(),
                     tableEntry.getCommandId(),
-                    tableEntry.getCommandParams());
+                    tableEntry.getTaskParamsAsJson());
             data.tasks.add(new TaskEntry(taskId, cmdEntry));
         }
         return data;

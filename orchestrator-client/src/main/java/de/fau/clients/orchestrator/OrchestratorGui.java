@@ -726,7 +726,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
 
         final TaskQueueTableModel model = taskQueueTable.getModel();
-        CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_COMMAND_IDX);
+        QueueTask entry = (QueueTask) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_COMMAND_IDX);
         if (entry == null) {
             return;
         }
@@ -835,9 +835,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         if (node.isLeaf()) {
             if (node instanceof CommandTreeNode) {
-                CommandTreeNode cmdNode = (CommandTreeNode) node;
+                final CommandTreeNode cmdNode = (CommandTreeNode) node;
                 // use the selected node to create a new table entry.
-                CommandTableEntry cmdEntry = cmdNode.createTableEntry();
+                final CommandTableEntry cmdEntry = cmdNode.createTableEntry();
                 final TaskQueueTableModel model = taskQueueTable.getModel();
                 model.addCommandTableEntry(++taskRowId, cmdEntry);
                 enableTaskQueueOperations();
@@ -865,7 +865,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     break;
                 }
 
-                entryThread = new Thread((CommandTableEntry) model.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX));
+                entryThread = new Thread((QueueTask) model.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX));
                 entryThread.start();
                 try {
                     entryThread.join();
@@ -887,7 +887,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             return;
         }
         final TaskQueueTableModel model = taskQueueTable.getModel();
-        CommandTableEntry entry = (CommandTableEntry) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_COMMAND_IDX);
+        QueueTask entry = (QueueTask) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_COMMAND_IDX);
         new Thread(entry).start();
     }//GEN-LAST:event_execRowEntryMenuItemActionPerformed
 

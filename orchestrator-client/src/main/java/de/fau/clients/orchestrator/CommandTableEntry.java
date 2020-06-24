@@ -5,11 +5,7 @@ import de.fau.clients.orchestrator.feature_explorer.NodeFactory;
 import de.fau.clients.orchestrator.feature_explorer.SilaNode;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import javax.swing.BorderFactory;
@@ -32,10 +28,8 @@ import sila_java.library.manager.models.SiLACall;
  * thread-safety for parallel usage is not given.
  */
 @Slf4j
-public class CommandTableEntry implements Runnable {
+public class CommandTableEntry extends QueueTask {
 
-    /// Use a "ISO 8601-ish" date-time representation.
-    private static final DateTimeFormatter TIME_STAMP_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss.SSS");
     private static final ImageIcon EXECUTE_ICON = new ImageIcon("src/main/resources/icons/execute.png");
     private JPanel panel = null;
     private JButton execBtn = null;
@@ -43,14 +37,9 @@ public class CommandTableEntry implements Runnable {
     private final String featureId;
     private final TypeDefLut typeDefs;
     private final Feature.Command command;
-    private final PropertyChangeSupport stateChanges = new PropertyChangeSupport(this);
     private boolean isPanelBuilt = false;
     private SilaNode cmdNode = null;
     private JsonNode cmdParams = null;
-    private OffsetDateTime startTimeStamp = null;
-    private OffsetDateTime endTimeStamp = null;
-    private String lastExecResult = "";
-    private TaskState state = TaskState.NEUTRAL;
 
     public CommandTableEntry(
             final UUID serverUuid,
@@ -69,10 +58,7 @@ public class CommandTableEntry implements Runnable {
             final TypeDefLut typeDefs,
             final Feature.Command command,
             final JsonNode cmdParams) {
-        this.serverUuid = serverId;
-        this.featureId = featureId;
-        this.typeDefs = typeDefs;
-        this.command = command;
+        this(serverId, featureId, typeDefs, command);
         this.cmdParams = cmdParams;
     }
 
@@ -141,62 +127,12 @@ public class CommandTableEntry implements Runnable {
         return command.getIdentifier();
     }
 
-    public String getCommandParams() {
+    @Override
+    public String getTaskParamsAsJson() {
         if (cmdNode == null) {
             buildNode();
         }
         return cmdNode.toJsonString();
-    }
-
-    public String getStartTimeStamp() {
-        if (startTimeStamp != null) {
-            return startTimeStamp.format(TIME_STAMP_FORMAT);
-        }
-        return "-";
-    }
-
-    public String getEndTimeStamp() {
-        if (endTimeStamp != null) {
-            return endTimeStamp.format(TIME_STAMP_FORMAT);
-        }
-        return "-";
-    }
-
-    public String getDuration() {
-        if (startTimeStamp != null && endTimeStamp != null) {
-            final Duration dur = Duration.between(
-                    startTimeStamp.toLocalDateTime(),
-                    endTimeStamp.toLocalDateTime());
-
-            return String.format("%d:%02d:%02d.%03d",
-                    dur.toHoursPart(),
-                    dur.toMinutesPart(),
-                    dur.toSecondsPart(),
-                    dur.toMillisPart());
-        }
-        return "-";
-    }
-
-    /**
-     * Gets the result of the last execution. The result-value gets overwritten on each execution.
-     *
-     * @return The last result as String or empty string on if no result was available.
-     */
-    public String getLastExecResult() {
-        return lastExecResult;
-    }
-
-    public TaskState getState() {
-        return state;
-    }
-
-    /**
-     * Adds a Listener which gets notified when the TaskState changes.
-     *
-     * @param listener The listener which gets notified when the TaskeState changes.
-     */
-    public void addStatusChangeListener(PropertyChangeListener listener) {
-        stateChanges.addPropertyChangeListener(listener);
     }
 
     /**
@@ -231,9 +167,10 @@ public class CommandTableEntry implements Runnable {
         log.info("Command parameters as JSON: " + jsonParams);
 
         startTimeStamp = OffsetDateTime.now();
-        final TaskState tmpState = state;
+        TaskState oldState = state;
         state = TaskState.RUNNING;
-        stateChanges.firePropertyChange(TaskQueueTableModel.TASK_STATE_PROPERTY, tmpState, state);
+        stateChanges.firePropertyChange(TaskQueueTableModel.TASK_STATE_PROPERTY, oldState, state);
+        oldState = state;
 
         SiLACall call = new SiLACall(serverUuid,
                 featureId,
@@ -242,7 +179,6 @@ public class CommandTableEntry implements Runnable {
                 jsonParams
         );
 
-        final TaskState oldState = state;
         try {
             lastExecResult = ServerManager.getInstance().newCallExecutor(call).execute();
             state = TaskState.FINISHED_SUCCESS;

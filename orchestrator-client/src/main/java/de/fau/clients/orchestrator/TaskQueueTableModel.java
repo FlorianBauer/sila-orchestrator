@@ -96,7 +96,7 @@ public class TaskQueueTableModel extends DefaultTableModel {
      * See also {@link #importTaskEntry(de.fau.clients.orchestrator.file_loader.TaskEntry)}
      */
     protected void addCommandTableEntry(int taskId, final CommandTableEntry cmdEntry) {
-        this.addRow(new Object[]{
+        addRow(new Object[]{
             taskId,
             cmdEntry,
             cmdEntry.getState(),
@@ -108,15 +108,28 @@ public class TaskQueueTableModel extends DefaultTableModel {
         addStateListener(cmdEntry);
     }
 
-    private void addStateListener(final CommandTableEntry cmdEntry) {
-        cmdEntry.addStatusChangeListener((PropertyChangeEvent pcEvt) -> {
+    protected void addTaskEntry(int taskId, final QueueTask taskEntry) {
+        addRow(new Object[]{
+            taskId,
+            taskEntry,
+            taskEntry.getState(),
+            taskEntry.getStartTimeStamp(),
+            taskEntry.getEndTimeStamp(),
+            taskEntry.getDuration(),
+            taskEntry.getLastExecResult(),
+            ""});
+        addStateListener(taskEntry);
+    }
+
+    private void addStateListener(final QueueTask taskEntry) {
+        taskEntry.addStatusChangeListener((PropertyChangeEvent pcEvt) -> {
             if (pcEvt.getPropertyName().equals(TASK_STATE_PROPERTY)) {
                 final TaskState state = (TaskState) pcEvt.getNewValue();
                 // Find the row of the changed entry. This has to be done dynamically, since 
                 // the order of rows might change during runtime.
                 int rowIdx = -1;
                 for (int i = 0; i < getRowCount(); i++) {
-                    if (getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX).equals(cmdEntry)) {
+                    if (getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX).equals(taskEntry)) {
                         rowIdx = i;
                         break;
                     }
@@ -129,13 +142,13 @@ public class TaskQueueTableModel extends DefaultTableModel {
                 setValueAt(state, rowIdx, TaskQueueTable.COLUMN_STATE_IDX);
                 switch (state) {
                     case RUNNING:
-                        setValueAt(cmdEntry.getStartTimeStamp(), rowIdx, TaskQueueTable.COLUMN_START_TIME_IDX);
+                        setValueAt(taskEntry.getStartTimeStamp(), rowIdx, TaskQueueTable.COLUMN_START_TIME_IDX);
                         break;
                     case FINISHED_SUCCESS:
                     case FINISHED_ERROR:
-                        setValueAt(cmdEntry.getLastExecResult(), rowIdx, TaskQueueTable.COLUMN_RESULT_IDX);
-                        setValueAt(cmdEntry.getEndTimeStamp(), rowIdx, TaskQueueTable.COLUMN_END_TIME_IDX);
-                        setValueAt(cmdEntry.getDuration(), rowIdx, TaskQueueTable.COLUMN_DURATION_IDX);
+                        setValueAt(taskEntry.getLastExecResult(), rowIdx, TaskQueueTable.COLUMN_RESULT_IDX);
+                        setValueAt(taskEntry.getEndTimeStamp(), rowIdx, TaskQueueTable.COLUMN_END_TIME_IDX);
+                        setValueAt(taskEntry.getDuration(), rowIdx, TaskQueueTable.COLUMN_DURATION_IDX);
                         break;
                     default:
                         log.warn("Unhandled state change");
