@@ -75,6 +75,7 @@ public class CommandTask extends QueueTask {
      *
      * @return A populated JPanel.
      */
+    @Override
     public JPanel getPanel() {
         if (!isPanelBuilt) {
             if (cmdNode == null) {
@@ -111,6 +112,16 @@ public class CommandTask extends QueueTask {
         } else {
             cmdNode = NodeFactory.createFromElementsWithJson(typeDefs, params, cmdParams);
         }
+    }
+
+    /**
+     * Action which gets performed when the "Execute"-Button in the command-panel gets triggered.
+     * The actual executed routine is located in the overwritten <code>run()</code> method and is
+     * executed in a dedicated thread.
+     */
+    private void executeCommandBtnActionPerformed() {
+        // instead of `this.run()`, start in new thread to avoid blocking the GUI
+        new Thread(this).start();
     }
 
     public UUID getServerUuid() {
@@ -194,15 +205,5 @@ public class CommandTask extends QueueTask {
             execBtn.setEnabled(true);
         }
         stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
-    }
-
-    /**
-     * Action which gets performed when the "Execute"-Button in the command-panel gets triggered.
-     * The actual executed routine is located in the overwritten `run()`-method and is executed in a
-     * dedicated thread.
-     */
-    public void executeCommandBtnActionPerformed() {
-        // instead of `this.run()`, start in new thread to avoid blocking the GUI
-        new Thread(this).start();
     }
 }
