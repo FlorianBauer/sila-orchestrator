@@ -46,10 +46,10 @@ public class BasicNodeTest {
         assertEquals("{\"value\":\"\"}", actual);
         actual = BasicNode.create(BasicType.TIME).toJsonString();
         // e.g. {"value":"20:15:00.000Z"}
-        assertTrue(actual.matches("\\{\"value\":\"\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\"\\}"), actual);
+        assertTrue(actual.matches("\\{\"value\":\"\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z\"\\}"), actual);
         actual = BasicNode.create(BasicType.TIMESTAMP).toJsonString();
         // e.g. {"value":"2020-06-04T20:15:00.000Z"}
-        assertTrue(actual.matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\"\\}"), actual);
+        assertTrue(actual.matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z\"\\}"), actual);
     }
 
     @Test

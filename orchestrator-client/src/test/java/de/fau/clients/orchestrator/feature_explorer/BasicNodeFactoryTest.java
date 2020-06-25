@@ -225,14 +225,14 @@ public class BasicNodeFactoryTest {
         assertEquals(BasicType.TIME, actual.getType());
         assertEquals(JTextField.class, actual.getComponent().getClass());
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
-        assertTrue(actual.getValue().matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"), actual.getValue());
-        assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\"\\}"), actual.toJsonString());
+        assertTrue(actual.getValue().matches("\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z"), actual.getValue());
+        assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z\"\\}"), actual.toJsonString());
         isEditable = true;
         actual = BasicNodeFactory.createTimeTypeFromJson(jsonNode, isEditable);
         assertEquals(BasicType.TIME, actual.getType());
         assertEquals(JSpinner.class, actual.getComponent().getClass());
-        assertTrue(actual.getValue().matches("\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"), actual.getValue());
-        assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\"\\}"), actual.toJsonString());
+        assertTrue(actual.getValue().matches("\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z"), actual.getValue());
+        assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z\"\\}"), actual.toJsonString());
 
         String expValue = "20:15:10.123Z";
         String expJsonStr = "{\"value\":\"" + expValue + "\"}";
@@ -260,14 +260,14 @@ public class BasicNodeFactoryTest {
         assertEquals(BasicType.TIMESTAMP, actual.getType());
         assertEquals(JTextField.class, actual.getComponent().getClass());
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
-        assertTrue(actual.getValue().matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"), actual.getValue());
-        assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\"\\}"), actual.toJsonString());
+        assertTrue(actual.getValue().matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z"), actual.getValue());
+        assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z\"\\}"), actual.toJsonString());
         isEditable = true;
         actual = BasicNodeFactory.createTimestampTypeFromJson(jsonNode, isEditable);
         assertEquals(BasicType.TIMESTAMP, actual.getType());
         assertEquals(JSpinner.class, actual.getComponent().getClass());
-        assertTrue(actual.getValue().matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"), actual.getValue());
-        assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\"\\}"), actual.toJsonString());
+        assertTrue(actual.getValue().matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z"), actual.getValue());
+        assertTrue(actual.toJsonString().matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z\"\\}"), actual.toJsonString());
 
         String expValue = "2020-06-29T20:15:10.123Z";
         String expJsonStr = "{\"value\":\"" + expValue + "\"}";
