@@ -1,7 +1,8 @@
 package de.fau.clients.orchestrator.file_loader;
 
+import de.fau.clients.orchestrator.tasks.CommandTaskModel;
 import com.fasterxml.jackson.annotation.*;
-import de.fau.clients.orchestrator.CommandTask;
+import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.TaskQueueTable;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
@@ -34,11 +35,11 @@ public class TaskQueueData {
         data.tasks = new ArrayList<>(rows);
         int taskId;
         CommandTask tableEntry;
-        CommandEntry cmdEntry;
+        CommandTaskModel cmdEntry;
         for (int i = 0; i < rows; i++) {
             taskId = (int) model.getValueAt(i, TaskQueueTable.COLUMN_TASK_ID_IDX);
             tableEntry = (CommandTask) model.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX);
-            cmdEntry = new CommandEntry(
+            cmdEntry = new CommandTaskModel(
                     tableEntry.getServerUuid(),
                     tableEntry.getFeatureId(),
                     tableEntry.getCommandId(),

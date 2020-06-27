@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator;
+package de.fau.clients.orchestrator.tasks;
 
 public enum TaskState {
     NEUTRAL,

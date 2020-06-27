@@ -3,6 +3,7 @@ package de.fau.clients.orchestrator.file_loader;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import de.fau.clients.orchestrator.tasks.CommandTaskModel;
 
 /**
  *
@@ -11,13 +12,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class TaskEntry {
 
     private final int taskId;
-    private final CommandEntry command;
+    private final CommandTaskModel command;
 
     @JsonCreator
     public TaskEntry(
             @JsonProperty("taskId") int taskId,
-            @JsonProperty("command") CommandEntry command) {
-
+            @JsonProperty("command") CommandTaskModel command) {
         this.taskId = taskId;
         this.command = command;
     }
@@ -26,7 +26,7 @@ public class TaskEntry {
         return taskId;
     }
 
-    public CommandEntry getCommand() {
+    public CommandTaskModel getCommand() {
         return command;
     }
 

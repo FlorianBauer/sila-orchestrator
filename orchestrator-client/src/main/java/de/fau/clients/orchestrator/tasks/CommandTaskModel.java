@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator.file_loader;
+package de.fau.clients.orchestrator.tasks;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -16,7 +16,7 @@ import java.util.UUID;
  *
  */
 @JsonPropertyOrder({"serverUuid", "featureId", "commandId", "commandParams"})
-public class CommandEntry {
+public class CommandTaskModel {
 
     static private final ObjectMapper mapper = new ObjectMapper();
     private final UUID serverUuid;
@@ -27,7 +27,7 @@ public class CommandEntry {
     private JsonNode commandNode;
 
     @JsonCreator
-    public CommandEntry(
+    public CommandTaskModel(
             @JsonProperty("serverUuid") UUID serverUuid,
             @JsonProperty("featureId") String featureId,
             @JsonProperty("commandId") String commandId) {
@@ -36,7 +36,7 @@ public class CommandEntry {
         this.commandId = commandId;
     }
 
-    public CommandEntry(
+    public CommandTaskModel(
             UUID serverUuid,
             String featureId,
             String commandId,

@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator;
 
+import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import java.util.UUID;
 import javax.swing.tree.DefaultMutableTreeNode;

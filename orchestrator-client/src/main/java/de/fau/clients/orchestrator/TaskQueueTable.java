@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator;
 
+import de.fau.clients.orchestrator.tasks.CommandTask;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JCheckBoxMenuItem;

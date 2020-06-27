@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator;
+package de.fau.clients.orchestrator.tasks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import de.fau.clients.orchestrator.feature_explorer.NodeFactory;

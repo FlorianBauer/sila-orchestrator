@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import de.fau.clients.orchestrator.file_loader.TaskEntry;
 import de.fau.clients.orchestrator.file_loader.TaskQueueData;
+import de.fau.clients.orchestrator.tasks.CommandTask;
+import de.fau.clients.orchestrator.tasks.QueueTask;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
