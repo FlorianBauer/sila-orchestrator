@@ -20,13 +20,13 @@ import sila_java.library.core.models.BasicType;
 /**
  * A Factory for <code>BasicNode</code>-Objects. See also {@link BasicNode}.
  */
-final class BasicNodeFactory {
+public final class BasicNodeFactory {
 
-    private static final int MAX_HEIGHT = 42;
-    protected static final Dimension MAX_SIZE_TEXT_FIELD = new Dimension(4096, MAX_HEIGHT);
-    protected static final Dimension MAX_SIZE_NUMERIC_SPINNER = new Dimension(160, MAX_HEIGHT);
-    protected static final Dimension MAX_SIZE_DATE_TIME_SPINNER = new Dimension(160, MAX_HEIGHT);
-    protected static final Dimension MAX_SIZE_TIMESTAMP_SPINNER = new Dimension(220, MAX_HEIGHT);
+    public static final int MAX_HEIGHT = 42;
+    public static final Dimension MAX_SIZE_TEXT_FIELD = new Dimension(4096, MAX_HEIGHT);
+    public static final Dimension MAX_SIZE_NUMERIC_SPINNER = new Dimension(160, MAX_HEIGHT);
+    public static final Dimension MAX_SIZE_DATE_TIME_SPINNER = new Dimension(160, MAX_HEIGHT);
+    public static final Dimension MAX_SIZE_TIMESTAMP_SPINNER = new Dimension(220, MAX_HEIGHT);
     /**
      * The precision of the offset-limit of an exclusive float range (e.g. the exclusive upper-limit
      * of the value <code>1.0</code> could be <code>0.9</code>, <code>0.99</code>,
