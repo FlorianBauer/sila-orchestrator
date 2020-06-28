@@ -34,28 +34,22 @@ public class CommandTask extends QueueTask {
     private JPanel panel = null;
     private JButton execBtn = null;
     private SilaNode cmdNode = null;
-    private JsonNode cmdParams = null;
 
     public CommandTask(
             final UUID serverUuid,
-            final String featureId,
             final TypeDefLut typeDefs,
             final Feature.Command command) {
         commandModel = new CommandTaskModel(serverUuid, typeDefs, command);
+        if (!commandModel.isValid()) {
+            state = TaskState.OFFLINE;
+        }
     }
 
     public CommandTask(final CommandTaskModel commandModel) {
         this.commandModel = commandModel;
-    }
-
-    public CommandTask(
-            final UUID serverId,
-            final String featureId,
-            final TypeDefLut typeDefs,
-            final Feature.Command command,
-            final JsonNode cmdParams) {
-        this(serverId, featureId, typeDefs, command);
-        this.cmdParams = cmdParams;
+        if (!this.commandModel.isValid()) {
+            state = TaskState.OFFLINE;
+        }
     }
 
     /**
@@ -67,18 +61,22 @@ public class CommandTask extends QueueTask {
      * @see CommandTaskModel
      */
     public CommandTaskModel getCurrentComandTaskModel() {
-        commandModel.setCommandParamsFromString(cmdNode.toJsonString());
-        return commandModel;
+        if (commandModel.isValid() && cmdNode != null) {
+            commandModel.setCommandParamsFromString(cmdNode.toJsonString());
+            return commandModel;
+        }
+        return null;
     }
 
     /**
-     * Overwritten `toString()` function to use the SiLA display name to label this component.
+     * Overwritten <code>toString()</code> function to use the SiLA identifier to label this
+     * component.
      *
      * @return The SiLA display name
      */
     @Override
     public String toString() {
-        return commandModel.getCommand().getDisplayName();
+        return commandModel.getCommandId();
     }
 
     /**
@@ -90,8 +88,12 @@ public class CommandTask extends QueueTask {
     public JPanel getPanel() {
         if (!isPanelBuilt) {
             if (cmdNode == null) {
-                buildNode();
+                boolean wasSuccessful = buildNode();
+                if (!wasSuccessful) {
+                    return null;
+                }
             }
+
             panel = new JPanel();
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
             panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -111,19 +113,23 @@ public class CommandTask extends QueueTask {
      * Builds up the <code>SilaNode</code>. This method shall only be called once an must be used
      * before proceeding any actions with the internal <code>cmdNode</code>.
      */
-    private void buildNode() {
-        final List<SiLAElement> params = commandModel.getCommand().getParameter();
-        if (params.isEmpty()) {
-            log.warn("Parameter list for command is empty.");
-            return;
-        }
+    private boolean buildNode() {
+        if (commandModel.isValid()) {
+            final List<SiLAElement> params = commandModel.getCommand().getParameter();
+            if (params.isEmpty()) {
+                log.warn("Parameter list for command is empty.");
+                return false;
+            }
 
-        if (cmdParams == null) {
-            cmdNode = NodeFactory.createFromElements(commandModel.getTypeDefs(), params);
-        } else {
-            cmdNode = NodeFactory.createFromElementsWithJson(commandModel.getTypeDefs(), params, cmdParams);
+            JsonNode cmdParams = commandModel.getCommandParamsAsJsonNode();
+            if (cmdParams == null) {
+                cmdNode = NodeFactory.createFromElements(commandModel.getTypeDefs(), params);
+            } else {
+                cmdNode = NodeFactory.createFromElementsWithJson(commandModel.getTypeDefs(), params, cmdParams);
+            }
+            return true;
         }
-
+        return false;
     }
 
     /**
@@ -151,9 +157,12 @@ public class CommandTask extends QueueTask {
     @Override
     public String getTaskParamsAsJson() {
         if (cmdNode == null) {
-            buildNode();
+            boolean wasSuccessful = buildNode();
+            if (wasSuccessful) {
+                return cmdNode.toJsonString();
+            }
         }
-        return cmdNode.toJsonString();
+        return "";
     }
 
     /**
@@ -167,6 +176,20 @@ public class CommandTask extends QueueTask {
      */
     @Override
     public void run() {
+        if (!commandModel.isValid()) {
+            TaskState oldState = state;
+            state = TaskState.OFFLINE;
+            stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
+            return;
+        }
+
+        if (cmdNode == null) {
+            boolean wasSuccessful = buildNode();
+            if (!wasSuccessful) {
+                return;
+            }
+        }
+
         if (isPanelBuilt) {
             execBtn.setEnabled(false);
         }
@@ -174,9 +197,6 @@ public class CommandTask extends QueueTask {
                 ? SiLACall.Type.OBSERVABLE_COMMAND
                 : SiLACall.Type.UNOBSERVABLE_COMMAND;
 
-        if (cmdNode == null) {
-            buildNode();
-        }
         final String jsonParams = cmdNode.toJsonString();
         if (jsonParams.isEmpty()) {
             log.warn("jsonMsg is empty. Execution was skipped.");

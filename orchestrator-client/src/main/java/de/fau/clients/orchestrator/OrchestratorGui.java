@@ -3,7 +3,6 @@ package de.fau.clients.orchestrator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
-import de.fau.clients.orchestrator.file_loader.TaskEntry;
 import de.fau.clients.orchestrator.file_loader.TaskQueueData;
 import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
@@ -1010,11 +1009,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 clearQueueActionPerformed(evt);
                 log.info("Silo-file version: " + tqd.getSiloFileVersion());
                 final TaskQueueTableModel model = taskQueueTable.getModel();
-                for (TaskEntry entry : tqd.getTasks()) {
-                    log.info("Import task: " + entry);
-                    model.importTaskEntry(entry);
-                }
-                // FIXME: only enable the GUI controlls when the task import was successfull.
+                tqd.importFromFile(model, serverManager.getServers());
                 enableTaskQueueOperations();
             }
         } else {
@@ -1066,7 +1061,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private String getSaveData() {
         String outData = "";
         ObjectMapper mapper = new ObjectMapper();
-        TaskQueueData tqd = TaskQueueData.createFromTaskQueue(taskQueueTable);
+        TaskQueueData tqd = TaskQueueData.createFromTaskQueue(taskQueueTable.getModel());
         try {
             outData = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tqd);
         } catch (JsonProcessingException ex) {

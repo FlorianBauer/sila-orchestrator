@@ -1,21 +1,12 @@
 package de.fau.clients.orchestrator;
 
 import static de.fau.clients.orchestrator.TaskQueueTable.*;
-import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
-import de.fau.clients.orchestrator.file_loader.TaskEntry;
 import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
 import java.beans.PropertyChangeEvent;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import javax.swing.table.DefaultTableModel;
 import lombok.extern.slf4j.Slf4j;
-import sila_java.library.core.models.Feature;
-import sila_java.library.core.models.Feature.Command;
-import sila_java.library.manager.ServerManager;
-import sila_java.library.manager.models.Server;
 
 /**
  * This class represents the underlying data-model of the <code>TaskQueueTable</code> in the GUI.
@@ -23,8 +14,6 @@ import sila_java.library.manager.models.Server;
 @Slf4j
 @SuppressWarnings("serial")
 public class TaskQueueTableModel extends DefaultTableModel {
-
-    private static final ServerManager serverManager = ServerManager.getInstance();
 
     /**
      * Clears the entire table. The table is empty after this operation.
@@ -36,65 +25,13 @@ public class TaskQueueTableModel extends DefaultTableModel {
     }
 
     /**
-     * Imports a given task entry into the table. The corresponding server has to be available to
-     * successfully load the task.
-     *
-     * @param entry The task entry to import.
-     * @return true if import was successful, otherwise false.
-     */
-    public boolean importTaskEntry(final TaskEntry entry) {
-        final UUID serverUuid = entry.getCommand().getServerUuid();
-        final Map<UUID, Server> serverMap = serverManager.getServers();
-        if (serverMap.isEmpty()) {
-            log.warn("No server available.");
-            return false;
-        } else if (!serverMap.containsKey(serverUuid)) {
-            log.warn("Server with UUID " + serverUuid.toString() + " not found.");
-            return false;
-        }
-
-        final List<Feature> featureList = serverMap.get(serverUuid).getFeatures();
-        for (final Feature feat : featureList) {
-            if (feat.getIdentifier().equalsIgnoreCase(entry.getCommand().getFeatureId())) {
-                final List<Command> commandList = feat.getCommand();
-                for (final Command cmd : commandList) {
-                    if (cmd.getIdentifier().equalsIgnoreCase(entry.getCommand().getCommandId())) {
-                        CommandTask tableEntry = new CommandTask(serverUuid,
-                                feat.getIdentifier(),
-                                new TypeDefLut(feat),
-                                cmd,
-                                entry.getCommand().getCommandParamsAsJsonNode());
-
-                        this.addRow(new Object[]{
-                            entry.getTaskId(),
-                            tableEntry,
-                            tableEntry.getState(),
-                            tableEntry.getStartTimeStamp(),
-                            tableEntry.getEndTimeStamp(),
-                            tableEntry.getDuration(),
-                            tableEntry.getLastExecResult(),
-                            tableEntry.getServerUuid()});
-                        addStateListener(tableEntry);
-                        return true;
-                    }
-                }
-            }
-        }
-        log.warn("Feature not found on server.");
-        return false;
-    }
-
-    /**
      * Adds the given command entry to the table and registers a change listener on the state
-     * property. To import task entries from outside sources, use
-     * {@link #importTaskEntry(de.fau.clients.orchestrator.file_loader.TaskEntry)}.
+     * property.
      *
      * @param taskId The task ID to use for this entry.
      * @param cmdEntry The command entry to add.
-     *
-     * @see #importTaskEntry(de.fau.clients.orchestrator.file_loader.TaskEntry)}
      */
-    protected void addCommandTableEntry(int taskId, final CommandTask cmdEntry) {
+    public void addCommandTableEntry(int taskId, final CommandTask cmdEntry) {
         addRow(new Object[]{
             taskId,
             cmdEntry,
@@ -148,6 +85,9 @@ public class TaskQueueTableModel extends DefaultTableModel {
                         setValueAt(taskEntry.getLastExecResult(), rowIdx, TaskQueueTable.COLUMN_RESULT_IDX);
                         setValueAt(taskEntry.getEndTimeStamp(), rowIdx, TaskQueueTable.COLUMN_END_TIME_IDX);
                         setValueAt(taskEntry.getDuration(), rowIdx, TaskQueueTable.COLUMN_DURATION_IDX);
+                        break;
+                    case SKIPPED:
+                    case OFFLINE:
                         break;
                     default:
                         log.warn("Unhandled state change");

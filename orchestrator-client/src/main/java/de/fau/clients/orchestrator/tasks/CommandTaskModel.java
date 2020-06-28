@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Feature;
-import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 
 /**
@@ -26,11 +25,14 @@ import sila_java.library.manager.models.Server;
 public class CommandTaskModel {
 
     static private final ObjectMapper mapper = new ObjectMapper();
+    private boolean isValid = false;
     private UUID serverUuid;
-    private TypeDefLut typeDefs;
-    private Feature.Command command;
+    private final String featureId;
+    private TypeDefLut typeDefs = null;
+    private final String commandId;
+    private Feature.Command command = null;
     private String cmdParamsAsString = "";
-    private JsonNode cmdParamsAsJsonNode;
+    private JsonNode cmdParamsAsJsonNode = null;
 
     public CommandTaskModel(
             final UUID serverUuid,
@@ -39,6 +41,9 @@ public class CommandTaskModel {
         this.serverUuid = serverUuid;
         this.typeDefs = typeDefs;
         this.command = command;
+        this.featureId = this.typeDefs.getFeatureId();
+        this.commandId = this.command.getIdentifier();
+        this.isValid = true;
     }
 
     public CommandTaskModel(
@@ -52,18 +57,25 @@ public class CommandTaskModel {
     }
 
     @JsonCreator
-    public static CommandTaskModel importFromIdentifiers(
+    public CommandTaskModel(
             @JsonProperty("serverUuid") final UUID serverUuid,
             @JsonProperty("featureId") final String featureId,
             @JsonProperty("commandId") final String commandId) {
+        this.serverUuid = serverUuid;
+        this.featureId = featureId;
+        this.commandId = commandId;
+        this.isValid = false;
+    }
 
-        final Map<UUID, Server> serverMap = ServerManager.getInstance().getServers();
+    public boolean importFromIdentifiers(final Map<UUID, Server> serverMap) {
         if (serverMap.isEmpty()) {
             log.warn("No server available.");
-            return null;
+            this.isValid = false;
+            return false;
         } else if (!serverMap.containsKey(serverUuid)) {
             log.warn("Server with UUID " + serverUuid.toString() + " not found.");
-            return null;
+            this.isValid = false;
+            return false;
         }
 
         final List<Feature> featureList = serverMap.get(serverUuid).getFeatures();
@@ -72,13 +84,22 @@ public class CommandTaskModel {
                 final List<Feature.Command> commandList = feat.getCommand();
                 for (final Feature.Command cmd : commandList) {
                     if (cmd.getIdentifier().equalsIgnoreCase(commandId)) {
-                        return new CommandTaskModel(serverUuid, new TypeDefLut(feat), cmd);
+                        this.typeDefs = new TypeDefLut(feat);
+                        this.command = cmd;
+                        this.isValid = true;
+                        return true;
                     }
                 }
             }
         }
         log.warn("Feature not found on server.");
-        return null;
+        this.isValid = false;
+        return false;
+    }
+
+    @JsonIgnore
+    public boolean isValid() {
+        return isValid;
     }
 
     @JsonGetter("serverUuid")
@@ -97,11 +118,11 @@ public class CommandTaskModel {
     }
 
     public String getFeatureId() {
-        return typeDefs.getFeatureId();
+        return featureId;
     }
 
     public String getCommandId() {
-        return command.getIdentifier();
+        return commandId;
     }
 
     @JsonRawValue
@@ -127,8 +148,8 @@ public class CommandTaskModel {
     @Override
     public String toString() {
         return "(" + serverUuid + ", "
-                + typeDefs.getFeatureId() + ", "
-                + command.getIdentifier() + ", "
+                + featureId + ", "
+                + commandId + ", "
                 + cmdParamsAsJsonNode + ")";
     }
 
