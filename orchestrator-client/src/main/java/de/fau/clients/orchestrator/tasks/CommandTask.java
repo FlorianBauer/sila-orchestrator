@@ -29,13 +29,10 @@ import sila_java.library.manager.models.SiLACall;
 @Slf4j
 public class CommandTask extends QueueTask {
 
+    private final CommandTaskModel commandModel;
+    private boolean isPanelBuilt = false;
     private JPanel panel = null;
     private JButton execBtn = null;
-    private final UUID serverUuid;
-    private final String featureId;
-    private final TypeDefLut typeDefs;
-    private final Feature.Command command;
-    private boolean isPanelBuilt = false;
     private SilaNode cmdNode = null;
     private JsonNode cmdParams = null;
 
@@ -44,10 +41,11 @@ public class CommandTask extends QueueTask {
             final String featureId,
             final TypeDefLut typeDefs,
             final Feature.Command command) {
-        this.serverUuid = serverUuid;
-        this.featureId = featureId;
-        this.typeDefs = typeDefs;
-        this.command = command;
+        commandModel = new CommandTaskModel(serverUuid, typeDefs, command);
+    }
+
+    public CommandTask(final CommandTaskModel commandModel) {
+        this.commandModel = commandModel;
     }
 
     public CommandTask(
@@ -61,13 +59,26 @@ public class CommandTask extends QueueTask {
     }
 
     /**
+     * Gets the current <code>ComandTaskModel</code> by collecting the set parameters form the view
+     * and stores them in the data-model. The purpose of this function is to update the model before
+     * exporting it (e.g. into a file).
+     *
+     * @return The task model with the current parameters.
+     * @see CommandTaskModel
+     */
+    public CommandTaskModel getCurrentComandTaskModel() {
+        commandModel.setCommandParamsFromString(cmdNode.toJsonString());
+        return commandModel;
+    }
+
+    /**
      * Overwritten `toString()` function to use the SiLA display name to label this component.
      *
      * @return The SiLA display name
      */
     @Override
     public String toString() {
-        return command.getDisplayName();
+        return commandModel.getCommand().getDisplayName();
     }
 
     /**
@@ -101,17 +112,18 @@ public class CommandTask extends QueueTask {
      * before proceeding any actions with the internal <code>cmdNode</code>.
      */
     private void buildNode() {
-        final List<SiLAElement> params = command.getParameter();
+        final List<SiLAElement> params = commandModel.getCommand().getParameter();
         if (params.isEmpty()) {
             log.warn("Parameter list for command is empty.");
             return;
         }
 
         if (cmdParams == null) {
-            cmdNode = NodeFactory.createFromElements(typeDefs, params);
+            cmdNode = NodeFactory.createFromElements(commandModel.getTypeDefs(), params);
         } else {
-            cmdNode = NodeFactory.createFromElementsWithJson(typeDefs, params, cmdParams);
+            cmdNode = NodeFactory.createFromElementsWithJson(commandModel.getTypeDefs(), params, cmdParams);
         }
+
     }
 
     /**
@@ -125,15 +137,15 @@ public class CommandTask extends QueueTask {
     }
 
     public UUID getServerUuid() {
-        return serverUuid;
+        return commandModel.getServerUuid();
     }
 
     public String getFeatureId() {
-        return featureId;
+        return commandModel.getFeatureId();
     }
 
     public String getCommandId() {
-        return command.getIdentifier();
+        return commandModel.getCommandId();
     }
 
     @Override
@@ -158,7 +170,7 @@ public class CommandTask extends QueueTask {
         if (isPanelBuilt) {
             execBtn.setEnabled(false);
         }
-        final SiLACall.Type callType = command.getObservable().equalsIgnoreCase("yes")
+        final SiLACall.Type callType = commandModel.getCommand().getObservable().equalsIgnoreCase("yes")
                 ? SiLACall.Type.OBSERVABLE_COMMAND
                 : SiLACall.Type.UNOBSERVABLE_COMMAND;
 
@@ -181,9 +193,9 @@ public class CommandTask extends QueueTask {
         stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
         oldState = state;
 
-        SiLACall call = new SiLACall(serverUuid,
-                featureId,
-                command.getIdentifier(),
+        SiLACall call = new SiLACall(commandModel.getServerUuid(),
+                commandModel.getFeatureId(),
+                commandModel.getCommandId(),
                 callType,
                 jsonParams
         );
@@ -201,9 +213,10 @@ public class CommandTask extends QueueTask {
             state = TaskState.FINISHED_ERROR;
         }
         endTimeStamp = OffsetDateTime.now();
+        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
+
         if (isPanelBuilt) {
             execBtn.setEnabled(true);
         }
-        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
     }
 }

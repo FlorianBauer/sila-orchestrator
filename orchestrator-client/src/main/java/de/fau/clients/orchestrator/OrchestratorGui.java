@@ -121,7 +121,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     for (final Command command : feature.getCommand()) {
                         final CommandTreeNode ctn = new CommandTreeNode(
                                 server.getConfiguration().getUuid(),
-                                feature.getIdentifier(),
                                 typeDefs,
                                 command);
                         ctn.setUserObject(new FeatureTreeType(command));

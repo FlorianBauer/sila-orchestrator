@@ -1,29 +1,27 @@
 package de.fau.clients.orchestrator;
 
-import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
+import de.fau.clients.orchestrator.tasks.CommandTask;
+import de.fau.clients.orchestrator.tasks.CommandTaskModel;
 import java.util.UUID;
 import javax.swing.tree.DefaultMutableTreeNode;
 import sila_java.library.core.models.Feature.Command;
 
 public class CommandTreeNode extends DefaultMutableTreeNode {
 
-    private final UUID serverId;
-    private final String featureId;
-    private final TypeDefLut typeDefs;
-    private final Command command;
+    private final CommandTaskModel commandModel;
 
     public CommandTreeNode(
-            final UUID serverId,
-            final String featureId,
+            final UUID serverUuid,
             final TypeDefLut typeDefs,
             final Command command) {
-
         super();
-        this.serverId = serverId;
-        this.featureId = featureId;
-        this.typeDefs = typeDefs;
-        this.command = command;
+        commandModel = new CommandTaskModel(serverUuid, typeDefs, command);
+    }
+
+    public CommandTreeNode(final CommandTaskModel commandModel) {
+        super();
+        this.commandModel = commandModel;
     }
 
     /**
@@ -32,11 +30,11 @@ public class CommandTreeNode extends DefaultMutableTreeNode {
      * @return The command used for the task queue table.
      */
     public CommandTask createTableEntry() {
-        return new CommandTask(this.serverId, this.featureId, this.typeDefs, this.command);
+        return new CommandTask(commandModel);
     }
 
     @Override
     public String toString() {
-        return command.getDisplayName();
+        return commandModel.getCommand().getDisplayName();
     }
 }

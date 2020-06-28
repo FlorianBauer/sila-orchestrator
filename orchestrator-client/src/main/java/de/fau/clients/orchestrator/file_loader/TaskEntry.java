@@ -17,7 +17,7 @@ public class TaskEntry {
     @JsonCreator
     public TaskEntry(
             @JsonProperty("taskId") int taskId,
-            @JsonProperty("command") CommandTaskModel command) {
+            @JsonProperty("command") final CommandTaskModel command) {
         this.taskId = taskId;
         this.command = command;
     }
