@@ -12,6 +12,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Feature;
@@ -95,8 +96,11 @@ public class CommandTask extends QueueTask {
             }
 
             panel = new JPanel();
+            panel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-            panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            panel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createTitledBorder(commandModel.getCommand().getDisplayName()),
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)));
             panel.add(cmdNode.getComponent());
             panel.add(Box.createVerticalStrut(10));
             execBtn = new JButton("Execute", EXECUTE_ICON);
