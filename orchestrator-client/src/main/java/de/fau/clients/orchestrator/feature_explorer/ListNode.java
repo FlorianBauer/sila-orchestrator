@@ -24,8 +24,8 @@ import sila_java.library.core.models.ListType;
 @Slf4j
 final class ListNode implements SilaNode {
 
-    private static final ImageIcon REMOVE_ICON = new ImageIcon("src/main/resources/icons/list-remove.png");
     private static final ImageIcon ADD_ICON = new ImageIcon("src/main/resources/icons/list-add.png");
+    private static final ImageIcon REMOVE_ICON = new ImageIcon("src/main/resources/icons/list-remove.png");
 
     /**
      * Look-up table for data-types defined by the corresponding SiLA-Feature.
@@ -40,6 +40,11 @@ final class ListNode implements SilaNode {
      * add- and remove-operations of items on the list are allowed.
      */
     private final SilaNode prototype;
+
+    private boolean isAddAndRemoveBtnNeeded = false;
+    private boolean isAddBtnEnabled = true;
+    private boolean isRemoveBtnEnabled = true;
+
     /**
      * A panel to place additional components on.
      */
@@ -86,7 +91,9 @@ final class ListNode implements SilaNode {
             @NonNull final TypeDefLut typeDefs,
             @NonNull final ListType type) {
         final SilaNode prototype = NodeFactory.createFromDataType(typeDefs, type.getDataType());
-        return new ListNode(typeDefs, prototype, true);
+        final ListNode listNode = new ListNode(typeDefs, prototype, true);
+        listNode.buildNode();
+        return listNode;
     }
 
     protected static ListNode createWithConstraint(
@@ -107,6 +114,7 @@ final class ListNode implements SilaNode {
                         isEditable));
             }
         }
+        listNode.buildNode();
         return listNode;
     }
 
@@ -125,6 +133,7 @@ final class ListNode implements SilaNode {
                     iter.next(),
                     isEditable));
         }
+        listNode.buildNode();
         return listNode;
     }
 
@@ -163,43 +172,6 @@ final class ListNode implements SilaNode {
             listPanel.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createEtchedBorder(),
                     BorderFactory.createEmptyBorder(4, 16, 4, 4)));
-            // Adding the "Remove" and "Add"-buttons only if no absolute element-count constraint was given.
-            boolean isAddAndRemoveBtnNeeded = false;
-            boolean isAddBtnEnabled = true;
-            boolean isRemoveBtnEnabled = true;
-            if (isEditable && prototype != null) {
-                if (constraints != null) {
-                    if (constraints.getElementCount() != null) {
-                        for (int i = nodeList.size(); i < constraints.getElementCount().intValue(); i++) {
-                            nodeList.add(prototype.cloneNode());
-                        }
-                        // everything is fixed, so registering button-listeners can be omitted
-                    } else {
-                        if (constraints.getMinimalElementCount() != null) {
-                            final int elemSize = nodeList.size();
-                            final int minSize = constraints.getMinimalElementCount().intValue();
-                            for (int i = elemSize; i < minSize; i++) {
-                                nodeList.add(prototype.cloneNode());
-                            }
-                            isRemoveBtnEnabled = (elemSize > minSize);
-                        }
-                        if (constraints.getMaximalElementCount() != null) {
-                            if (nodeList.size() >= constraints.getMaximalElementCount().intValue()) {
-                                isAddBtnEnabled = false;
-                            }
-                            if (nodeList.isEmpty()) {
-                                nodeList.add(prototype.cloneNode());
-                            }
-                        }
-                        isAddAndRemoveBtnNeeded = true;
-                    }
-                } else {
-                    if (nodeList.isEmpty()) {
-                        nodeList.add(prototype.cloneNode());
-                    }
-                    isAddAndRemoveBtnNeeded = true;
-                }
-            }
 
             for (final SilaNode node : nodeList) {
                 listPanel.add(node.getComponent());
@@ -218,7 +190,7 @@ final class ListNode implements SilaNode {
                     removeBtnActionPerformed();
                 });
 
-                Box hbox = Box.createHorizontalBox();
+                final Box hbox = Box.createHorizontalBox();
                 hbox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
                 hbox.add(addBtn);
                 hbox.add(removeBtn);
@@ -226,6 +198,46 @@ final class ListNode implements SilaNode {
             }
         }
         return listPanel;
+    }
+
+    /**
+     * Builds the Node by filling the list with default items and setting the states of the item
+     * add/remove buttons accordingly. This function shall only be called once.
+     */
+    private void buildNode() {
+        if (isEditable && prototype != null) {
+            if (constraints != null) {
+                if (constraints.getElementCount() != null) {
+                    for (int i = nodeList.size(); i < constraints.getElementCount().intValue(); i++) {
+                        nodeList.add(prototype.cloneNode());
+                    }
+                    // everything is fixed, so registering button-listeners can be omitted
+                } else {
+                    if (constraints.getMinimalElementCount() != null) {
+                        final int elemSize = nodeList.size();
+                        final int minSize = constraints.getMinimalElementCount().intValue();
+                        for (int i = elemSize; i < minSize; i++) {
+                            nodeList.add(prototype.cloneNode());
+                        }
+                        isRemoveBtnEnabled = (elemSize > minSize);
+                    }
+                    if (constraints.getMaximalElementCount() != null) {
+                        if (nodeList.size() >= constraints.getMaximalElementCount().intValue()) {
+                            isAddBtnEnabled = false;
+                        }
+                        if (nodeList.isEmpty()) {
+                            nodeList.add(prototype.cloneNode());
+                        }
+                    }
+                    isAddAndRemoveBtnNeeded = true;
+                }
+            } else {
+                if (nodeList.isEmpty()) {
+                    nodeList.add(prototype.cloneNode());
+                }
+                isAddAndRemoveBtnNeeded = true;
+            }
+        }
     }
 
     /**
