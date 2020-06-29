@@ -122,6 +122,8 @@ public class CommandTask extends QueueTask {
             final List<SiLAElement> params = commandModel.getCommand().getParameter();
             if (params.isEmpty()) {
                 log.warn("Parameter list for command is empty.");
+                // FIXME: A command with no parameter can be valid by definition of the standard.
+                // So building a Node without parameter must be made possible. (2020-06-29)
                 return false;
             }
 
@@ -133,6 +135,7 @@ public class CommandTask extends QueueTask {
             }
             return true;
         }
+        log.warn("Could not build Node.");
         return false;
     }
 
@@ -162,26 +165,27 @@ public class CommandTask extends QueueTask {
     public String getTaskParamsAsJson() {
         if (cmdNode == null) {
             boolean wasSuccessful = buildNode();
-            if (wasSuccessful) {
-                return cmdNode.toJsonString();
+            if (!wasSuccessful) {
+                return "";
             }
         }
-        return "";
+        return cmdNode.toJsonString();
     }
 
     /**
-     * The actual action which is performed on execution. The overwritten Runnable interface allows
-     * the execution routine to be run in its own, dedicated thread without blocking the entire GUI.
-     * Multiple instances of this routine shall not be executed at the same time, since the parallel
-     * usage of the involved GUI-components is not synchronized and therefore not thread-safe.
+     * The actual action which is performed on execution. The overwritten <code>Runnable</code>
+     * interface allows the execution routine to be run in its own, dedicated thread without
+     * blocking the entire GUI. Multiple instances of this routine shall not be executed at the same
+     * time, since the parallel usage of the involved GUI-components is not synchronized and
+     * therefore not thread-safe.
      *
-     * To start the routine in the current Thread use `this.run()`. To create a separate process use
-     * `new Thread(this).start`.
+     * To start the routine in the current Thread use <code>this.run()</code>. To create a separate
+     * process use <code>new Thread(this).start</code>.
      */
     @Override
     public void run() {
+        TaskState oldState = state;
         if (!commandModel.isValid()) {
-            TaskState oldState = state;
             state = TaskState.OFFLINE;
             stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
             return;
@@ -201,28 +205,26 @@ public class CommandTask extends QueueTask {
                 ? SiLACall.Type.OBSERVABLE_COMMAND
                 : SiLACall.Type.UNOBSERVABLE_COMMAND;
 
-        final String jsonParams = cmdNode.toJsonString();
-        if (jsonParams.isEmpty()) {
-            log.warn("jsonMsg is empty. Execution was skipped.");
-            if (isPanelBuilt) {
-                execBtn.setEnabled(true);
-            }
-            return;
-        }
-        log.info("Command parameters as JSON: " + jsonParams);
-
         startTimeStamp = OffsetDateTime.now();
-        TaskState oldState = state;
         state = TaskState.RUNNING;
         stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
         oldState = state;
 
-        SiLACall call = new SiLACall(commandModel.getServerUuid(),
-                commandModel.getFeatureId(),
-                commandModel.getCommandId(),
-                callType,
-                jsonParams
-        );
+        final String jsonParams = cmdNode.toJsonString();
+        final SiLACall call;
+        if (jsonParams.isEmpty()) {
+            call = new SiLACall(commandModel.getServerUuid(),
+                    commandModel.getFeatureId(),
+                    commandModel.getCommandId(),
+                    callType);
+        } else {
+            call = new SiLACall(commandModel.getServerUuid(),
+                    commandModel.getFeatureId(),
+                    commandModel.getCommandId(),
+                    callType,
+                    jsonParams);
+        }
+        log.info("Command parameters as JSON: \"" + jsonParams + "\"");
 
         try {
             lastExecResult = ServerManager.getInstance().newCallExecutor(call).execute();
