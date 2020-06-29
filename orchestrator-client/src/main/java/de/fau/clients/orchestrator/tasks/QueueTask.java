@@ -26,20 +26,18 @@ public abstract class QueueTask implements Runnable {
     protected TaskState state = TaskState.NEUTRAL;
 
     /**
-     * Gets the parameters of this task as JSON string. The set content is defined by the concrete
-     * task implementation.
+     * Gets the current <code>TaskModel</code> by collecting the set parameters form the view and
+     * storing them in the data-model. The purpose of this function is to update the model before
+     * returning it (e.g. before exporting it into a file etc.).
      *
-     * @return The parameters as JSON string.
+     * @return The task model with the current parameters.
      */
-    abstract public String getTaskParamsAsJson();
+    abstract public TaskModel getCurrentTaskModel();
 
     /**
-     * Gets a JPanel for the parameter-view. This mechanism should be used to populate a panel with
-     * controls, which allows the user to set the parameters* of an task. A returned
+     * Gets a <code>JPanel</code> for the parameter-view. This mechanism should be used to populate
+     * a panel with controls, which allows the user to set the parameters of an task. A returned
      * <code>null</code> value sets the parameter-view empty.
-     *
-     * (* The correct term would be "argument" but "parameter" is used to stay coherent with the
-     * SiLA-standard.)
      *
      * @return The panel to set task parameters or <code>null</code>.
      */

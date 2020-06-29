@@ -44,7 +44,7 @@ public class TaskQueueTableModel extends DefaultTableModel {
         addStateListener(cmdEntry);
     }
 
-    protected void addTaskEntry(int taskId, final QueueTask taskEntry) {
+    public void addTaskEntry(int taskId, final QueueTask taskEntry) {
         addRow(new Object[]{
             taskId,
             taskEntry,

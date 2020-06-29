@@ -3,9 +3,9 @@ package de.fau.clients.orchestrator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
-import de.fau.clients.orchestrator.file_loader.TaskQueueData;
 import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
+import de.fau.clients.orchestrator.tasks.TaskQueueData;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -1009,7 +1009,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 clearQueueActionPerformed(evt);
                 log.info("Silo-file version: " + tqd.getSiloFileVersion());
                 final TaskQueueTableModel model = taskQueueTable.getModel();
-                tqd.importFromFile(model, serverManager.getServers());
+                tqd.importToTaskQueue(model, serverManager.getServers());
                 enableTaskQueueOperations();
             }
         } else {

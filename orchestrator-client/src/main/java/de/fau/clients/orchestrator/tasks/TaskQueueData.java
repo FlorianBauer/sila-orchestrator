@@ -1,18 +1,18 @@
-package de.fau.clients.orchestrator.file_loader;
+package de.fau.clients.orchestrator.tasks;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import de.fau.clients.orchestrator.TaskQueueTable;
 import de.fau.clients.orchestrator.TaskQueueTableModel;
-import de.fau.clients.orchestrator.tasks.CommandTask;
-import de.fau.clients.orchestrator.tasks.CommandTaskModel;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import sila_java.library.manager.models.Server;
 
 /**
  * Class responsible for importing and exporting the task-queue from/to a JSON-file.
  */
+@Slf4j
 @JsonPropertyOrder({"siloFileVersion", "tasks"})
 public class TaskQueueData {
 
@@ -25,8 +25,8 @@ public class TaskQueueData {
     private String versionOfLoadedFile = "";
 
     /**
-     * Creates a <code>TaskQueueData</code> object and populates it with the task-entry data for
-     * serialization in JSON.
+     * Creates a <code>TaskQueueData</code> object and populates it with the taskModel-entry data
+     * for serialization in JSON.
      *
      * @param queueModel The queue model instance to extract the data from.
      * @return A populated <code>TaskQueueData</code> object for JSON serialization.
@@ -36,20 +36,28 @@ public class TaskQueueData {
         final TaskQueueData data = new TaskQueueData();
         data.tasks = new ArrayList<>(rows);
         int taskId;
-        CommandTask tableEntry;
+        QueueTask tableEntry;
         for (int i = 0; i < rows; i++) {
             taskId = (int) queueModel.getValueAt(i, TaskQueueTable.COLUMN_TASK_ID_IDX);
-            tableEntry = (CommandTask) queueModel.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX);
-            data.tasks.add(new TaskEntry(taskId, tableEntry.getCurrentComandTaskModel()));
+            tableEntry = (QueueTask) queueModel.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX);
+            data.tasks.add(new TaskEntry(taskId, tableEntry.getCurrentTaskModel()));
         }
         return data;
     }
 
-    public void importFromFile(final TaskQueueTableModel queue, final Map<UUID, Server> serverMap) {
+    public void importToTaskQueue(final TaskQueueTableModel queue, final Map<UUID, Server> serverMap) {
         for (final TaskEntry entry : this.tasks) {
-            final CommandTaskModel ctm = entry.getCommand();
-            ctm.importFromIdentifiers(serverMap);
-            queue.addCommandTableEntry(entry.getTaskId(), new CommandTask(ctm));
+            final TaskModel taskModel = entry.getTaskModel();
+            if (taskModel instanceof CommandTaskModel) {
+                final CommandTaskModel ctm = (CommandTaskModel) taskModel;
+                ctm.importFromIdentifiers(serverMap);
+                queue.addCommandTableEntry(entry.taskId, new CommandTask(ctm));
+            } else if (taskModel instanceof DelayTaskModel) {
+                final DelayTaskModel dtm = (DelayTaskModel) taskModel;
+                queue.addTaskEntry(entry.taskId, new DelayTask(dtm));
+            } else {
+                log.warn("Unknow TaskModel instance found. Task import omitted.");
+            }
         }
     }
 

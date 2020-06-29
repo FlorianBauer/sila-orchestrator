@@ -54,14 +54,14 @@ public class CommandTask extends QueueTask {
     }
 
     /**
-     * Gets the current <code>ComandTaskModel</code> by collecting the set parameters form the view
-     * and stores them in the data-model. The purpose of this function is to update the model before
-     * exporting it (e.g. into a file).
+     * Gets the current <code>CommandTaskModel</code> by collecting the set parameters form the view
+     * and storing them in the data-model.
      *
-     * @return The task model with the current parameters.
-     * @see CommandTaskModel
+     * @return The task-model of the command with the current parameters or null.
+     * @see TaskModel
      */
-    public CommandTaskModel getCurrentComandTaskModel() {
+    @Override
+    public TaskModel getCurrentTaskModel() {
         if (commandModel.isValid() && cmdNode != null) {
             commandModel.setCommandParamsFromString(cmdNode.toJsonString());
             return commandModel;
@@ -159,17 +159,6 @@ public class CommandTask extends QueueTask {
 
     public String getCommandId() {
         return commandModel.getCommandId();
-    }
-
-    @Override
-    public String getTaskParamsAsJson() {
-        if (cmdNode == null) {
-            boolean wasSuccessful = buildNode();
-            if (!wasSuccessful) {
-                return "";
-            }
-        }
-        return cmdNode.toJsonString();
     }
 
     /**

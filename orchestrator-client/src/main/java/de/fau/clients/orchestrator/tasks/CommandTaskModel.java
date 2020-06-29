@@ -18,11 +18,15 @@ import sila_java.library.core.models.Feature;
 import sila_java.library.manager.models.Server;
 
 /**
+ * A class representing the data from a <code>CommandTask</code>. The data of a task is separated
+ * from the task itself for reasons of encapsulation and serialization.
  *
+ * @see CommandTask
+ * @see TaskModel
  */
 @Slf4j
 @JsonPropertyOrder({"serverUuid", "featureId", "commandId", "commandParams"})
-public class CommandTaskModel {
+public class CommandTaskModel extends TaskModel {
 
     static private final ObjectMapper mapper = new ObjectMapper();
     private boolean isValid = false;
@@ -67,6 +71,13 @@ public class CommandTaskModel {
         this.isValid = false;
     }
 
+    /**
+     * Tries to requires the desired SiLA command instance by using only the given identifier.
+     * Therefore a Map of currently available servers has to be provided.
+     *
+     * @param serverMap The Map with the currently available SiLA servers.
+     * @return <code>true</code> on success otherwise <code>false</code>.
+     */
     public boolean importFromIdentifiers(final Map<UUID, Server> serverMap) {
         if (serverMap.isEmpty()) {
             log.warn("No server available.");
