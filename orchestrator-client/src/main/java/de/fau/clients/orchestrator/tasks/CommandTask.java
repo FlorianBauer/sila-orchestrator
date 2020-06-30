@@ -140,7 +140,7 @@ public class CommandTask extends QueueTask {
             isNodeBuilt = true;
             return true;
         }
-        log.warn("Could not build Node.");
+        log.warn("Could not build Node for " + commandModel.getCommandId() + ".");
         return false;
     }
 

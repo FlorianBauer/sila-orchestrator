@@ -80,7 +80,7 @@ public class CommandTaskModel extends TaskModel {
      */
     public boolean importFromIdentifiers(final Map<UUID, Server> serverMap) {
         if (serverMap.isEmpty()) {
-            log.warn("No server available.");
+            log.warn("No server available for " + commandId + ".");
             this.isValid = false;
             return false;
         } else if (!serverMap.containsKey(serverUuid)) {
@@ -103,7 +103,7 @@ public class CommandTaskModel extends TaskModel {
                 }
             }
         }
-        log.warn("Feature not found on server.");
+        log.warn("Feature " + featureId + " for " + commandId + " not found on server.");
         this.isValid = false;
         return false;
     }
