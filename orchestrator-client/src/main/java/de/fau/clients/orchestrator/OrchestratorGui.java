@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import de.fau.clients.orchestrator.tasks.CommandTask;
+import de.fau.clients.orchestrator.tasks.DelayTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskQueueData;
 import java.awt.Image;
@@ -680,6 +681,15 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         tasksMenu.add(executeAllMenuItem);
 
+        addDelayTaskMenuItem.setText("Add Delay");
+        addDelayTaskMenuItem.setToolTipText("Add a delay to the task queue");
+        addDelayTaskMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addDelayTaskActionPerformed(evt);
+            }
+        });
+        tasksMenu.add(addDelayTaskMenuItem);
+
         menuBar.add(tasksMenu);
 
         helpMenu.setMnemonic('h');
@@ -1029,6 +1039,17 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_aboutDialogCloseBtnActionPerformed
 
     /**
+     * Adds a delay task to the task queue.
+     *
+     * @param evt The fired event.
+     */
+    private void addDelayTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDelayTaskActionPerformed
+        final TaskQueueTableModel model = taskQueueTable.getModel();
+        model.addTaskEntry(++taskRowId, new DelayTask());
+        enableTaskQueueOperations();
+    }//GEN-LAST:event_addDelayTaskActionPerformed
+
+    /**
      * Enables all the GUI controls which actions can be applied on entries in the task queue. This
      * function is to enable user interaction after the task queue was set to a valid state (e.g.
      * queue is not empty anymore).
@@ -1150,6 +1171,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JTextPane aboutInfoTextPane = new javax.swing.JTextPane();
     private final javax.swing.JLabel aboutLabel = new javax.swing.JLabel();
     private final javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JMenuItem addDelayTaskMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton addServerBtn = new javax.swing.JButton();
     private final javax.swing.JDialog addServerDialog = new javax.swing.JDialog();
     private final javax.swing.JMenuItem addServerMenuItem = new javax.swing.JMenuItem();
