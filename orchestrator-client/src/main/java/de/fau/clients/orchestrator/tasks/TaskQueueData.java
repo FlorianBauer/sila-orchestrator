@@ -39,7 +39,7 @@ public class TaskQueueData {
         QueueTask tableEntry;
         for (int i = 0; i < rows; i++) {
             taskId = (int) queueModel.getValueAt(i, TaskQueueTable.COLUMN_TASK_ID_IDX);
-            tableEntry = (QueueTask) queueModel.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX);
+            tableEntry = (QueueTask) queueModel.getValueAt(i, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX);
             data.tasks.add(new TaskEntry(taskId, tableEntry.getCurrentTaskModel()));
         }
         return data;

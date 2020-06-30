@@ -65,7 +65,7 @@ public class TaskQueueTableModel extends DefaultTableModel {
                 // the order of rows might change during runtime.
                 int rowIdx = -1;
                 for (int i = 0; i < getRowCount(); i++) {
-                    if (getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX).equals(taskEntry)) {
+                    if (getValueAt(i, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX).equals(taskEntry)) {
                         rowIdx = i;
                         break;
                     }
@@ -111,7 +111,7 @@ public class TaskQueueTableModel extends DefaultTableModel {
         switch (col) {
             case TaskQueueTable.COLUMN_TASK_ID_IDX:
                 return Integer.class;
-            case TaskQueueTable.COLUMN_COMMAND_IDX:
+            case TaskQueueTable.COLUMN_TASK_INSTANCE_IDX:
                 return CommandTask.class;
             default:
                 return String.class;

@@ -13,7 +13,7 @@ import javax.swing.table.TableColumn;
 public class TaskQueueTable extends JTable {
 
     public static final int COLUMN_TASK_ID_IDX = 0;
-    public static final int COLUMN_COMMAND_IDX = 1;
+    public static final int COLUMN_TASK_INSTANCE_IDX = 1;
     public static final int COLUMN_STATE_IDX = 2;
     public static final int COLUMN_START_TIME_IDX = 3;
     public static final int COLUMN_END_TIME_IDX = 4;
@@ -23,7 +23,7 @@ public class TaskQueueTable extends JTable {
 
     public static final String[] COLUMN_TITLES = {
         "ID",
-        "Command",
+        "Task",
         "State",
         "Start Time",
         "End Time",
@@ -54,8 +54,8 @@ public class TaskQueueTable extends JTable {
         tch.hideColumn(COLUMN_SERVER_UUID_IDX);
 
         for (int i = 0; i < TaskQueueTable.COLUMN_TITLES.length; i++) {
-            if (i == COLUMN_COMMAND_IDX) {
-                // Do not allow the user to hide the command column.
+            if (i == COLUMN_TASK_INSTANCE_IDX) {
+                // Do not allow the user to hide the task column.
                 continue;
             }
 
@@ -101,6 +101,6 @@ public class TaskQueueTable extends JTable {
     }
 
     public CommandTask getFromRow(int rowIdx) {
-        return (CommandTask) this.dataModel.getValueAt(rowIdx, COLUMN_COMMAND_IDX);
+        return (CommandTask) this.dataModel.getValueAt(rowIdx, COLUMN_TASK_INSTANCE_IDX);
     }
 }

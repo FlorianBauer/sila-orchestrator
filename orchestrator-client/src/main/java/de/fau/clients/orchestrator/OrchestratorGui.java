@@ -726,7 +726,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
 
         final TaskQueueTableModel model = taskQueueTable.getModel();
-        QueueTask entry = (QueueTask) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_COMMAND_IDX);
+        QueueTask entry = (QueueTask) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX);
         if (entry == null) {
             return;
         }
@@ -865,7 +865,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     break;
                 }
 
-                entryThread = new Thread((QueueTask) model.getValueAt(i, TaskQueueTable.COLUMN_COMMAND_IDX));
+                entryThread = new Thread((QueueTask) model.getValueAt(i, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX));
                 entryThread.start();
                 try {
                     entryThread.join();
@@ -887,7 +887,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             return;
         }
         final TaskQueueTableModel model = taskQueueTable.getModel();
-        QueueTask entry = (QueueTask) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_COMMAND_IDX);
+        QueueTask entry = (QueueTask) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX);
         new Thread(entry).start();
     }//GEN-LAST:event_execRowEntryMenuItemActionPerformed
 
