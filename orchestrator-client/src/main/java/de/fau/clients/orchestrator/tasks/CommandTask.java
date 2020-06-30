@@ -34,6 +34,7 @@ public class CommandTask extends QueueTask {
     private boolean isPanelBuilt = false;
     private JPanel panel = null;
     private JButton execBtn = null;
+    private boolean isNodeBuilt = false;
     private SilaNode cmdNode = null;
 
     public CommandTask(
@@ -88,7 +89,7 @@ public class CommandTask extends QueueTask {
     @Override
     public JPanel getPanel() {
         if (!isPanelBuilt) {
-            if (cmdNode == null) {
+            if (!isNodeBuilt) {
                 boolean wasSuccessful = buildNode();
                 if (!wasSuccessful) {
                     return null;
@@ -101,7 +102,11 @@ public class CommandTask extends QueueTask {
             panel.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createTitledBorder(commandModel.getCommand().getDisplayName()),
                     BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-            panel.add(cmdNode.getComponent());
+
+            if (cmdNode != null) {
+                panel.add(cmdNode.getComponent());
+            }
+
             panel.add(Box.createVerticalStrut(10));
             execBtn = new JButton("Execute", EXECUTE_ICON);
             execBtn.addActionListener((ActionEvent evt) -> {
@@ -122,9 +127,8 @@ public class CommandTask extends QueueTask {
             final List<SiLAElement> params = commandModel.getCommand().getParameter();
             if (params.isEmpty()) {
                 log.warn("Parameter list for command is empty.");
-                // FIXME: A command with no parameter can be valid by definition of the standard.
-                // So building a Node without parameter must be made possible. (2020-06-29)
-                return false;
+                isNodeBuilt = true;
+                return true;
             }
 
             JsonNode cmdParams = commandModel.getCommandParamsAsJsonNode();
@@ -133,6 +137,7 @@ public class CommandTask extends QueueTask {
             } else {
                 cmdNode = NodeFactory.createFromElementsWithJson(commandModel.getTypeDefs(), params, cmdParams);
             }
+            isNodeBuilt = true;
             return true;
         }
         log.warn("Could not build Node.");
@@ -174,15 +179,11 @@ public class CommandTask extends QueueTask {
     @Override
     public void run() {
         TaskState oldState = state;
-        if (!commandModel.isValid()) {
-            state = TaskState.OFFLINE;
-            stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
-            return;
-        }
-
-        if (cmdNode == null) {
+        if (!isNodeBuilt) {
             boolean wasSuccessful = buildNode();
             if (!wasSuccessful) {
+                state = TaskState.SKIPPED;
+                stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
                 return;
             }
         }
@@ -199,7 +200,11 @@ public class CommandTask extends QueueTask {
         stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
         oldState = state;
 
-        final String jsonParams = cmdNode.toJsonString();
+        String jsonParams = "";
+        if (cmdNode != null) {
+            jsonParams = cmdNode.toJsonString();
+        }
+
         final SiLACall call;
         if (jsonParams.isEmpty()) {
             call = new SiLACall(commandModel.getServerUuid(),
