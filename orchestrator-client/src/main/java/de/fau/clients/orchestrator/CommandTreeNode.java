@@ -7,21 +7,21 @@ import java.util.UUID;
 import javax.swing.tree.DefaultMutableTreeNode;
 import sila_java.library.core.models.Feature.Command;
 
+@SuppressWarnings("serial")
 public class CommandTreeNode extends DefaultMutableTreeNode {
 
     private final CommandTaskModel commandModel;
+
+    public CommandTreeNode(final CommandTaskModel commandModel) {
+        super();
+        this.commandModel = commandModel;
+    }
 
     public CommandTreeNode(
             final UUID serverUuid,
             final TypeDefLut typeDefs,
             final Command command) {
-        super();
-        commandModel = new CommandTaskModel(serverUuid, typeDefs, command);
-    }
-
-    public CommandTreeNode(final CommandTaskModel commandModel) {
-        super();
-        this.commandModel = commandModel;
+        this(new CommandTaskModel(serverUuid, typeDefs, command));
     }
 
     /**
