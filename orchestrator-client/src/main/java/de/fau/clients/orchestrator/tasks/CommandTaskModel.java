@@ -123,6 +123,10 @@ public class CommandTaskModel extends TaskModel {
         return serverUuid;
     }
 
+    public void setServerUuid(UUID serverUuid) {
+        this.serverUuid = serverUuid;
+    }
+
     @JsonIgnore
     public Feature.Command getCommand() {
         return command;
