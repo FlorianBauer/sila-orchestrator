@@ -18,7 +18,7 @@ public class TaskQueueTableModel extends DefaultTableModel {
     /**
      * Clears the entire table. The table is empty after this operation.
      */
-    public void removeAllRows() {
+    protected void removeAllRows() {
         for (int i = getRowCount() - 1; i >= 0; i--) {
             removeRow(i);
         }
@@ -31,7 +31,7 @@ public class TaskQueueTableModel extends DefaultTableModel {
      * @param taskId The task ID to use for this entry.
      * @param cmdEntry The command entry to add.
      */
-    public void addCommandTableEntry(int taskId, final CommandTask cmdEntry) {
+    protected void addCommandTableEntry(int taskId, final CommandTask cmdEntry) {
         addRow(new Object[]{
             taskId,
             cmdEntry,
@@ -44,7 +44,7 @@ public class TaskQueueTableModel extends DefaultTableModel {
         addStateListener(cmdEntry);
     }
 
-    public void addTaskEntry(int taskId, final QueueTask taskEntry) {
+    protected void addTaskEntry(int taskId, final QueueTask taskEntry) {
         addRow(new Object[]{
             taskId,
             taskEntry,
