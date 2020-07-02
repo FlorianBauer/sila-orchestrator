@@ -120,7 +120,14 @@ public class TaskQueueTableModel extends DefaultTableModel {
 
     @Override
     public boolean isCellEditable(int row, int col) {
-        // make only the task-ID editable
-        return (col == COLUMN_TASK_ID_IDX);
+        // make the task-ID and the server-UUID column editable
+        if (col == COLUMN_TASK_ID_IDX) {
+            return true;
+        } else if (col == COLUMN_SERVER_UUID_IDX) {
+            if (getValueAt(row, COLUMN_TASK_INSTANCE_IDX) instanceof CommandTask) {
+                return true;
+            }
+        }
+        return false;
     }
 }
