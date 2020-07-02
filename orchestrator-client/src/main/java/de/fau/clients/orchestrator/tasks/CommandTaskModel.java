@@ -50,16 +50,6 @@ public class CommandTaskModel extends TaskModel {
         this.isValid = true;
     }
 
-    public CommandTaskModel(
-            final UUID serverUuid,
-            final TypeDefLut typeDefs,
-            final Feature.Command command,
-            final String commandParams) {
-        this(serverUuid, typeDefs, command);
-        this.cmdParamsAsString = commandParams;
-        this.cmdParamsAsJsonNode = mapper.valueToTree(commandParams);
-    }
-
     @JsonCreator
     public CommandTaskModel(
             @JsonProperty("serverUuid") final UUID serverUuid,
