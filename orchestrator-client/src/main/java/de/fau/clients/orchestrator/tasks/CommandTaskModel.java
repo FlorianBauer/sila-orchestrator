@@ -142,7 +142,8 @@ public class CommandTaskModel extends TaskModel {
 
     @JsonSetter
     public void setCommandParams(final Map<String, Object> jsonMap) {
-        this.cmdParamsAsJsonNode = mapper.valueToTree(jsonMap);
+        cmdParamsAsJsonNode = mapper.valueToTree(jsonMap);
+        cmdParamsAsString = cmdParamsAsJsonNode.toString();
     }
 
     @JsonIgnore
