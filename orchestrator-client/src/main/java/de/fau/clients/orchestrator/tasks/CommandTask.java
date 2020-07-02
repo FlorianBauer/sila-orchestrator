@@ -37,21 +37,18 @@ public class CommandTask extends QueueTask {
     private boolean isNodeBuilt = false;
     private SilaNode cmdNode = null;
 
-    public CommandTask(
-            final UUID serverUuid,
-            final TypeDefLut typeDefs,
-            final Feature.Command command) {
-        commandModel = new CommandTaskModel(serverUuid, typeDefs, command);
-        if (!commandModel.isValid()) {
-            state = TaskState.OFFLINE;
-        }
-    }
-
     public CommandTask(final CommandTaskModel commandModel) {
         this.commandModel = commandModel;
         if (!this.commandModel.isValid()) {
             state = TaskState.OFFLINE;
         }
+    }
+
+    public CommandTask(
+            final UUID serverUuid,
+            final TypeDefLut typeDefs,
+            final Feature.Command command) {
+        this(new CommandTaskModel(serverUuid, typeDefs, command));
     }
 
     /**
