@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -25,6 +26,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
+import javax.swing.text.DefaultFormatterFactory;
+import javax.swing.text.NumberFormatter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
@@ -83,6 +86,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         try {
             serverManager.addServer(addr, port);
         } catch (ServerAdditionException ex) {
+            log.warn(ex.getMessage());
+            return;
+        } catch (Exception ex) {
             log.warn(ex.getMessage());
             return;
         }
@@ -267,11 +273,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(10, 5, 5, 10);
         addServerDialog.getContentPane().add(serverDialogCancelBtn, gridBagConstraints);
 
-        try {
-            serverPortFormattedTextField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("#####")));
-        } catch (java.text.ParseException ex) {
-            ex.printStackTrace();
-        }
+        final NumberFormatter formatter = new NumberFormatter(new DecimalFormat("#0"));
+        formatter.setMinimum(0);
+        formatter.setMaximum(99999);
+        formatter.setAllowsInvalid(false);
+        serverPortFormattedTextField.setFormatterFactory(new DefaultFormatterFactory(formatter));
         serverPortFormattedTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverPortFormattedTextFieldActionPerformed(evt);
