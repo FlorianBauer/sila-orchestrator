@@ -90,6 +90,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         for (final Server server : serverManager.getServers().values()) {
             if (server.getHost().equals(addr) && server.getPort() == port) {
                 addFeaturesToTree(List.of(server));
+                taskQueueTable.addUuidToSelectionSet(server.getConfiguration().getUuid());
                 break;
             }
         }
@@ -714,6 +715,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void initTaskQueueTable() {
+        taskQueueTable.setServerManager(serverManager);
+        taskQueueTable.setParamsPane(commandScrollPane);
         taskQueueTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
@@ -735,13 +738,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
             return;
         }
 
-        final TaskQueueTableModel model = taskQueueTable.getModel();
-        QueueTask entry = (QueueTask) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX);
+        final QueueTask entry = taskQueueTable.getTaskFromRow(selectedRowIdx);
         if (entry == null) {
             return;
         }
 
-        int rowCount = model.getRowCount();
+        int rowCount = taskQueueTable.getRowCount();
         if (rowCount > 1) {
             moveTaskUpBtn.setEnabled(selectedRowIdx > 0);
             moveTaskDownBtn.setEnabled(selectedRowIdx < rowCount - 1);
@@ -794,6 +796,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 // hide the "No Server Available" string.
                 featureTree.setRootVisible(false);
                 addFeaturesToTree(serverList);
+                for (final Server server : serverList) {
+                    taskQueueTable.addUuidToSelectionSet(server.getConfiguration().getUuid());
+                }
             } else {
                 // show the "No Server Available" string.
                 featureTree.setRootVisible(true);
@@ -848,8 +853,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 final CommandTreeNode cmdNode = (CommandTreeNode) node;
                 // use the selected node to create a new table entry.
                 final CommandTask cmdEntry = cmdNode.createTableEntry();
-                final TaskQueueTableModel model = taskQueueTable.getModel();
-                model.addCommandTableEntry(++taskRowId, cmdEntry);
+                taskQueueTable.addCommandTask(++taskRowId, cmdEntry);
                 enableTaskQueueOperations();
             }
         }
@@ -868,14 +872,13 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         final Runnable queueRunner = () -> {
             Thread entryThread;
-            final TaskQueueTableModel model = taskQueueTable.getModel();
             for (int i = 0; i < taskQueueTable.getRowCount(); i++) {
                 if (!isOnExecution) {
                     log.info("Aborted queue execution by user");
                     break;
                 }
 
-                entryThread = new Thread((QueueTask) model.getValueAt(i, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX));
+                entryThread = new Thread(taskQueueTable.getTaskFromRow(i));
                 entryThread.start();
                 try {
                     entryThread.join();
@@ -896,8 +899,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         if (selectedRowIdx < 0) {
             return;
         }
-        final TaskQueueTableModel model = taskQueueTable.getModel();
-        QueueTask entry = (QueueTask) model.getValueAt(selectedRowIdx, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX);
+        final QueueTask entry = taskQueueTable.getTaskFromRow(selectedRowIdx);
         new Thread(entry).start();
     }//GEN-LAST:event_execRowEntryMenuItemActionPerformed
 
@@ -908,8 +910,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         } else if (selectedRowIdx <= 1) {
             moveTaskUpBtn.setEnabled(false);
         }
-        final TaskQueueTableModel model = taskQueueTable.getModel();
-        model.moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx - 1);
+        taskQueueTable.getModel().moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx - 1);
         taskQueueTable.changeSelection(selectedRowIdx - 1, TaskQueueTable.COLUMN_TASK_ID_IDX, false, false);
         moveTaskDownBtn.setEnabled(true);
     }//GEN-LAST:event_moveTaskUpBtnActionPerformed
@@ -922,8 +923,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         } else if (selectedRowIdx >= rowCount - 2) {
             moveTaskDownBtn.setEnabled(false);
         }
-        final TaskQueueTableModel model = taskQueueTable.getModel();
-        model.moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx + 1);
+        taskQueueTable.getModel().moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx + 1);
         taskQueueTable.changeSelection(selectedRowIdx + 1, TaskQueueTable.COLUMN_TASK_ID_IDX, false, false);
         moveTaskUpBtn.setEnabled(true);
     }//GEN-LAST:event_moveTaskDownBtnActionPerformed
@@ -937,9 +937,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
         moveTaskDownBtn.setEnabled(false);
         removeTaskFromQueueBtn.setEnabled(false);
         removeTaskFromQueueMenuItem.setEnabled(false);
-        final TaskQueueTableModel model = taskQueueTable.getModel();
-        model.removeRow(selectedRowIdx);
-        if (model.getRowCount() <= 0) {
+        taskQueueTable.getModel().removeRow(selectedRowIdx);
+        if (taskQueueTable.getRowCount() <= 0) {
             // task queue is now empty
             disableTaskQueueOperations();
         }
@@ -1018,8 +1017,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             if (tqd != null) {
                 clearQueueActionPerformed(evt);
                 log.info("Silo-file version: " + tqd.getSiloFileVersion());
-                final TaskQueueTableModel model = taskQueueTable.getModel();
-                tqd.importToTaskQueue(model, serverManager.getServers());
+                tqd.importToTaskQueue(taskQueueTable, serverManager.getServers());
                 enableTaskQueueOperations();
             }
         } else {
@@ -1044,8 +1042,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
      * @param evt The fired event.
      */
     private void addDelayTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDelayTaskActionPerformed
-        final TaskQueueTableModel model = taskQueueTable.getModel();
-        model.addTaskEntry(++taskRowId, new DelayTask());
+        taskQueueTable.addTask(++taskRowId, new DelayTask());
         enableTaskQueueOperations();
     }//GEN-LAST:event_addDelayTaskActionPerformed
 
@@ -1082,7 +1079,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private String getSaveData() {
         String outData = "";
         ObjectMapper mapper = new ObjectMapper();
-        TaskQueueData tqd = TaskQueueData.createFromTaskQueue(taskQueueTable.getModel());
+        TaskQueueData tqd = TaskQueueData.createFromTaskQueue(taskQueueTable);
         try {
             outData = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tqd);
         } catch (JsonProcessingException ex) {

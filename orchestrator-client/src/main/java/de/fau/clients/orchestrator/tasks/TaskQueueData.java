@@ -2,7 +2,6 @@ package de.fau.clients.orchestrator.tasks;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import de.fau.clients.orchestrator.TaskQueueTable;
-import de.fau.clients.orchestrator.TaskQueueTableModel;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
@@ -25,36 +24,42 @@ public class TaskQueueData {
     private String versionOfLoadedFile = "";
 
     /**
-     * Creates a <code>TaskQueueData</code> object and populates it with the taskModel-entry data
-     * for serialization in JSON.
+     * Creates a <code>TaskQueueData</code> object and populates it with the task-model data for
+     * serialization in JSON.
      *
-     * @param queueModel The queue model instance to extract the data from.
+     * @param queue The task queue to extract the data from.
      * @return A populated <code>TaskQueueData</code> object for JSON serialization.
      */
-    public static TaskQueueData createFromTaskQueue(final TaskQueueTableModel queueModel) {
-        final int rows = queueModel.getRowCount();
+    public static TaskQueueData createFromTaskQueue(final TaskQueueTable queue) {
+        final int rows = queue.getRowCount();
         final TaskQueueData data = new TaskQueueData();
         data.tasks = new ArrayList<>(rows);
         int taskId;
         QueueTask tableEntry;
         for (int i = 0; i < rows; i++) {
-            taskId = (int) queueModel.getValueAt(i, TaskQueueTable.COLUMN_TASK_ID_IDX);
-            tableEntry = (QueueTask) queueModel.getValueAt(i, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX);
+            taskId = (int) queue.getModel().getValueAt(i, TaskQueueTable.COLUMN_TASK_ID_IDX);
+            tableEntry = queue.getTaskFromRow(i);
             data.tasks.add(new TaskEntry(taskId, tableEntry.getCurrentTaskModel()));
         }
         return data;
     }
 
-    public void importToTaskQueue(final TaskQueueTableModel queue, final Map<UUID, Server> serverMap) {
+    /**
+     * Imports the data (tasks) hold by this instance into the given task queue.
+     *
+     * @param queue The task queue to import the data.
+     * @param serverMap A current map with available server.
+     */
+    public void importToTaskQueue(final TaskQueueTable queue, final Map<UUID, Server> serverMap) {
         for (final TaskEntry entry : this.tasks) {
             final TaskModel taskModel = entry.getTaskModel();
             if (taskModel instanceof CommandTaskModel) {
                 final CommandTaskModel ctm = (CommandTaskModel) taskModel;
                 ctm.importFromIdentifiers(serverMap);
-                queue.addCommandTableEntry(entry.taskId, new CommandTask(ctm));
+                queue.addCommandTask(entry.taskId, new CommandTask(ctm));
             } else if (taskModel instanceof DelayTaskModel) {
                 final DelayTaskModel dtm = (DelayTaskModel) taskModel;
-                queue.addTaskEntry(entry.taskId, new DelayTask(dtm));
+                queue.addTask(entry.taskId, new DelayTask(dtm));
             } else {
                 log.warn("Unknow TaskModel instance found. Task import omitted.");
             }

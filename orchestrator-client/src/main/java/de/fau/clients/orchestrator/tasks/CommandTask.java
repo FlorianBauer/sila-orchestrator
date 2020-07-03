@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Feature;
 import sila_java.library.core.models.SiLAElement;
 import sila_java.library.manager.ServerManager;
+import sila_java.library.manager.models.Server;
 import sila_java.library.manager.models.SiLACall;
 
 /**
@@ -55,16 +56,15 @@ public class CommandTask extends QueueTask {
      * Gets the current <code>CommandTaskModel</code> by collecting the set parameters form the view
      * and storing them in the data-model.
      *
-     * @return The task-model of the command with the current parameters or null.
+     * @return The task-model of the command with the current parameters.
      * @see TaskModel
      */
     @Override
     public TaskModel getCurrentTaskModel() {
-        if (commandModel.isValid() && cmdNode != null) {
+        if (cmdNode != null) {
             commandModel.setCommandParamsFromString(cmdNode.toJsonString());
-            return commandModel;
         }
-        return null;
+        return commandModel;
     }
 
     /**
@@ -85,6 +85,10 @@ public class CommandTask extends QueueTask {
      */
     @Override
     public JPanel getPanel() {
+        if (!commandModel.isValid()) {
+            return null;
+        }
+
         if (!isPanelBuilt) {
             if (!isNodeBuilt) {
                 boolean wasSuccessful = buildNode();
@@ -155,6 +159,23 @@ public class CommandTask extends QueueTask {
         return commandModel.getServerUuid();
     }
 
+    /**
+     * Changes the UUID and the server instance of this task. The <code>state</code>-field is set
+     * accordingly.
+     *
+     * @param uuid The new UUID to assign.
+     * @param server The new server instance or <code>null</code> to set invalid/offline.
+     */
+    public void changeServer(final UUID uuid, final Server server) {
+        commandModel.setServerUuid(uuid);
+        commandModel.setServerInstance(server);
+        if (commandModel.isValid()) {
+            state = TaskState.NEUTRAL;
+        } else {
+            state = TaskState.OFFLINE;
+        }
+    }
+
     public String getFeatureId() {
         return commandModel.getFeatureId();
     }
@@ -177,12 +198,13 @@ public class CommandTask extends QueueTask {
     public void run() {
         TaskState oldState = state;
         if (!isNodeBuilt) {
-            boolean wasSuccessful = buildNode();
-            if (!wasSuccessful) {
-                state = TaskState.SKIPPED;
-                stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
-                return;
-            }
+            buildNode();
+        }
+
+        if (!commandModel.isValid()) {
+            state = TaskState.SKIPPED;
+            stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
+            return;
         }
 
         if (isPanelBuilt) {

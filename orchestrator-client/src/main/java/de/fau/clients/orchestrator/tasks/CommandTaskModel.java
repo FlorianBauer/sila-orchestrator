@@ -98,6 +98,48 @@ public class CommandTaskModel extends TaskModel {
         return false;
     }
 
+    /**
+     * Sets the server instance where this command model is assigned to. There may be more than one
+     * valid server instances available for a given SiLA command or none at all. This function
+     * allows to re-assign the command to a different instance and sets the <code>isValid</code>
+     * field accordingly. The UUID is not altered since a server may be offline.
+     *
+     * @param server The server instance for this command or <code>null</code> to mark as invalid
+     * (offline).
+     * @see #isValid()
+     * @see #setServerUuid(java.util.UUID)
+     */
+    @JsonIgnore
+    public void setServerInstance(final Server server) {
+        if (server == null) {
+            log.warn("No server available for " + commandId + ".");
+            this.isValid = false;
+            return;
+        }
+
+        final List<Feature> featureList = server.getFeatures();
+        for (final Feature feat : featureList) {
+            if (feat.getIdentifier().equalsIgnoreCase(featureId)) {
+                final List<Feature.Command> commandList = feat.getCommand();
+                for (final Feature.Command cmd : commandList) {
+                    if (cmd.getIdentifier().equalsIgnoreCase(commandId)) {
+                        this.typeDefs = new TypeDefLut(feat);
+                        this.command = cmd;
+                        this.isValid = true;
+                        return;
+                    }
+                }
+            }
+        }
+        log.warn("Feature " + featureId + " for " + commandId + " not found on server.");
+        this.isValid = false;
+    }
+
+    /**
+     * Indicates if the command is currently in an valid state and ready to be executed.
+     *
+     * @return <code>true</code> if the command is valid or <code>false</code> otherwise.
+     */
     @JsonIgnore
     public boolean isValid() {
         return isValid;

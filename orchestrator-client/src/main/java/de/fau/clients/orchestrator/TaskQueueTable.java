@@ -1,13 +1,22 @@
 package de.fau.clients.orchestrator;
 
 import de.fau.clients.orchestrator.tasks.CommandTask;
+import de.fau.clients.orchestrator.tasks.QueueTask;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.UUID;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumn;
+import sila_java.library.manager.ServerManager;
+import sila_java.library.manager.models.Server;
 
 @SuppressWarnings("serial")
 public class TaskQueueTable extends JTable {
@@ -32,8 +41,12 @@ public class TaskQueueTable extends JTable {
         "Server UUID"
     };
 
+    private static ServerManager serverManager = null;
     private final TableColumnHider tch;
     private final JPopupMenu taskQueueHeaderPopupMenu = new JPopupMenu();
+    private final HashSet<UUID> serverUuidSet = new HashSet<>();
+    private final JComboBox<UUID> comboBox = new JComboBox<>();
+    private JScrollPane paramsPane = null;
 
     public TaskQueueTable() {
         super(new TaskQueueTableModel());
@@ -46,6 +59,11 @@ public class TaskQueueTable extends JTable {
         taskColumn.setMaxWidth(80);
         columnModel.getColumn(COLUMN_START_TIME_IDX).setPreferredWidth(170);
         columnModel.getColumn(COLUMN_END_TIME_IDX).setPreferredWidth(170);
+
+        columnModel.getColumn(COLUMN_SERVER_UUID_IDX).setCellEditor(new DefaultCellEditor(comboBox));
+        comboBox.addActionListener(evt -> {
+            changeTaskUuidActionPerformed();
+        });
 
         // hidden on default
         tch.hideColumn(COLUMN_START_TIME_IDX);
@@ -100,7 +118,67 @@ public class TaskQueueTable extends JTable {
         return (TaskQueueTableModel) this.dataModel;
     }
 
-    public CommandTask getFromRow(int rowIdx) {
-        return (CommandTask) this.dataModel.getValueAt(rowIdx, COLUMN_TASK_INSTANCE_IDX);
+    public QueueTask getTaskFromRow(int rowIdx) {
+        return (QueueTask) dataModel.getValueAt(rowIdx, COLUMN_TASK_INSTANCE_IDX);
+    }
+
+    /**
+     * Adds the given command task to the queue table.
+     *
+     * @param taskId The task ID to use for this entry.
+     * @param cmdTask The command task to add.
+     */
+    public void addCommandTask(int taskId, final CommandTask cmdTask) {
+        addUuidToSelectionSet(cmdTask.getServerUuid());
+        final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
+        tqtModel.addCommandTableEntry(taskId, cmdTask);
+    }
+
+    public void setServerManager(ServerManager manager) {
+        TaskQueueTable.serverManager = manager;
+    }
+
+    public void setParamsPane(final JScrollPane pane) {
+        this.paramsPane = pane;
+    }
+
+    /**
+     * Adds the given queue task to the table.
+     *
+     * @param taskId The task ID to use for this entry.
+     * @param task The queue task to add.
+     */
+    public void addTask(int taskId, final QueueTask task) {
+        final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
+        tqtModel.addTaskEntry(taskId, task);
+    }
+
+    /**
+     * Adds the given UUID to the selection set. This allows to re-assign a task to another UUID
+     * listed in the set.
+     *
+     * @param serverUuid The server UUID to add to the selection set.
+     */
+    public void addUuidToSelectionSet(UUID serverUuid) {
+        if (!serverUuidSet.contains(serverUuid)) {
+            serverUuidSet.add(serverUuid);
+            comboBox.addItem(serverUuid);
+        }
+    }
+
+    private void changeTaskUuidActionPerformed() {
+        if (editingRow >= 0) {
+            if (serverManager != null) {
+                final UUID serverUuid = (UUID) comboBox.getSelectedItem();
+                final Map<UUID, Server> onlineServer = serverManager.getServers();
+                final CommandTask task = (CommandTask) dataModel.getValueAt(editingRow, COLUMN_TASK_INSTANCE_IDX);
+                task.changeServer(serverUuid, onlineServer.get(serverUuid));
+                dataModel.setValueAt(task.getState(), editingRow, COLUMN_STATE_IDX);
+                if (paramsPane != null) {
+                    // update the parameter panel if available
+                    paramsPane.setViewportView(task.getPanel());
+                }
+            }
+        }
     }
 }
