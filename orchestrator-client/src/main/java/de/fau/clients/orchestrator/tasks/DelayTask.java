@@ -152,13 +152,14 @@ public class DelayTask extends QueueTask {
         stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
         oldState = state;
 
+        boolean wasCanceled = false;
         try {
             Thread.sleep(delayModel.getDelayInMillisec());
         } catch (InterruptedException ex) {
-            log.error(ex.getMessage());
+            wasCanceled = true;
         }
 
-        state = TaskState.FINISHED_SUCCESS;
+        state = (wasCanceled) ? TaskState.FINISHED_ERROR : TaskState.FINISHED_SUCCESS;
         endTimeStamp = OffsetDateTime.now();
         stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
         if (isPanelBuilt) {

@@ -69,6 +69,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private boolean isOnExecution = false;
     private boolean wasSaved = false;
     private String outFilePath = "";
+    private Thread currentlyExecutedTaskThread = null;
 
     private void addSpecificServer() {
         String addr = serverAddressTextField.getText();
@@ -866,35 +867,60 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_addTaskToQueueBtnActionPerformed
 
     /**
-     * Starts/stops the execution of all entries in the task queue.
+     * Starts/stops the execution of all entries in the task queue. If the execution is stopped and
+     * a task is currently running, the active task gets 2 seconds time to complete before an
+     * interrupt is signaled, which causes a <code>InterruptedException</code> inside the thread.
      *
      * @param evt The fired event.
      */
     private void executeAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeAllActionPerformed
-        isOnExecution = !isOnExecution;
+        if (isOnExecution) {
+            // exectuion is already running, so stop it
+            executeAllBtn.setEnabled(false);
+            isOnExecution = false;
+            log.info("Aborted queue execution by user.");
+            /* Use a dedicated thread for the abortion process, since the user can pile up events by 
+               spamming the button due to the delay inside the cancellation routine. */
+            final Runnable abortRunner = () -> {
+                // give the executing thread 2 seconds time to finish before sending an interrupt
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ex) {
+                    log.error(ex.getMessage());
+                }
+                if (currentlyExecutedTaskThread != null
+                        && !currentlyExecutedTaskThread.isInterrupted()) {
+                    currentlyExecutedTaskThread.interrupt();
+                }
+                executeAllBtn.setEnabled(true);
+            };
+            new Thread(abortRunner).start();
+            return;
+        }
+
         executeAllBtn.setIcon(STOP_QUEUE_EXEC_ICON);
         executeAllBtn.setText(STOP_QUEUE_EXEC_LABEL);
         executeAllMenuItem.setEnabled(false);
+        isOnExecution = true;
 
         final Runnable queueRunner = () -> {
-            Thread entryThread;
             for (int i = 0; i < taskQueueTable.getRowCount(); i++) {
                 if (!isOnExecution) {
-                    log.info("Aborted queue execution by user");
                     break;
                 }
-
-                entryThread = new Thread(taskQueueTable.getTaskFromRow(i));
-                entryThread.start();
+                currentlyExecutedTaskThread = new Thread(taskQueueTable.getTaskFromRow(i));
+                currentlyExecutedTaskThread.start();
                 try {
-                    entryThread.join();
+                    currentlyExecutedTaskThread.join();
                 } catch (InterruptedException ex) {
                     log.error(ex.getMessage());
                 }
             }
+            currentlyExecutedTaskThread = null;
             executeAllBtn.setIcon(START_QUEUE_EXEC_ICON);
             executeAllBtn.setText(START_QUEUE_EXEC_LABEL);
             executeAllMenuItem.setEnabled(true);
+            executeAllBtn.setEnabled(true);
             isOnExecution = false;
         };
         new Thread(queueRunner).start();
