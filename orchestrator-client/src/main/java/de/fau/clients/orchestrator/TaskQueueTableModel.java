@@ -36,11 +36,11 @@ public class TaskQueueTableModel extends DefaultTableModel {
             taskId,
             cmdEntry,
             cmdEntry.getState(),
+            cmdEntry.getServerUuid(),
             cmdEntry.getStartTimeStamp(),
             cmdEntry.getEndTimeStamp(),
             cmdEntry.getDuration(),
-            cmdEntry.getLastExecResult(),
-            cmdEntry.getServerUuid()});
+            cmdEntry.getLastExecResult()});
         addStateListener(cmdEntry);
     }
 
@@ -49,11 +49,11 @@ public class TaskQueueTableModel extends DefaultTableModel {
             taskId,
             taskEntry,
             taskEntry.getState(),
+            "",
             taskEntry.getStartTimeStamp(),
             taskEntry.getEndTimeStamp(),
             taskEntry.getDuration(),
-            taskEntry.getLastExecResult(),
-            ""});
+            taskEntry.getLastExecResult()});
         addStateListener(taskEntry);
     }
 

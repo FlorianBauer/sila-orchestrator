@@ -29,26 +29,27 @@ public class TaskQueueTable extends JTable {
     public static final int COLUMN_TASK_ID_IDX = 0;
     public static final int COLUMN_TASK_INSTANCE_IDX = 1;
     public static final int COLUMN_STATE_IDX = 2;
-    public static final int COLUMN_START_TIME_IDX = 3;
-    public static final int COLUMN_END_TIME_IDX = 4;
-    public static final int COLUMN_DURATION_IDX = 5;
-    public static final int COLUMN_RESULT_IDX = 6;
-    public static final int COLUMN_SERVER_UUID_IDX = 7;
+    public static final int COLUMN_SERVER_UUID_IDX = 3;
+    public static final int COLUMN_START_TIME_IDX = 4;
+    public static final int COLUMN_END_TIME_IDX = 5;
+    public static final int COLUMN_DURATION_IDX = 6;
+    public static final int COLUMN_RESULT_IDX = 7;
 
     public static final String[] COLUMN_TITLES = {
         "ID",
         "Task",
         "State",
+        "Server UUID",
         "Start Time",
         "End Time",
         "Duration",
-        "Result",
-        "Server UUID"
+        "Result"
     };
 
     private static ServerManager serverManager = null;
     private final TableColumnHider tch;
     private final JPopupMenu taskQueueHeaderPopupMenu = new JPopupMenu();
+    private final JCheckBoxMenuItem[] headerItems = new JCheckBoxMenuItem[COLUMN_TITLES.length];
     private final HashSet<UUID> serverUuidSet = new HashSet<>();
     private final JComboBox<UUID> comboBox = new JComboBox<>();
     private JScrollPane paramsPane = null;
@@ -73,10 +74,10 @@ public class TaskQueueTable extends JTable {
         });
 
         // hidden on default
+        tch.hideColumn(COLUMN_SERVER_UUID_IDX);
         tch.hideColumn(COLUMN_START_TIME_IDX);
         tch.hideColumn(COLUMN_END_TIME_IDX);
         tch.hideColumn(COLUMN_RESULT_IDX);
-        tch.hideColumn(COLUMN_SERVER_UUID_IDX);
 
         for (int i = 0; i < TaskQueueTable.COLUMN_TITLES.length; i++) {
             if (i == COLUMN_TASK_INSTANCE_IDX) {
@@ -85,27 +86,27 @@ public class TaskQueueTable extends JTable {
             }
 
             final int colIdx = i;
-            final JCheckBoxMenuItem item = new JCheckBoxMenuItem();
             final boolean isChecked;
-            if (colIdx == COLUMN_START_TIME_IDX
+            if (colIdx == COLUMN_SERVER_UUID_IDX
+                    || colIdx == COLUMN_START_TIME_IDX
                     || colIdx == COLUMN_END_TIME_IDX
-                    || colIdx == COLUMN_RESULT_IDX
-                    || colIdx == COLUMN_SERVER_UUID_IDX) {
+                    || colIdx == COLUMN_RESULT_IDX) {
                 // uncheck hidden columns
                 isChecked = false;
             } else {
                 isChecked = true;
             }
-            item.setSelected(isChecked);
-            item.setText(COLUMN_TITLES[colIdx]);
-            item.addActionListener(evt -> {
-                if (item.isSelected()) {
+            headerItems[colIdx] = new JCheckBoxMenuItem();
+            headerItems[colIdx].setSelected(isChecked);
+            headerItems[colIdx].setText(COLUMN_TITLES[colIdx]);
+            headerItems[colIdx].addActionListener(evt -> {
+                if (headerItems[colIdx].isSelected()) {
                     tch.showColumn(colIdx);
                 } else {
                     tch.hideColumn(colIdx);
                 }
             });
-            taskQueueHeaderPopupMenu.add(item);
+            taskQueueHeaderPopupMenu.add(headerItems[i]);
         }
 
         this.tableHeader.addMouseListener(new MouseAdapter() {
@@ -117,7 +118,6 @@ public class TaskQueueTable extends JTable {
                 }
             }
         });
-
     }
 
     @Override
@@ -170,6 +170,20 @@ public class TaskQueueTable extends JTable {
         if (!serverUuidSet.contains(serverUuid)) {
             serverUuidSet.add(serverUuid);
             comboBox.addItem(serverUuid);
+        }
+    }
+
+    public void showColumn(int columnIdx) {
+        if (columnIdx >= 0 && columnIdx < COLUMN_TITLES.length) {
+            tch.showColumn(columnIdx);
+            headerItems[columnIdx].setSelected(true);
+        }
+    }
+
+    public void hideColumn(int columnIdx) {
+        if (columnIdx >= 0 && columnIdx < COLUMN_TITLES.length) {
+            tch.hideColumn(columnIdx);
+            headerItems[columnIdx].setSelected(false);
         }
     }
 
