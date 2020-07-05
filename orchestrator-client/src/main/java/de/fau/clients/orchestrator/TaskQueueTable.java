@@ -2,6 +2,7 @@ package de.fau.clients.orchestrator;
 
 import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
+import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
@@ -10,14 +11,18 @@ import java.util.UUID;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import lombok.extern.slf4j.Slf4j;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 
+@Slf4j
 @SuppressWarnings("serial")
 public class TaskQueueTable extends JTable {
 
@@ -60,7 +65,9 @@ public class TaskQueueTable extends JTable {
         columnModel.getColumn(COLUMN_START_TIME_IDX).setPreferredWidth(170);
         columnModel.getColumn(COLUMN_END_TIME_IDX).setPreferredWidth(170);
 
-        columnModel.getColumn(COLUMN_SERVER_UUID_IDX).setCellEditor(new DefaultCellEditor(comboBox));
+        final TableColumn uuidColumn = columnModel.getColumn(COLUMN_SERVER_UUID_IDX);
+        uuidColumn.setCellRenderer(new UuidCellRenderer());
+        uuidColumn.setCellEditor(new DefaultCellEditor(comboBox));
         comboBox.addActionListener(evt -> {
             changeTaskUuidActionPerformed();
         });
@@ -179,6 +186,33 @@ public class TaskQueueTable extends JTable {
                     paramsPane.setViewportView(task.getPanel());
                 }
             }
+        }
+    }
+
+    /**
+     * A custom cell renderer for displaying UUID objects in the table. This renderer shows the UUID
+     * inside a <code>JComboBox</code> for the sole purpose of signaling the user a editable cell.
+     */
+    private static final class UuidCellRenderer implements TableCellRenderer {
+
+        private final JComboBox<String> comboBox = new JComboBox<>();
+        private final JLabel emptyLabel = new JLabel();
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                boolean hasFocus,
+                int row,
+                int column) {
+            if (value != null) {
+                if (table.isCellEditable(row, column)) {
+                    comboBox.getModel().setSelectedItem(value.toString());
+                    return comboBox;
+                }
+            }
+            return emptyLabel;
         }
     }
 }
