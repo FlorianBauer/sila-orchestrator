@@ -24,6 +24,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultFormatterFactory;
@@ -795,22 +796,28 @@ public class OrchestratorGui extends javax.swing.JFrame {
      * freezing while scanning.
      */
     private void scanNetworkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanNetworkActionPerformed
+        scanServerBtn.setEnabled(false);
         final Runnable scan = () -> {
-            scanServerBtn.setEnabled(false);
             serverManager.getDiscovery().scanNetwork();
             final List<Server> serverList = ServerFinder.filterBy(ServerFinder.Filter.status(Server.Status.ONLINE)).find();
+            final boolean isTreeRootVisible;
             if (!serverList.isEmpty()) {
                 // hide the "No Server Available" string.
-                featureTree.setRootVisible(false);
+                isTreeRootVisible = false;
                 addFeaturesToTree(serverList);
                 for (final Server server : serverList) {
                     taskQueueTable.addUuidToSelectionSet(server.getConfiguration().getUuid());
                 }
             } else {
                 // show the "No Server Available" string.
-                featureTree.setRootVisible(true);
+                isTreeRootVisible = true;
             }
-            scanServerBtn.setEnabled(true);
+
+            // update components in the GUI thread
+            SwingUtilities.invokeLater(() -> {
+                featureTree.setRootVisible(isTreeRootVisible);
+                scanServerBtn.setEnabled(true);
+            });
         };
         new Thread(scan).start();
     }//GEN-LAST:event_scanNetworkActionPerformed
@@ -892,7 +899,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
                         && !currentlyExecutedTaskThread.isInterrupted()) {
                     currentlyExecutedTaskThread.interrupt();
                 }
-                executeAllBtn.setEnabled(true);
+
+                SwingUtilities.invokeLater(() -> {
+                    executeAllBtn.setEnabled(true);
+                });
             };
             new Thread(abortRunner).start();
             return;
@@ -917,10 +927,13 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 }
             }
             currentlyExecutedTaskThread = null;
-            executeAllBtn.setIcon(START_QUEUE_EXEC_ICON);
-            executeAllBtn.setText(START_QUEUE_EXEC_LABEL);
-            executeAllMenuItem.setEnabled(true);
-            executeAllBtn.setEnabled(true);
+
+            SwingUtilities.invokeLater(() -> {
+                executeAllBtn.setIcon(START_QUEUE_EXEC_ICON);
+                executeAllBtn.setText(START_QUEUE_EXEC_LABEL);
+                executeAllMenuItem.setEnabled(true);
+                executeAllBtn.setEnabled(true);
+            });
             isOnExecution = false;
         };
         new Thread(queueRunner).start();
@@ -1189,7 +1202,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
 
         // Create and display the form
-        java.awt.EventQueue.invokeLater(() -> {
+        SwingUtilities.invokeLater(() -> {
             new OrchestratorGui().setVisible(true);
         });
     }
