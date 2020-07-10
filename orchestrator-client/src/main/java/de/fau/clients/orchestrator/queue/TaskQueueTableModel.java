@@ -19,15 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 class TaskQueueTableModel extends DefaultTableModel {
 
     /**
-     * Clears the entire table. The table is empty after this operation.
-     */
-    protected void removeAllRows() {
-        for (int i = getRowCount() - 1; i >= 0; i--) {
-            removeRow(i);
-        }
-    }
-
-    /**
      * Adds the given command entry to the table and registers a change listener on the state
      * property.
      *

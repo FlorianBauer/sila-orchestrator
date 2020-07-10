@@ -19,6 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import lombok.extern.slf4j.Slf4j;
@@ -137,8 +138,17 @@ public class TaskQueueTable extends JTable {
         });
     }
 
+    /**
+     * Clears all entries in the entire table. Current cell-editing operations get canceled and all
+     * used task IDs are released as well.
+     */
     public void clearTable() {
-        ((TaskQueueTableModel) dataModel).removeAllRows();
+        final TableCellEditor ce = getCellEditor();
+        if (ce != null) {
+            // abort editing before purging the entries
+            ce.stopCellEditing();
+        }
+        ((TaskQueueTableModel) dataModel).setRowCount(0);
         taskId = INIT_TASK_ID;
         taskIdSet.clear();
     }
