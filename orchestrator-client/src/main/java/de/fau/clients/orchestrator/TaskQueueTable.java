@@ -60,7 +60,7 @@ public class TaskQueueTable extends JTable {
      * Set to keep track of available SiLA server.
      */
     private final HashSet<UUID> serverUuidSet = new HashSet<>();
-    private final JComboBox<UUID> comboBox = new JComboBox<>();
+    private final JComboBox<UUID> uuidComboBox = new JComboBox<>();
 
     /**
      * Set to track task IDs and ensure uniqueness.
@@ -85,8 +85,8 @@ public class TaskQueueTable extends JTable {
 
         final TableColumn uuidColumn = columnModel.getColumn(COLUMN_SERVER_UUID_IDX);
         uuidColumn.setCellRenderer(new UuidCellRenderer());
-        uuidColumn.setCellEditor(new DefaultCellEditor(comboBox));
-        comboBox.addActionListener(evt -> {
+        uuidColumn.setCellEditor(new DefaultCellEditor(uuidComboBox));
+        uuidComboBox.addActionListener(evt -> {
             changeTaskUuidActionPerformed();
         });
 
@@ -232,7 +232,7 @@ public class TaskQueueTable extends JTable {
     public void addUuidToSelectionSet(UUID serverUuid) {
         if (!serverUuidSet.contains(serverUuid)) {
             serverUuidSet.add(serverUuid);
-            comboBox.addItem(serverUuid);
+            uuidComboBox.addItem(serverUuid);
         }
     }
 
@@ -253,7 +253,7 @@ public class TaskQueueTable extends JTable {
     private void changeTaskUuidActionPerformed() {
         if (editingRow >= 0) {
             if (serverManager != null) {
-                final UUID serverUuid = (UUID) comboBox.getSelectedItem();
+                final UUID serverUuid = (UUID) uuidComboBox.getSelectedItem();
                 final Map<UUID, Server> onlineServer = serverManager.getServers();
                 final CommandTask task = (CommandTask) dataModel.getValueAt(editingRow, COLUMN_TASK_INSTANCE_IDX);
                 task.changeServer(serverUuid, onlineServer.get(serverUuid));
