@@ -979,7 +979,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         moveTaskDownBtn.setEnabled(false);
         removeTaskFromQueueBtn.setEnabled(false);
         removeTaskFromQueueMenuItem.setEnabled(false);
-        taskQueueTable.getModel().removeRow(selectedRowIdx);
+        taskQueueTable.removeRow(selectedRowIdx);
         if (taskQueueTable.getRowCount() <= 0) {
             // task queue is now empty
             disableTaskQueueOperations();

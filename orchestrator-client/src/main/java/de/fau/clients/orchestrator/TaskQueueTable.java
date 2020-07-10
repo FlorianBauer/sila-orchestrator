@@ -55,9 +55,17 @@ public class TaskQueueTable extends JTable {
     private final TableColumnHider tch;
     private final JPopupMenu taskQueueHeaderPopupMenu = new JPopupMenu();
     private final JCheckBoxMenuItem[] headerItems = new JCheckBoxMenuItem[COLUMN_TITLES.length];
+
+    /**
+     * Set to keep track of available SiLA server.
+     */
     private final HashSet<UUID> serverUuidSet = new HashSet<>();
-    private final HashSet<Integer> taskIdSet = new HashSet<>();
     private final JComboBox<UUID> comboBox = new JComboBox<>();
+
+    /**
+     * Set to track task IDs and ensure uniqueness.
+     */
+    private final HashSet<Integer> taskIdSet = new HashSet<>();
     private JScrollPane paramsPane = null;
 
     public TaskQueueTable() {
@@ -138,6 +146,11 @@ public class TaskQueueTable extends JTable {
         ((TaskQueueTableModel) dataModel).removeAllRows();
         taskId = INIT_TASK_ID;
         taskIdSet.clear();
+    }
+
+    public void removeRow(int rowIdx) {
+        taskIdSet.remove((int) dataModel.getValueAt(rowIdx, COLUMN_TASK_ID_IDX));
+        ((TaskQueueTableModel) dataModel).removeRow(rowIdx);
     }
 
     public void setServerManager(ServerManager manager) {
