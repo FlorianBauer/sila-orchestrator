@@ -1,7 +1,7 @@
 package de.fau.clients.orchestrator.tasks;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import de.fau.clients.orchestrator.TaskQueueTable;
+import de.fau.clients.orchestrator.queue.TaskQueueTable;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
@@ -37,7 +37,7 @@ public class TaskQueueData {
         int taskId;
         QueueTask tableEntry;
         for (int i = 0; i < rows; i++) {
-            taskId = (int) queue.getModel().getValueAt(i, TaskQueueTable.COLUMN_TASK_ID_IDX);
+            taskId = queue.getTaskIdFromRow(i);
             tableEntry = queue.getTaskFromRow(i);
             data.tasks.add(new TaskEntry(taskId, tableEntry.getCurrentTaskModel()));
         }

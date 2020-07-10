@@ -1,6 +1,9 @@
-package de.fau.clients.orchestrator;
+package de.fau.clients.orchestrator.queue;
 
-import static de.fau.clients.orchestrator.TaskQueueTable.*;
+import static de.fau.clients.orchestrator.queue.TaskQueueTable.COLUMN_SERVER_UUID_IDX;
+import static de.fau.clients.orchestrator.queue.TaskQueueTable.COLUMN_TASK_ID_IDX;
+import static de.fau.clients.orchestrator.queue.TaskQueueTable.COLUMN_TASK_INSTANCE_IDX;
+import static de.fau.clients.orchestrator.queue.TaskQueueTable.COLUMN_TITLES;
 import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
@@ -13,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @SuppressWarnings("serial")
-public class TaskQueueTableModel extends DefaultTableModel {
+class TaskQueueTableModel extends DefaultTableModel {
 
     /**
      * Clears the entire table. The table is empty after this operation.

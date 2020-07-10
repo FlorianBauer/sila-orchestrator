@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator;
+package de.fau.clients.orchestrator.queue;
 
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
  * <code>JTable</code>.
  */
 @Slf4j
-public class TableColumnHider {
+class TableColumnHider {
 
     private final TableColumnModel columnModel;
     private final String[] columnTitles;

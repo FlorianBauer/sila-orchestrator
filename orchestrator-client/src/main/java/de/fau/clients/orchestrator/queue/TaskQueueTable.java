@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator;
+package de.fau.clients.orchestrator.queue;
 
 import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
@@ -137,11 +137,6 @@ public class TaskQueueTable extends JTable {
         });
     }
 
-    @Override
-    public TaskQueueTableModel getModel() {
-        return (TaskQueueTableModel) dataModel;
-    }
-
     public void clearTable() {
         ((TaskQueueTableModel) dataModel).removeAllRows();
         taskId = INIT_TASK_ID;
@@ -153,12 +148,20 @@ public class TaskQueueTable extends JTable {
         ((TaskQueueTableModel) dataModel).removeRow(rowIdx);
     }
 
+    public void moveRow(int sourceRowIdx, int targetRowIdx) {
+        ((TaskQueueTableModel) dataModel).moveRow(sourceRowIdx, sourceRowIdx, targetRowIdx);
+    }
+
     public void setServerManager(ServerManager manager) {
         TaskQueueTable.serverManager = manager;
     }
 
     public void setParamsPane(final JScrollPane pane) {
         this.paramsPane = pane;
+    }
+
+    public int getTaskIdFromRow(int rowIdx) {
+        return (int) dataModel.getValueAt(rowIdx, TaskQueueTable.COLUMN_TASK_ID_IDX);
     }
 
     public QueueTask getTaskFromRow(int rowIdx) {

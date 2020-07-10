@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator;
 
+import de.fau.clients.orchestrator.queue.TaskQueueTable;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
@@ -952,7 +953,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         } else if (selectedRowIdx <= 1) {
             moveTaskUpBtn.setEnabled(false);
         }
-        taskQueueTable.getModel().moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx - 1);
+        taskQueueTable.moveRow(selectedRowIdx, selectedRowIdx - 1);
         taskQueueTable.changeSelection(selectedRowIdx - 1, TaskQueueTable.COLUMN_TASK_ID_IDX, false, false);
         moveTaskDownBtn.setEnabled(true);
     }//GEN-LAST:event_moveTaskUpBtnActionPerformed
@@ -965,7 +966,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         } else if (selectedRowIdx >= rowCount - 2) {
             moveTaskDownBtn.setEnabled(false);
         }
-        taskQueueTable.getModel().moveRow(selectedRowIdx, selectedRowIdx, selectedRowIdx + 1);
+        taskQueueTable.moveRow(selectedRowIdx, selectedRowIdx + 1);
         taskQueueTable.changeSelection(selectedRowIdx + 1, TaskQueueTable.COLUMN_TASK_ID_IDX, false, false);
         moveTaskUpBtn.setEnabled(true);
     }//GEN-LAST:event_moveTaskDownBtnActionPerformed
