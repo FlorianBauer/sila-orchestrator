@@ -9,12 +9,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import javax.swing.DefaultCellEditor;
+import javax.swing.InputVerifier;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -46,11 +49,14 @@ public class TaskQueueTable extends JTable {
         "Result"
     };
 
+    private static final int INIT_TASK_ID = 1;
+    private static int taskId = INIT_TASK_ID;
     private static ServerManager serverManager = null;
     private final TableColumnHider tch;
     private final JPopupMenu taskQueueHeaderPopupMenu = new JPopupMenu();
     private final JCheckBoxMenuItem[] headerItems = new JCheckBoxMenuItem[COLUMN_TITLES.length];
     private final HashSet<UUID> serverUuidSet = new HashSet<>();
+    private final HashSet<Integer> taskIdSet = new HashSet<>();
     private final JComboBox<UUID> comboBox = new JComboBox<>();
     private JScrollPane paramsPane = null;
 
@@ -65,6 +71,9 @@ public class TaskQueueTable extends JTable {
         taskColumn.setMaxWidth(80);
         columnModel.getColumn(COLUMN_START_TIME_IDX).setPreferredWidth(170);
         columnModel.getColumn(COLUMN_END_TIME_IDX).setPreferredWidth(170);
+
+        final TableColumn taskIdColumn = columnModel.getColumn(COLUMN_TASK_ID_IDX);
+        taskIdColumn.setCellEditor(new TaskIdCellEditor(new TaskIdVerifier()));
 
         final TableColumn uuidColumn = columnModel.getColumn(COLUMN_SERVER_UUID_IDX);
         uuidColumn.setCellRenderer(new UuidCellRenderer());
@@ -122,23 +131,13 @@ public class TaskQueueTable extends JTable {
 
     @Override
     public TaskQueueTableModel getModel() {
-        return (TaskQueueTableModel) this.dataModel;
+        return (TaskQueueTableModel) dataModel;
     }
 
-    public QueueTask getTaskFromRow(int rowIdx) {
-        return (QueueTask) dataModel.getValueAt(rowIdx, COLUMN_TASK_INSTANCE_IDX);
-    }
-
-    /**
-     * Adds the given command task to the queue table.
-     *
-     * @param taskId The task ID to use for this entry.
-     * @param cmdTask The command task to add.
-     */
-    public void addCommandTask(int taskId, final CommandTask cmdTask) {
-        addUuidToSelectionSet(cmdTask.getServerUuid());
-        final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
-        tqtModel.addCommandTableEntry(taskId, cmdTask);
+    public void clearTable() {
+        ((TaskQueueTableModel) dataModel).removeAllRows();
+        taskId = INIT_TASK_ID;
+        taskIdSet.clear();
     }
 
     public void setServerManager(ServerManager manager) {
@@ -149,15 +148,66 @@ public class TaskQueueTable extends JTable {
         this.paramsPane = pane;
     }
 
+    public QueueTask getTaskFromRow(int rowIdx) {
+        return (QueueTask) dataModel.getValueAt(rowIdx, COLUMN_TASK_INSTANCE_IDX);
+    }
+
+    /**
+     * Adds the given command task to the queue table.
+     *
+     * @param cmdTask The command task to add.
+     */
+    public void addCommandTask(final CommandTask cmdTask) {
+        addUuidToSelectionSet(cmdTask.getServerUuid());
+        final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
+        tqtModel.addCommandTableEntry(generateAndRegisterTaskId(), cmdTask);
+    }
+
+    /**
+     * Adds the given command task to the queue table.
+     *
+     * @param taskId The task ID to use for this entry.
+     * @param cmdTask The command task to add.
+     */
+    public void addCommandTaskWithId(int taskId, final CommandTask cmdTask) {
+        final int uniqueId;
+        if (checkAndRegisterTaskId(taskId)) {
+            uniqueId = taskId;
+        } else {
+            uniqueId = generateAndRegisterTaskId();
+        }
+
+        addUuidToSelectionSet(cmdTask.getServerUuid());
+        final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
+        tqtModel.addCommandTableEntry(uniqueId, cmdTask);
+    }
+
+    /**
+     * Adds the given queue task to the table.
+     *
+     * @param task The queue task to add.
+     */
+    public void addTask(final QueueTask task) {
+        final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
+        tqtModel.addTaskEntry(generateAndRegisterTaskId(), task);
+    }
+
     /**
      * Adds the given queue task to the table.
      *
      * @param taskId The task ID to use for this entry.
      * @param task The queue task to add.
      */
-    public void addTask(int taskId, final QueueTask task) {
+    public void addTaskWithId(int taskId, final QueueTask task) {
+        final int uniqueId;
+        if (checkAndRegisterTaskId(taskId)) {
+            uniqueId = taskId;
+        } else {
+            uniqueId = generateAndRegisterTaskId();
+        }
+
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
-        tqtModel.addTaskEntry(taskId, task);
+        tqtModel.addTaskEntry(uniqueId, task);
     }
 
     /**
@@ -200,6 +250,96 @@ public class TaskQueueTable extends JTable {
                     paramsPane.setViewportView(task.getPanel());
                 }
             }
+        }
+    }
+
+    private boolean checkAndRegisterTaskId(int taskId) {
+        if (!taskIdSet.contains(taskId)) {
+            taskIdSet.add(taskId);
+            return true;
+        }
+        return false;
+    }
+
+    private int generateAndRegisterTaskId() {
+        while (taskIdSet.contains(taskId)) {
+            taskId++;
+        }
+        taskIdSet.add(taskId);
+        return taskId;
+    }
+
+    /**
+     * Custom cell editor for task IDs.
+     */
+    private class TaskIdCellEditor extends DefaultCellEditor {
+
+        /**
+         * Verifier for ID uniqueness.
+         */
+        final InputVerifier verifier;
+        /**
+         * Initial ID before editing process begun.
+         */
+        String oldTaskId;
+
+        public TaskIdCellEditor(InputVerifier verifier) {
+            super(new JTextField());
+            this.verifier = verifier;
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            JTextField tf = (JTextField) super.getTableCellEditorComponent(table, value, isSelected, row, column);
+            if (value != null) {
+                oldTaskId = value.toString();
+                tf.setText(oldTaskId);
+            }
+            return tf;
+        }
+
+        @Override
+        public boolean stopCellEditing() {
+            String value = getCellEditorValue().toString();
+            if (value.isBlank() || value.equals(oldTaskId)) {
+                cancelCellEditing();
+                return true;
+            }
+
+            boolean isValid = verifier.verify(editorComponent) && super.stopCellEditing();
+            if (isValid) {
+                try {
+                    taskIdSet.add(Integer.parseInt(value));
+                    taskIdSet.remove(Integer.parseInt(oldTaskId));
+                } catch (NumberFormatException ex) {
+                    return false;
+                }
+            }
+            return isValid;
+        }
+    }
+
+    /**
+     * Verifier to check if the edited task ID from the user is unique.
+     */
+    private class TaskIdVerifier extends InputVerifier {
+
+        @Override
+        public boolean verify(JComponent input) {
+            final String text = ((JTextField) input).getText();
+            int newTaskId;
+            try {
+                newTaskId = Integer.parseInt(text);
+            } catch (NumberFormatException ex) {
+                return false;
+            }
+
+            if (newTaskId > 0) {
+                if (!taskIdSet.contains(newTaskId)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

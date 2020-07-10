@@ -3,7 +3,6 @@ package de.fau.clients.orchestrator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
-import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.DelayTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskQueueData;
@@ -52,7 +51,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private static final String START_QUEUE_EXEC_LABEL = "Start Execute All";
     private static final String STOP_QUEUE_EXEC_LABEL = "Stop Execute All";
     private static ServerManager serverManager;
-    private static int taskRowId = 0;
     private static String silaOrchestratorVersion;
     private static String gitCommit;
     private static String gitCommitTimestamp;
@@ -866,8 +864,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             if (node instanceof CommandTreeNode) {
                 final CommandTreeNode cmdNode = (CommandTreeNode) node;
                 // use the selected node to create a new table entry.
-                final CommandTask cmdEntry = cmdNode.createTableEntry();
-                taskQueueTable.addCommandTask(++taskRowId, cmdEntry);
+                taskQueueTable.addCommandTask(cmdNode.createTableEntry());
                 enableTaskQueueOperations();
             }
         }
@@ -1073,7 +1070,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private void clearQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearQueueActionPerformed
         disableTaskQueueOperations();
         commandScrollPane.setViewportView(null);
-        taskQueueTable.getModel().removeAllRows();
+        taskQueueTable.clearTable();
     }//GEN-LAST:event_clearQueueActionPerformed
 
     private void aboutDialogCloseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutDialogCloseBtnActionPerformed
@@ -1087,7 +1084,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
      * @param evt The fired event.
      */
     private void addDelayTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDelayTaskActionPerformed
-        taskQueueTable.addTask(++taskRowId, new DelayTask());
+        taskQueueTable.addTask(new DelayTask());
         enableTaskQueueOperations();
     }//GEN-LAST:event_addDelayTaskActionPerformed
 

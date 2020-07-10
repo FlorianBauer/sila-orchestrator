@@ -56,10 +56,10 @@ public class TaskQueueData {
             if (taskModel instanceof CommandTaskModel) {
                 final CommandTaskModel ctm = (CommandTaskModel) taskModel;
                 ctm.importFromIdentifiers(serverMap);
-                queue.addCommandTask(entry.taskId, new CommandTask(ctm));
+                queue.addCommandTaskWithId(entry.taskId, new CommandTask(ctm));
             } else if (taskModel instanceof DelayTaskModel) {
                 final DelayTaskModel dtm = (DelayTaskModel) taskModel;
-                queue.addTask(entry.taskId, new DelayTask(dtm));
+                queue.addTaskWithId(entry.taskId, new DelayTask(dtm));
             } else {
                 log.warn("Unknow TaskModel instance found. Task import omitted.");
             }
