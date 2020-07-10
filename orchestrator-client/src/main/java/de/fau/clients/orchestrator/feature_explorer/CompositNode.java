@@ -3,6 +3,7 @@ package de.fau.clients.orchestrator.feature_explorer;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -20,7 +21,6 @@ final class CompositNode implements SilaNode {
     private CompositNode(
             @NonNull final TypeDefLut typeDefs,
             @NonNull final List<SiLAElement> elements) {
-
         this.typeDefs = typeDefs;
         this.elements = elements;
     }
@@ -28,7 +28,6 @@ final class CompositNode implements SilaNode {
     protected final static CompositNode create(
             @NonNull final TypeDefLut typeDefs,
             @NonNull final List<SiLAElement> elements) {
-
         final CompositNode node = new CompositNode(typeDefs, elements);
         for (final SiLAElement elem : node.elements) {
             node.children.add(NodeFactory.createFromDataType(typeDefs, elem.getDataType()));
@@ -41,11 +40,10 @@ final class CompositNode implements SilaNode {
             @NonNull final List<SiLAElement> elements,
             @NonNull JsonNode jsonNode,
             boolean isEditable) {
-
         final CompositNode node = new CompositNode(typeDefs, elements);
         for (final SiLAElement elem : node.elements) {
             node.children.add(NodeFactory.createFromJson(
-                    typeDefs, 
+                    typeDefs,
                     elem.getDataType(),
                     jsonNode.get(elem.getIdentifier()),
                     isEditable));
@@ -79,18 +77,33 @@ final class CompositNode implements SilaNode {
 
     @Override
     public JComponent getComponent() {
-        Box vbox = Box.createVerticalBox();
-        for (int i = 0; i < elements.size(); i++) {
+        final int elemCount = elements.size();
+        final Box structBox = Box.createVerticalBox();
+        structBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+        structBox.setAlignmentY(JComponent.TOP_ALIGNMENT);
+
+        if (elemCount >= 2) {
+            structBox.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createEtchedBorder(),
+                    BorderFactory.createEmptyBorder(4, 4, 0, 4)));
+        }
+
+        for (int i = 0; i < elemCount; i++) {
+            final Box vbox = Box.createVerticalBox();
+            vbox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            vbox.setAlignmentY(JComponent.TOP_ALIGNMENT);
             vbox.add(new JLabel(elements.get(i).getDisplayName()));
             SilaNode node = children.get(i);
             if (node == null) {
                 continue;
             }
-            JComponent comp = node.getComponent();
+            final JComponent comp = node.getComponent();
             comp.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            comp.setAlignmentY(JComponent.TOP_ALIGNMENT);
             vbox.add(comp);
-            vbox.add(Box.createVerticalStrut(10));
+            structBox.add(vbox);
+            structBox.add(Box.createVerticalStrut(10));
         }
-        return vbox;
+        return structBox;
     }
 }

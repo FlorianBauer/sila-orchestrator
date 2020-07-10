@@ -105,7 +105,10 @@ public class CommandTask extends QueueTask {
                     BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
             if (cmdNode != null) {
-                panel.add(cmdNode.getComponent());
+                final JComponent comp = cmdNode.getComponent();
+                // always remove border decoration when in first layer
+                comp.setBorder(BorderFactory.createEmptyBorder());
+                panel.add(comp);
             }
 
             panel.add(Box.createVerticalStrut(10));
