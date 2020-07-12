@@ -91,6 +91,12 @@ public class TaskQueueTable extends JTable {
             changeTaskUuidActionPerformed();
         });
 
+        // make the result cell editable with a non-editable text field to allow copying
+        final TableColumn resultColumn = columnModel.getColumn(COLUMN_RESULT_IDX);
+        final JTextField resultTextField = new JTextField();
+        resultTextField.setEditable(false);
+        resultColumn.setCellEditor(new DefaultCellEditor(resultTextField));
+
         // hidden on default
         tch.hideColumn(COLUMN_SERVER_UUID_IDX);
         tch.hideColumn(COLUMN_START_TIME_IDX);

@@ -1,9 +1,5 @@
 package de.fau.clients.orchestrator.queue;
 
-import static de.fau.clients.orchestrator.queue.TaskQueueTable.COLUMN_SERVER_UUID_IDX;
-import static de.fau.clients.orchestrator.queue.TaskQueueTable.COLUMN_TASK_ID_IDX;
-import static de.fau.clients.orchestrator.queue.TaskQueueTable.COLUMN_TASK_INSTANCE_IDX;
-import static de.fau.clients.orchestrator.queue.TaskQueueTable.COLUMN_TITLES;
 import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
@@ -92,12 +88,12 @@ class TaskQueueTableModel extends DefaultTableModel {
 
     @Override
     public int getColumnCount() {
-        return COLUMN_TITLES.length;
+        return TaskQueueTable.COLUMN_TITLES.length;
     }
 
     @Override
     public String getColumnName(int col) {
-        return COLUMN_TITLES[col];
+        return TaskQueueTable.COLUMN_TITLES[col];
     }
 
     @Override
@@ -115,13 +111,19 @@ class TaskQueueTableModel extends DefaultTableModel {
     @Override
     public boolean isCellEditable(int row, int col) {
         // make the task-ID and the server-UUID column editable
-        if (col == COLUMN_TASK_ID_IDX) {
-            return true;
-        } else if (col == COLUMN_SERVER_UUID_IDX) {
-            if (getValueAt(row, COLUMN_TASK_INSTANCE_IDX) instanceof CommandTask) {
+        switch (col) {
+            case TaskQueueTable.COLUMN_TASK_ID_IDX:
+            case TaskQueueTable.COLUMN_RESULT_IDX:
                 return true;
-            }
+            case TaskQueueTable.COLUMN_SERVER_UUID_IDX:
+                if (getValueAt(row, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX) instanceof CommandTask) {
+                    return true;
+                }
+                break;
+            default:
+                break;
         }
+
         return false;
     }
 }
