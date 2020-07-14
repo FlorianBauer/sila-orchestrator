@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator.queue;
 
 import de.fau.clients.orchestrator.tasks.CommandTask;
+import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
@@ -38,6 +39,7 @@ public class TaskQueueTable extends JTable {
     public static final int COLUMN_END_TIME_IDX = 5;
     public static final int COLUMN_DURATION_IDX = 6;
     public static final int COLUMN_RESULT_IDX = 7;
+    public static final int COLUMN_EXEC_POLICY_IDX = 8;
 
     public static final String[] COLUMN_TITLES = {
         "ID",
@@ -47,7 +49,8 @@ public class TaskQueueTable extends JTable {
         "Start Time",
         "End Time",
         "Duration",
-        "Result"
+        "Result",
+        "Policy"
     };
 
     private static final int INIT_TASK_ID = 1;
@@ -62,6 +65,11 @@ public class TaskQueueTable extends JTable {
      */
     private final HashSet<UUID> serverUuidSet = new HashSet<>();
     private final JComboBox<UUID> uuidComboBox = new JComboBox<>();
+
+    /**
+     * Widget to set the execution policy for the tasks.
+     */
+    private final JComboBox<ExecPolicy> policyComboBox = new JComboBox<>(ExecPolicy.values());
 
     /**
      * Set to track task IDs and ensure uniqueness.
@@ -96,6 +104,13 @@ public class TaskQueueTable extends JTable {
         final JTextField resultTextField = new JTextField();
         resultTextField.setEditable(false);
         resultColumn.setCellEditor(new DefaultCellEditor(resultTextField));
+
+        final TableColumn policyColumn = columnModel.getColumn(COLUMN_EXEC_POLICY_IDX);
+        policyColumn.setCellRenderer(new ExecPolicyCellRenderer());
+        policyColumn.setCellEditor(new DefaultCellEditor(policyComboBox));
+        policyComboBox.addActionListener(evt -> {
+            changeTaskPolicyActionPerformed();
+        });
 
         // hidden on default
         tch.hideColumn(COLUMN_SERVER_UUID_IDX);
@@ -184,6 +199,10 @@ public class TaskQueueTable extends JTable {
         return (QueueTask) dataModel.getValueAt(rowIdx, COLUMN_TASK_INSTANCE_IDX);
     }
 
+    public ExecPolicy getTaskPolicyFromRow(int rowIdx) {
+        return (ExecPolicy) dataModel.getValueAt(rowIdx, COLUMN_EXEC_POLICY_IDX);
+    }
+
     /**
      * Adds the given command task to the queue table.
      *
@@ -192,7 +211,9 @@ public class TaskQueueTable extends JTable {
     public void addCommandTask(final CommandTask cmdTask) {
         addUuidToSelectionSet(cmdTask.getServerUuid());
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
-        tqtModel.addCommandTableEntry(generateAndRegisterTaskId(), cmdTask);
+        tqtModel.addCommandTableEntry(generateAndRegisterTaskId(),
+                cmdTask,
+                ExecPolicy.HALT_AFTER_ERROR);
     }
 
     /**
@@ -200,18 +221,21 @@ public class TaskQueueTable extends JTable {
      *
      * @param taskId The task ID to use for this entry.
      * @param cmdTask The command task to add.
+     * @param policy The execution policy.
      */
-    public void addCommandTaskWithId(int taskId, final CommandTask cmdTask) {
+    public void addCommandTaskWithId(
+            int taskId,
+            final CommandTask cmdTask,
+            final ExecPolicy policy) {
         final int uniqueId;
         if (checkAndRegisterTaskId(taskId)) {
             uniqueId = taskId;
         } else {
             uniqueId = generateAndRegisterTaskId();
         }
-
         addUuidToSelectionSet(cmdTask.getServerUuid());
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
-        tqtModel.addCommandTableEntry(uniqueId, cmdTask);
+        tqtModel.addCommandTableEntry(uniqueId, cmdTask, policy);
     }
 
     /**
@@ -221,7 +245,7 @@ public class TaskQueueTable extends JTable {
      */
     public void addTask(final QueueTask task) {
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
-        tqtModel.addTaskEntry(generateAndRegisterTaskId(), task);
+        tqtModel.addTaskEntry(generateAndRegisterTaskId(), task, ExecPolicy.HALT_AFTER_ERROR);
     }
 
     /**
@@ -229,17 +253,17 @@ public class TaskQueueTable extends JTable {
      *
      * @param taskId The task ID to use for this entry.
      * @param task The queue task to add.
+     * @param policy The execution policy.
      */
-    public void addTaskWithId(int taskId, final QueueTask task) {
+    public void addTaskWithId(int taskId, final QueueTask task, final ExecPolicy policy) {
         final int uniqueId;
         if (checkAndRegisterTaskId(taskId)) {
             uniqueId = taskId;
         } else {
             uniqueId = generateAndRegisterTaskId();
         }
-
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
-        tqtModel.addTaskEntry(uniqueId, task);
+        tqtModel.addTaskEntry(uniqueId, task, policy);
     }
 
     /**
@@ -282,6 +306,13 @@ public class TaskQueueTable extends JTable {
                     paramsPane.setViewportView(task.getPanel());
                 }
             }
+        }
+    }
+
+    private void changeTaskPolicyActionPerformed() {
+        if (editingRow >= 0) {
+            final ExecPolicy policy = (ExecPolicy) policyComboBox.getSelectedItem();
+            dataModel.setValueAt(policy, editingRow, COLUMN_EXEC_POLICY_IDX);
         }
     }
 
@@ -397,6 +428,32 @@ public class TaskQueueTable extends JTable {
                     comboBox.getModel().setSelectedItem(value.toString());
                     return comboBox;
                 }
+            }
+            return emptyLabel;
+        }
+    }
+
+    /**
+     * A custom cell renderer for displaying <code>ExecPolicy</code> objects in the table. This
+     * renderer shows the <code>ExecPolicy</code> inside a <code>JComboBox</code> for the sole
+     * purpose of signaling the user a editable cell.
+     */
+    private static final class ExecPolicyCellRenderer implements TableCellRenderer {
+
+        private final JComboBox<String> comboBox = new JComboBox<>();
+        private final JLabel emptyLabel = new JLabel();
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                boolean hasFocus,
+                int row,
+                int column) {
+            if (value != null) {
+                comboBox.getModel().setSelectedItem(value.toString());
+                return comboBox;
             }
             return emptyLabel;
         }

@@ -34,12 +34,10 @@ public class TaskQueueData {
         final int rows = queue.getRowCount();
         final TaskQueueData data = new TaskQueueData();
         data.tasks = new ArrayList<>(rows);
-        int taskId;
-        QueueTask tableEntry;
         for (int i = 0; i < rows; i++) {
-            taskId = queue.getTaskIdFromRow(i);
-            tableEntry = queue.getTaskFromRow(i);
-            data.tasks.add(new TaskEntry(taskId, tableEntry.getCurrentTaskModel()));
+            data.tasks.add(new TaskEntry(queue.getTaskIdFromRow(i),
+                    queue.getTaskFromRow(i).getCurrentTaskModel(),
+                    queue.getTaskPolicyFromRow(i)));
         }
         return data;
     }
@@ -56,10 +54,10 @@ public class TaskQueueData {
             if (taskModel instanceof CommandTaskModel) {
                 final CommandTaskModel ctm = (CommandTaskModel) taskModel;
                 ctm.importFromIdentifiers(serverMap);
-                queue.addCommandTaskWithId(entry.taskId, new CommandTask(ctm));
+                queue.addCommandTaskWithId(entry.taskId, new CommandTask(ctm), entry.taskPolicy);
             } else if (taskModel instanceof DelayTaskModel) {
                 final DelayTaskModel dtm = (DelayTaskModel) taskModel;
-                queue.addTaskWithId(entry.taskId, new DelayTask(dtm));
+                queue.addTaskWithId(entry.taskId, new DelayTask(dtm), entry.taskPolicy);
             } else {
                 log.warn("Unknow TaskModel instance found. Task import omitted.");
             }

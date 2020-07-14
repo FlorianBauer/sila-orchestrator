@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator.queue;
 
 import de.fau.clients.orchestrator.tasks.CommandTask;
+import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
 import java.beans.PropertyChangeEvent;
@@ -20,8 +21,16 @@ class TaskQueueTableModel extends DefaultTableModel {
      *
      * @param taskId The task ID to use for this entry.
      * @param cmdEntry The command entry to add.
+     * @param policy The execution policy to add or <code>null</code> for default value
+     * <code>ExecPolicy.HALT_AFTER_ERROR</code>.
+     *
+     * @see ExecPolicy
      */
-    protected void addCommandTableEntry(int taskId, final CommandTask cmdEntry) {
+    protected void addCommandTableEntry(
+            int taskId,
+            final CommandTask cmdEntry,
+            final ExecPolicy policy) {
+        final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         addRow(new Object[]{
             taskId,
             cmdEntry,
@@ -30,11 +39,16 @@ class TaskQueueTableModel extends DefaultTableModel {
             cmdEntry.getStartTimeStamp(),
             cmdEntry.getEndTimeStamp(),
             cmdEntry.getDuration(),
-            cmdEntry.getLastExecResult()});
+            cmdEntry.getLastExecResult(),
+            pol});
         addStateListener(cmdEntry);
     }
 
-    protected void addTaskEntry(int taskId, final QueueTask taskEntry) {
+    protected void addTaskEntry(
+            int taskId,
+            final QueueTask taskEntry,
+            final ExecPolicy policy) {
+        final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         addRow(new Object[]{
             taskId,
             taskEntry,
@@ -43,7 +57,8 @@ class TaskQueueTableModel extends DefaultTableModel {
             taskEntry.getStartTimeStamp(),
             taskEntry.getEndTimeStamp(),
             taskEntry.getDuration(),
-            taskEntry.getLastExecResult()});
+            taskEntry.getLastExecResult(),
+            pol});
         addStateListener(taskEntry);
     }
 
@@ -114,6 +129,7 @@ class TaskQueueTableModel extends DefaultTableModel {
         switch (col) {
             case TaskQueueTable.COLUMN_TASK_ID_IDX:
             case TaskQueueTable.COLUMN_RESULT_IDX:
+            case TaskQueueTable.COLUMN_EXEC_POLICY_IDX:
                 return true;
             case TaskQueueTable.COLUMN_SERVER_UUID_IDX:
                 if (getValueAt(row, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX) instanceof CommandTask) {

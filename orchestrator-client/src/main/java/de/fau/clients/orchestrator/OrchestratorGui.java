@@ -1,12 +1,14 @@
 package de.fau.clients.orchestrator;
 
-import de.fau.clients.orchestrator.queue.TaskQueueTable;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
+import de.fau.clients.orchestrator.queue.TaskQueueTable;
 import de.fau.clients.orchestrator.tasks.DelayTask;
+import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskQueueData;
+import de.fau.clients.orchestrator.tasks.TaskState;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -916,12 +918,21 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 if (!isOnExecution) {
                     break;
                 }
-                currentlyExecutedTaskThread = new Thread(taskQueueTable.getTaskFromRow(i));
+
+                final QueueTask task = taskQueueTable.getTaskFromRow(i);
+                currentlyExecutedTaskThread = new Thread(task);
                 currentlyExecutedTaskThread.start();
                 try {
                     currentlyExecutedTaskThread.join();
                 } catch (InterruptedException ex) {
                     log.error(ex.getMessage());
+                }
+
+                if (task.getState() == TaskState.FINISHED_ERROR) {
+                    // apply execution policy
+                    if (taskQueueTable.getTaskPolicyFromRow(i) == ExecPolicy.HALT_AFTER_ERROR) {
+                        break;
+                    }
                 }
             }
             currentlyExecutedTaskThread = null;
