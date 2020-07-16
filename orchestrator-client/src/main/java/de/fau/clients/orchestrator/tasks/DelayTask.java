@@ -2,7 +2,6 @@ package de.fau.clients.orchestrator.tasks;
 
 import static de.fau.clients.orchestrator.feature_explorer.BasicNodeFactory.MAX_HEIGHT;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.time.OffsetDateTime;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -126,8 +125,7 @@ public class DelayTask extends QueueTask {
             panel.add(hBox);
             panel.add(Box.createVerticalStrut(20));
             execBtn = new JButton("Execute", EXECUTE_ICON);
-            execBtn.setMinimumSize(MAX_SIZE_TIME_FIELD);
-            execBtn.addActionListener((ActionEvent evt) -> {
+            execBtn.addActionListener((evt) -> {
                 new Thread(this).start();
             });
             panel.add(execBtn);
