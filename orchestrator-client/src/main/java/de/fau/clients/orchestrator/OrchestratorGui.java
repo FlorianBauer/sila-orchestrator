@@ -6,6 +6,7 @@ import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
 import de.fau.clients.orchestrator.queue.TaskQueueTable;
 import de.fau.clients.orchestrator.tasks.DelayTask;
 import de.fau.clients.orchestrator.tasks.ExecPolicy;
+import de.fau.clients.orchestrator.tasks.LocalExecTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskQueueData;
 import de.fau.clients.orchestrator.tasks.TaskState;
@@ -700,6 +701,14 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         tasksMenu.add(addDelayTaskMenuItem);
 
+        addLocalExecTaskMenuItem.setText("Add Executable");
+        addLocalExecTaskMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addLocalExecTaskActionPerformed(evt);
+            }
+        });
+        tasksMenu.add(addLocalExecTaskMenuItem);
+
         menuBar.add(tasksMenu);
 
         helpMenu.setMnemonic('h');
@@ -1100,6 +1109,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
         enableTaskQueueOperations();
     }//GEN-LAST:event_addDelayTaskActionPerformed
 
+    private void addLocalExecTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLocalExecTaskActionPerformed
+        taskQueueTable.addTask(new LocalExecTask());
+        enableTaskQueueOperations();
+    }//GEN-LAST:event_addLocalExecTaskActionPerformed
+
     /**
      * Enables all the GUI controls which actions can be applied on entries in the task queue. This
      * function is to enable user interaction after the task queue was set to a valid state (e.g.
@@ -1223,6 +1237,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JLabel aboutLabel = new javax.swing.JLabel();
     private final javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem addDelayTaskMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JMenuItem addLocalExecTaskMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton addServerBtn = new javax.swing.JButton();
     private final javax.swing.JDialog addServerDialog = new javax.swing.JDialog();
     private final javax.swing.JMenuItem addServerMenuItem = new javax.swing.JMenuItem();

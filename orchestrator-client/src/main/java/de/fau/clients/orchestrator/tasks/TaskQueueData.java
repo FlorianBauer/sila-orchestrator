@@ -58,6 +58,9 @@ public class TaskQueueData {
             } else if (taskModel instanceof DelayTaskModel) {
                 final DelayTaskModel dtm = (DelayTaskModel) taskModel;
                 queue.addTaskWithId(entry.taskId, new DelayTask(dtm), entry.taskPolicy);
+            } else if (taskModel instanceof LocalExecTaskModel) {
+                final LocalExecTaskModel letm = (LocalExecTaskModel) taskModel;
+                queue.addTaskWithId(entry.taskId, new LocalExecTask(letm), entry.taskPolicy);
             } else {
                 log.warn("Unknow TaskModel instance found. Task import omitted.");
             }
