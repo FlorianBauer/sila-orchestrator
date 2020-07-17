@@ -38,7 +38,6 @@ import javax.swing.tree.TreeSelectionModel;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Feature;
 import sila_java.library.core.models.Feature.Command;
-import sila_java.library.core.models.Feature.Metadata;
 import sila_java.library.core.models.Feature.Property;
 import sila_java.library.manager.ServerAdditionException;
 import sila_java.library.manager.ServerFinder;
@@ -150,16 +149,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
                                 prop);
                         ptn.setUserObject(new FeatureTreeType(prop));
                         propertyNode.add(ptn);
-                    }
-                }
-
-                if (feature.getMetadata() != null && !feature.getMetadata().isEmpty()) {
-                    DefaultMutableTreeNode metaNode = new DefaultMutableTreeNode("Metadata");
-                    featureNode.add(metaNode);
-                    for (final Metadata meta : feature.getMetadata()) {
-                        DefaultMutableTreeNode mtn = new DefaultMutableTreeNode();
-                        mtn.setUserObject(new FeatureTreeType(meta));
-                        metaNode.add(mtn);
                     }
                 }
             }
