@@ -94,27 +94,28 @@ public class ConstraintBasicNode extends BasicNode {
             case BOOLEAN:
                 return BasicNodeFactory.createBooleanTypeFromJson(jsonNode, true);
             case DATE:
-                final JSpinner dateSpinner;
                 if (constraints.getSet() != null) {
                     final List<String> dateSet = constraints.getSet().getValue();
-                    ArrayList<LocalDate> dates = new ArrayList<>(dateSet.size());
-                    for (final String element : dateSet) {
-                        dates.add(DateTimeUtils.parseIsoDate(element));
+                    final LocalDate[] dates = new LocalDate[dateSet.size()];
+                    for (int i = 0; i < dateSet.size(); i++) {
+                        dates[i] = DateTimeUtils.parseIsoDate(dateSet.get(i));
                     }
-                    dateSpinner = new JSpinner(new SpinnerListModel(dates));
+                    final JComboBox<LocalDate> dateComboBox = new JComboBox<>(dates);
+                    dateComboBox.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
                     supp = () -> {
-                        return ((LocalDate) dateSpinner.getValue()).toString();
+                        return dateComboBox.getSelectedItem().toString();
                     };
+                    comp = dateComboBox;
                 } else {
-                    dateSpinner = new JSpinner(createRangeConstrainedDateModel(constraints));
+                    final JSpinner dateSpinner = new JSpinner(createRangeConstrainedDateModel(constraints));
+                    dateSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
                     dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
                     supp = () -> {
                         Date date = (Date) dateSpinner.getValue();
                         return LocalDate.ofInstant(date.toInstant(), DateTimeUtils.LOCAL_OFFSET).toString();
                     };
+                    comp = dateSpinner;
                 }
-                dateSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
-                comp = dateSpinner;
                 break;
             case INTEGER:
             case REAL:
