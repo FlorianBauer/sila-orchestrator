@@ -20,7 +20,6 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerDateModel;
-import javax.swing.SpinnerListModel;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.text.AbstractDocument;
@@ -118,27 +117,34 @@ public class ConstraintBasicNode extends BasicNode {
                 break;
             case INTEGER:
             case REAL:
-                final SpinnerModel model;
                 if (constraints.getSet() != null) {
-                    model = new SpinnerListModel(constraints.getSet().getValue());
+                    final List<String> numberSet = constraints.getSet().getValue();
+                    final JComboBox<String> numberComboBox = new JComboBox<>(numberSet.toArray(new String[0]));
+                    numberComboBox.setMaximumSize(BasicNodeFactory.MAX_SIZE_NUMERIC_SPINNER);
+                    if (type == BasicType.INTEGER) {
+                        supp = () -> (Integer.valueOf((String) numberComboBox.getSelectedItem()).toString());
+                    } else { // REAL
+                        supp = () -> (Double.valueOf((String) numberComboBox.getSelectedItem()).toString());
+                    }
+                    comp = numberComboBox;
                 } else {
-                    model = (type == BasicType.INTEGER)
+                    final SpinnerModel model = (type == BasicType.INTEGER)
                             ? createRangeConstrainedIntModel(constraints)
                             : createRangeConstrainedRealModel(constraints);
+                    final JSpinner numericSpinner = new JSpinner(model);
+                    numericSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_NUMERIC_SPINNER);
+                    if (constraints.getUnit() != null) {
+                        final Box hbox = Box.createHorizontalBox();
+                        hbox.add(numericSpinner);
+                        hbox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
+                        hbox.add(new JLabel(constraints.getUnit().getLabel()));
+                        hbox.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
+                        comp = hbox;
+                    } else {
+                        comp = numericSpinner;
+                    }
+                    supp = () -> (numericSpinner.getValue().toString());
                 }
-                final JSpinner numericSpinner = new JSpinner(model);
-                numericSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_NUMERIC_SPINNER);
-                if (constraints.getUnit() != null) {
-                    final Box hbox = Box.createHorizontalBox();
-                    hbox.add(numericSpinner);
-                    hbox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
-                    hbox.add(new JLabel(constraints.getUnit().getLabel()));
-                    hbox.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
-                    comp = hbox;
-                } else {
-                    comp = numericSpinner;
-                }
-                supp = () -> (numericSpinner.getValue().toString());
                 break;
             case STRING:
                 final Constraints.Set conSet = constraints.getSet();
