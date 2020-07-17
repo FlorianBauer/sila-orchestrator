@@ -173,7 +173,7 @@ public class CommandTask extends QueueTask {
         commandModel.setServerUuid(uuid);
         commandModel.setServerInstance(server);
         if (commandModel.isValid()) {
-            state = TaskState.NEUTRAL;
+            state = TaskState.READY;
         } else {
             state = TaskState.OFFLINE;
         }

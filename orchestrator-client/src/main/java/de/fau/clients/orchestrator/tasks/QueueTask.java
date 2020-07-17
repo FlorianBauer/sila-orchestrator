@@ -23,7 +23,7 @@ public abstract class QueueTask implements Runnable {
     protected OffsetDateTime startTimeStamp = null;
     protected OffsetDateTime endTimeStamp = null;
     protected String lastExecResult = "";
-    protected TaskState state = TaskState.NEUTRAL;
+    protected TaskState state = TaskState.READY;
 
     /**
      * Gets the current <code>TaskModel</code> by collecting the set parameters form the view and
