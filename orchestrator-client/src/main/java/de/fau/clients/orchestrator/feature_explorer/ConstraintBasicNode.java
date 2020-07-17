@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -228,27 +227,29 @@ public class ConstraintBasicNode extends BasicNode {
                 supp = () -> (strField.getText());
                 break;
             case TIME:
-                final JSpinner timeSpinner;
                 if (constraints.getSet() != null) {
                     final List<String> timeSet = constraints.getSet().getValue();
-                    ArrayList<OffsetTime> times = new ArrayList<>(timeSet.size());
-                    for (final String element : timeSet) {
-                        times.add(DateTimeUtils.parseIsoTime(element));
+                    final OffsetTime[] times = new OffsetTime[timeSet.size()];
+                    for (int i = 0; i < timeSet.size(); i++) {
+                        times[i] = DateTimeUtils.parseIsoTime(timeSet.get(i));
                     }
-                    timeSpinner = new JSpinner(new SpinnerListModel(times));
+                    final JComboBox<OffsetTime> timeComboBox = new JComboBox<>(times);
+                    timeComboBox.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
                     supp = () -> {
-                        return ((OffsetTime) timeSpinner.getValue())
+                        return ((OffsetTime) timeComboBox.getSelectedItem())
                                 .withOffsetSameInstant(ZoneOffset.UTC)
                                 .toString();
                     };
+                    comp = timeComboBox;
                 } else {
-                    timeSpinner = new JSpinner(
+                    final JSpinner timeSpinner = new JSpinner(
                             // FIXME: The out-commented function below seems to return a valid 
                             // spinner-model, but the spinner itself does not work correctly. Therefore 
                             // a unrestrained default-spinner-model is used as a temporary hack.
                             createRangeConstrainedTimeModel(constraints)
                     // new SpinnerDateModel()
                     );
+                    timeSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
                     timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
                     supp = () -> {
                         Date time = (Date) timeSpinner.getValue();
@@ -256,9 +257,8 @@ public class ConstraintBasicNode extends BasicNode {
                                 .withOffsetSameInstant(ZoneOffset.UTC)
                                 .toString();
                     };
+                    comp = timeSpinner;
                 }
-                timeSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
-                comp = timeSpinner;
                 break;
             case TIMESTAMP:
                 if (constraints.getSet() != null) {
