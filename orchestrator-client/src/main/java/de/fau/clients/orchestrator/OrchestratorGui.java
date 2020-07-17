@@ -125,19 +125,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 serverNode.add(featureNode);
 
                 final TypeDefLut typeDefs = new TypeDefLut(feature);
-                if (feature.getCommand() != null && !feature.getCommand().isEmpty()) {
-                    DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
-                    featureNode.add(commandNode);
-                    for (final Command command : feature.getCommand()) {
-                        final CommandTreeNode ctn = new CommandTreeNode(
-                                server.getConfiguration().getUuid(),
-                                typeDefs,
-                                command);
-                        ctn.setUserObject(new FeatureTreeType(command));
-                        commandNode.add(ctn);
-                    }
-                }
-
                 if (feature.getProperty() != null && !feature.getProperty().isEmpty()) {
                     DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode("Properties");
                     featureNode.add(propertyNode);
@@ -149,6 +136,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
                                 prop);
                         ptn.setUserObject(new FeatureTreeType(prop));
                         propertyNode.add(ptn);
+                    }
+                }
+
+                if (feature.getCommand() != null && !feature.getCommand().isEmpty()) {
+                    DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
+                    featureNode.add(commandNode);
+                    for (final Command command : feature.getCommand()) {
+                        final CommandTreeNode ctn = new CommandTreeNode(
+                                server.getConfiguration().getUuid(),
+                                typeDefs,
+                                command);
+                        ctn.setUserObject(new FeatureTreeType(command));
+                        commandNode.add(ctn);
                     }
                 }
             }
