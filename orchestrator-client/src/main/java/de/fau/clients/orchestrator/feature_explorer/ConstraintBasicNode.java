@@ -261,30 +261,31 @@ public class ConstraintBasicNode extends BasicNode {
                 comp = timeSpinner;
                 break;
             case TIMESTAMP:
-                final JSpinner timeStampSpinner;
                 if (constraints.getSet() != null) {
                     final List<String> timeSet = constraints.getSet().getValue();
-                    ArrayList<OffsetDateTime> times = new ArrayList<>(timeSet.size());
-                    for (final String element : timeSet) {
-                        times.add(DateTimeUtils.parseIsoDateTime(element));
+                    final OffsetDateTime[] times = new OffsetDateTime[timeSet.size()];
+                    for (int i = 0; i < timeSet.size(); i++) {
+                        times[i] = DateTimeUtils.parseIsoDateTime(timeSet.get(i));
                     }
-                    timeStampSpinner = new JSpinner(new SpinnerListModel(times));
+                    final JComboBox<OffsetDateTime> timestampComboBox = new JComboBox<>(times);
+                    timestampComboBox.setMaximumSize(BasicNodeFactory.MAX_SIZE_TIMESTAMP_SPINNER);
                     supp = () -> {
-                        return ((OffsetDateTime) timeStampSpinner.getValue()).toString();
+                        return timestampComboBox.getSelectedItem().toString();
                     };
+                    comp = timestampComboBox;
                 } else {
-                    timeStampSpinner = new JSpinner(
+                    final JSpinner timestampSpinner = new JSpinner(
                             // TODO: implement createRangeConstrainedTimestampModel(constraints)
                             new SpinnerDateModel()
                     );
-                    timeStampSpinner.setEditor(new JSpinner.DateEditor(timeStampSpinner, DATE_TIME_FORMAT));
+                    timestampSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_TIMESTAMP_SPINNER);
+                    timestampSpinner.setEditor(new JSpinner.DateEditor(timestampSpinner, DATE_TIME_FORMAT));
                     supp = () -> {
-                        Date time = (Date) timeStampSpinner.getValue();
+                        Date time = (Date) timestampSpinner.getValue();
                         return OffsetDateTime.ofInstant(time.toInstant(), ZoneOffset.UTC).toString();
                     };
+                    comp = timestampSpinner;
                 }
-                timeStampSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_TIMESTAMP_SPINNER);
-                comp = timeStampSpinner;
                 break;
             default:
                 throw new IllegalArgumentException("Not a valid BasicType.");
