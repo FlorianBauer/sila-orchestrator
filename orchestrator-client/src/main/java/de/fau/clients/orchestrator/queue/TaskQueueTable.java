@@ -192,7 +192,7 @@ public class TaskQueueTable extends JTable {
     }
 
     public int getTaskIdFromRow(int rowIdx) {
-        return (int) dataModel.getValueAt(rowIdx, TaskQueueTable.COLUMN_TASK_ID_IDX);
+        return Integer.parseInt(dataModel.getValueAt(rowIdx, TaskQueueTable.COLUMN_TASK_ID_IDX).toString());
     }
 
     public QueueTask getTaskFromRow(int rowIdx) {
