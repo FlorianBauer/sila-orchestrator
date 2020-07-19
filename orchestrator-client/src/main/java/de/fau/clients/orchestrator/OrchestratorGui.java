@@ -49,8 +49,8 @@ import sila_java.library.manager.models.Server;
 public class OrchestratorGui extends javax.swing.JFrame {
 
     private static final Image ICON_IMG = new ImageIcon("src/main/resources/icons/sila-orchestrator-16px.png").getImage();
-    private static final ImageIcon START_QUEUE_EXEC_ICON = new ImageIcon("src/main/resources/icons/execute-all-start.png");
-    private static final ImageIcon STOP_QUEUE_EXEC_ICON = new ImageIcon("src/main/resources/icons/execute-all-stop.png");
+    private static final ImageIcon START_QUEUE_EXEC_ICON = new ImageIcon("src/main/resources/icons/queue-exec-start.png");
+    private static final ImageIcon STOP_QUEUE_EXEC_ICON = new ImageIcon("src/main/resources/icons/queue-exec-stop.png");
     private static final String START_QUEUE_EXEC_LABEL = "Start Execute All";
     private static final String STOP_QUEUE_EXEC_LABEL = "Stop Execute All";
     private static ServerManager serverManager;
@@ -413,6 +413,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addServerBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/server-add.png"))); // NOI18N
         addServerBtn.setMnemonic('a');
         addServerBtn.setText("Add");
+        addServerBtn.setToolTipText("Adds a SiLA server with a given IP address and port.");
         addServerBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addServerActionPerformed(evt);
@@ -429,6 +430,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         scanServerBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/network-scan.png"))); // NOI18N
         scanServerBtn.setMnemonic('c');
         scanServerBtn.setText("Scan");
+        scanServerBtn.setToolTipText("Scans the network for discoverable SiLA servers.");
         scanServerBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 scanNetworkActionPerformed(evt);
@@ -555,10 +557,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
         toolBar.setRollover(true);
 
         openFileBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-open.png"))); // NOI18N
-        openFileBtn.setToolTipText("Open File");
+        openFileBtn.setText("Open");
+        openFileBtn.setToolTipText("Opens a *.silo file.");
         openFileBtn.setFocusable(false);
         openFileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        openFileBtn.setPreferredSize(new java.awt.Dimension(42, 42));
         openFileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         openFileBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -568,7 +570,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
         toolBar.add(openFileBtn);
 
         saveFileBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-save.png"))); // NOI18N
-        saveFileBtn.setToolTipText("Save File");
+        saveFileBtn.setText("Save");
+        saveFileBtn.setToolTipText("Saves a current queue into a *.silo file.");
         saveFileBtn.setEnabled(false);
         saveFileBtn.setFocusable(false);
         saveFileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -579,6 +582,49 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         toolBar.add(saveFileBtn);
+
+        toolBarSeparator.setSeparatorSize(new java.awt.Dimension(24, 12));
+        toolBar.add(toolBarSeparator);
+
+        addDelayBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/delay-add.png"))); // NOI18N
+        addDelayBtn.setText("Add Delay");
+        addDelayBtn.setToolTipText("Adds a delay in the task queue.");
+        addDelayBtn.setFocusable(false);
+        addDelayBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        addDelayBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        addDelayBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addDelayTaskActionPerformed(evt);
+            }
+        });
+        toolBar.add(addDelayBtn);
+
+        addLocalExecBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/exec-add.png"))); // NOI18N
+        addLocalExecBtn.setText("Add Exec");
+        addLocalExecBtn.setToolTipText("Adds a local executable in the task queue.");
+        addLocalExecBtn.setFocusable(false);
+        addLocalExecBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        addLocalExecBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        addLocalExecBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addLocalExecTaskActionPerformed(evt);
+            }
+        });
+        toolBar.add(addLocalExecBtn);
+
+        clearQueueBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/queue-clear.png"))); // NOI18N
+        clearQueueBtn.setText("Clear Queue");
+        clearQueueBtn.setToolTipText("Removes all entries from the current task queue.");
+        clearQueueBtn.setEnabled(false);
+        clearQueueBtn.setFocusable(false);
+        clearQueueBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        clearQueueBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        clearQueueBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearQueueActionPerformed(evt);
+            }
+        });
+        toolBar.add(clearQueueBtn);
 
         getContentPane().add(toolBar, java.awt.BorderLayout.PAGE_START);
 
@@ -660,8 +706,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
         tasksMenu.setMnemonic('t');
         tasksMenu.setText("Tasks");
 
+        clearQueueMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/queue-clear-16px.png"))); // NOI18N
         clearQueueMenuItem.setMnemonic('c');
         clearQueueMenuItem.setText("Clear Queue");
+        clearQueueMenuItem.setToolTipText("Clears all entries from the current task queue.");
         clearQueueMenuItem.setEnabled(false);
         clearQueueMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -670,9 +718,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         tasksMenu.add(clearQueueMenuItem);
 
-        executeAllMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/execute-all-start-16px.png"))); // NOI18N
+        executeAllMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/queue-exec-start-16px.png"))); // NOI18N
         executeAllMenuItem.setMnemonic('e');
         executeAllMenuItem.setText("Execute All");
+        executeAllMenuItem.setToolTipText("Start executing the current task queue.");
         executeAllMenuItem.setEnabled(false);
         executeAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -682,7 +731,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         tasksMenu.add(executeAllMenuItem);
 
         addDelayTaskMenuItem.setText("Add Delay");
-        addDelayTaskMenuItem.setToolTipText("Add a delay to the task queue");
+        addDelayTaskMenuItem.setToolTipText("Add a delay to the task queue.");
         addDelayTaskMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addDelayTaskActionPerformed(evt);
@@ -691,6 +740,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         tasksMenu.add(addDelayTaskMenuItem);
 
         addLocalExecTaskMenuItem.setText("Add Executable");
+        addLocalExecTaskMenuItem.setToolTipText("Adds a starter for a local executable or a script.");
         addLocalExecTaskMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addLocalExecTaskActionPerformed(evt);
@@ -1112,6 +1162,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         executeAllBtn.setEnabled(true);
         executeAllMenuItem.setEnabled(true);
         clearQueueMenuItem.setEnabled(true);
+        clearQueueBtn.setEnabled(true);
         saveFileBtn.setEnabled(true);
         saveMenuItem.setEnabled(true);
         saveAsMenuItem.setEnabled(true);
@@ -1126,6 +1177,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         executeAllBtn.setEnabled(false);
         executeAllMenuItem.setEnabled(false);
         clearQueueMenuItem.setEnabled(false);
+        clearQueueBtn.setEnabled(false);
         saveFileBtn.setEnabled(false);
         saveMenuItem.setEnabled(false);
         saveAsMenuItem.setEnabled(false);
@@ -1225,12 +1277,15 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JTextPane aboutInfoTextPane = new javax.swing.JTextPane();
     private final javax.swing.JLabel aboutLabel = new javax.swing.JLabel();
     private final javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JButton addDelayBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem addDelayTaskMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JButton addLocalExecBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem addLocalExecTaskMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton addServerBtn = new javax.swing.JButton();
     private final javax.swing.JDialog addServerDialog = new javax.swing.JDialog();
     private final javax.swing.JMenuItem addServerMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton addTaskToQueueBtn = new javax.swing.JButton();
+    private final javax.swing.JButton clearQueueBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem clearQueueMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JScrollPane commandScrollPane = new javax.swing.JScrollPane();
     private final javax.swing.JMenuItem execRowEntryMenuItem = new javax.swing.JMenuItem();
@@ -1271,5 +1326,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JScrollPane taskQueueScrollPane = new javax.swing.JScrollPane();
     private final javax.swing.JMenu tasksMenu = new javax.swing.JMenu();
     private final javax.swing.JToolBar toolBar = new javax.swing.JToolBar();
+    private final javax.swing.JToolBar.Separator toolBarSeparator = new javax.swing.JToolBar.Separator();
     // End of variables declaration//GEN-END:variables
 }

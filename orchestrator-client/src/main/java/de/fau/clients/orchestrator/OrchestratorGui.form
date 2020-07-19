@@ -1439,8 +1439,12 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="clearQueueMenuItem">
               <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/icons/queue-clear-16px.png"/>
+                </Property>
                 <Property name="mnemonic" type="int" value="99"/>
                 <Property name="text" type="java.lang.String" value="Clear Queue"/>
+                <Property name="toolTipText" type="java.lang.String" value="Clears all entries from the current task queue."/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <Events>
@@ -1453,10 +1457,11 @@
             <MenuItem class="javax.swing.JMenuItem" name="executeAllMenuItem">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/icons/execute-all-start-16px.png"/>
+                  <Image iconType="3" name="/icons/queue-exec-start-16px.png"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="101"/>
                 <Property name="text" type="java.lang.String" value="Execute All"/>
+                <Property name="toolTipText" type="java.lang.String" value="Start executing the current task queue."/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <Events>
@@ -1469,7 +1474,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="addDelayTaskMenuItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Add Delay"/>
-                <Property name="toolTipText" type="java.lang.String" value="Add a delay to the task queue"/>
+                <Property name="toolTipText" type="java.lang.String" value="Add a delay to the task queue."/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addDelayTaskActionPerformed"/>
@@ -1481,6 +1486,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="addLocalExecTaskMenuItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Add Executable"/>
+                <Property name="toolTipText" type="java.lang.String" value="Adds a starter for a local executable or a script."/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addLocalExecTaskActionPerformed"/>
@@ -1631,6 +1637,7 @@
                 </Property>
                 <Property name="mnemonic" type="int" value="97"/>
                 <Property name="text" type="java.lang.String" value="Add"/>
+                <Property name="toolTipText" type="java.lang.String" value="Adds a SiLA server with a given IP address and port."/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addServerActionPerformed"/>
@@ -1651,6 +1658,7 @@
                 </Property>
                 <Property name="mnemonic" type="int" value="99"/>
                 <Property name="text" type="java.lang.String" value="Scan"/>
+                <Property name="toolTipText" type="java.lang.String" value="Scans the network for discoverable SiLA servers."/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scanNetworkActionPerformed"/>
@@ -2793,12 +2801,10 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/icons/document-open.png"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Open File"/>
+            <Property name="text" type="java.lang.String" value="Open"/>
+            <Property name="toolTipText" type="java.lang.String" value="Opens a *.silo file."/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
-            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[42, 42]"/>
-            </Property>
             <Property name="verticalTextPosition" type="int" value="3"/>
           </Properties>
           <Events>
@@ -2813,7 +2819,8 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/icons/document-save.png"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Save File"/>
+            <Property name="text" type="java.lang.String" value="Save"/>
+            <Property name="toolTipText" type="java.lang.String" value="Saves a current queue into a *.silo file."/>
             <Property name="enabled" type="boolean" value="false"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -2821,6 +2828,71 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveFileActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="18"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JToolBar$Separator" name="toolBarSeparator">
+          <Properties>
+            <Property name="separatorSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[24, 12]"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="18"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JButton" name="addDelayBtn">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/icons/delay-add.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Add Delay"/>
+            <Property name="toolTipText" type="java.lang.String" value="Adds a delay in the task queue."/>
+            <Property name="focusable" type="boolean" value="false"/>
+            <Property name="horizontalTextPosition" type="int" value="0"/>
+            <Property name="verticalTextPosition" type="int" value="3"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addDelayTaskActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="18"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JButton" name="addLocalExecBtn">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/icons/exec-add.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Add Exec"/>
+            <Property name="toolTipText" type="java.lang.String" value="Adds a local executable in the task queue."/>
+            <Property name="focusable" type="boolean" value="false"/>
+            <Property name="horizontalTextPosition" type="int" value="0"/>
+            <Property name="verticalTextPosition" type="int" value="3"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addLocalExecTaskActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="18"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JButton" name="clearQueueBtn">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/icons/queue-clear.png"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Clear Queue"/>
+            <Property name="toolTipText" type="java.lang.String" value="Removes all entries from the current task queue."/>
+            <Property name="enabled" type="boolean" value="false"/>
+            <Property name="focusable" type="boolean" value="false"/>
+            <Property name="horizontalTextPosition" type="int" value="0"/>
+            <Property name="verticalTextPosition" type="int" value="3"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="clearQueueActionPerformed"/>
           </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="18"/>
