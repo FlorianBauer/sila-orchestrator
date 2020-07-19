@@ -11,6 +11,7 @@ import java.util.UUID;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -27,6 +28,7 @@ import sila_java.library.manager.models.SiLACall;
 @SuppressWarnings("serial")
 public class PropertyTreeNode extends DefaultMutableTreeNode {
 
+    public static final ImageIcon REFRESH_ICON = new ImageIcon("src/main/resources/icons/refresh.png");
     /**
      * Index to place and update the contents of the panel.
      */
@@ -71,7 +73,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode {
             panel.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createTitledBorder(property.getDisplayName()),
                     BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-            refreshBtn = new JButton("Refresh");
+            refreshBtn = new JButton("Refresh", REFRESH_ICON);
             refreshBtn.addActionListener((ActionEvent evt) -> {
                 refreshBtnActionPerformed();
             });
