@@ -240,7 +240,6 @@ public class CommandTask extends QueueTask {
                     callType,
                     jsonParams);
         }
-        log.info("Command parameters as JSON: \"" + jsonParams + "\"");
 
         try {
             lastExecResult = ServerManager.getInstance().newCallExecutor(call).execute();

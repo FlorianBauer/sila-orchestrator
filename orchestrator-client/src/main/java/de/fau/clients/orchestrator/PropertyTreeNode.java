@@ -111,7 +111,6 @@ public class PropertyTreeNode extends DefaultMutableTreeNode {
         try {
             lastResult = ServerManager.getInstance().newCallExecutor(call).execute();
             wasSuccessful = true;
-            log.info(lastResult);
         } catch (RuntimeException ex) {
             log.error(ex.getMessage());
             lastResult = ex.getMessage();
