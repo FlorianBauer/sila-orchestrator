@@ -5,11 +5,10 @@ import javax.swing.filechooser.FileFilter;
 
 /**
  *
- * @author Florian Bauer <florian.bauer.dev@gmail.com>
  */
 public class SiloFileFilter extends FileFilter {
 
-    private final static String SILO = "silo";
+    private final static String SILO_SUFFIX = "silo";
 
     /*
      * Get the extension of a file.
@@ -29,7 +28,7 @@ public class SiloFileFilter extends FileFilter {
      * Accept all directories and all *.silo files.
      *
      * @param file the file to check
-     * @return true if file filter matches, otherwise false
+     * @return <code>true</code> if file filter matches, otherwise <code>false</code>
      */
     @Override
     public boolean accept(File file) {
@@ -39,7 +38,7 @@ public class SiloFileFilter extends FileFilter {
 
         String ext = getExtension(file);
         if (ext != null) {
-            if (ext.equals(SILO)) {
+            if (ext.equals(SILO_SUFFIX)) {
                 return true;
             }
         }

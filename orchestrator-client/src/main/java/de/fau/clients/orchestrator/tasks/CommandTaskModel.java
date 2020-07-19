@@ -18,7 +18,7 @@ import sila_java.library.core.models.Feature;
 import sila_java.library.manager.models.Server;
 
 /**
- * A class representing the data from a <code>CommandTask</code>. The data of a task is separated
+ * A model class holding the data for a <code>CommandTask</code>. The data of a task is separated
  * from the task itself for reasons of encapsulation and serialization.
  *
  * @see CommandTask
