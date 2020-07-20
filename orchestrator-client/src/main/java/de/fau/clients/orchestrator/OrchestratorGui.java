@@ -2,7 +2,7 @@ package de.fau.clients.orchestrator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
+import de.fau.clients.orchestrator.nodes.TypeDefLut;
 import de.fau.clients.orchestrator.queue.TaskQueueTable;
 import de.fau.clients.orchestrator.tasks.DelayTask;
 import de.fau.clients.orchestrator.tasks.ExecPolicy;

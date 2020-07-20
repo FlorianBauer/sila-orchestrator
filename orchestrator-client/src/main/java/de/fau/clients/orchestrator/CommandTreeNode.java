@@ -1,6 +1,6 @@
 package de.fau.clients.orchestrator;
 
-import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
+import de.fau.clients.orchestrator.nodes.TypeDefLut;
 import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.CommandTaskModel;
 import java.util.UUID;

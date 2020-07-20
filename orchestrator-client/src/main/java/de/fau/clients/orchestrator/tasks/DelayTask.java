@@ -1,6 +1,6 @@
 package de.fau.clients.orchestrator.tasks;
 
-import static de.fau.clients.orchestrator.feature_explorer.BasicNodeFactory.MAX_HEIGHT;
+import static de.fau.clients.orchestrator.nodes.BasicNodeFactory.MAX_HEIGHT;
 import java.awt.Dimension;
 import java.time.OffsetDateTime;
 import javax.swing.BorderFactory;

@@ -1,9 +1,9 @@
 package de.fau.clients.orchestrator.tasks;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import de.fau.clients.orchestrator.feature_explorer.NodeFactory;
-import de.fau.clients.orchestrator.feature_explorer.SilaNode;
-import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
+import de.fau.clients.orchestrator.nodes.NodeFactory;
+import de.fau.clients.orchestrator.nodes.SilaNode;
+import de.fau.clients.orchestrator.nodes.TypeDefLut;
 import java.awt.event.ActionEvent;
 import java.time.OffsetDateTime;
 import java.util.List;

@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator.feature_explorer;
+package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.awt.Dimension;

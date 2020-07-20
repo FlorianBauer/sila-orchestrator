@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator.feature_explorer;
+package de.fau.clients.orchestrator.nodes;
 
 import java.util.HashMap;
 import lombok.NonNull;

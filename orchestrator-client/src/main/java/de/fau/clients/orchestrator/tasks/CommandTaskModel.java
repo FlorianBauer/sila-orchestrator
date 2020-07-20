@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
+import de.fau.clients.orchestrator.nodes.TypeDefLut;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;

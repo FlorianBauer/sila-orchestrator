@@ -2,9 +2,9 @@ package de.fau.clients.orchestrator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.fau.clients.orchestrator.feature_explorer.NodeFactory;
-import de.fau.clients.orchestrator.feature_explorer.SilaNode;
-import de.fau.clients.orchestrator.feature_explorer.TypeDefLut;
+import de.fau.clients.orchestrator.nodes.NodeFactory;
+import de.fau.clients.orchestrator.nodes.SilaNode;
+import de.fau.clients.orchestrator.nodes.TypeDefLut;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.UUID;

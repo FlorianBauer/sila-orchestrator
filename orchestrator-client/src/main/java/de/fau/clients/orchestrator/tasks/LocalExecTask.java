@@ -1,6 +1,6 @@
 package de.fau.clients.orchestrator.tasks;
 
-import static de.fau.clients.orchestrator.feature_explorer.BasicNodeFactory.MAX_HEIGHT;
+import static de.fau.clients.orchestrator.nodes.BasicNodeFactory.MAX_HEIGHT;
 import static de.fau.clients.orchestrator.tasks.QueueTask.TASK_STATE_PROPERTY;
 import java.awt.Dimension;
 import java.io.IOException;

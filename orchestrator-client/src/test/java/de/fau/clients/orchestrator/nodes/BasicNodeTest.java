@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator.feature_explorer;
+package de.fau.clients.orchestrator.nodes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
