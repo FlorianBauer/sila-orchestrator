@@ -1,6 +1,12 @@
-# sila-orchestrator
+# ![sila-orchestrator logo](doc/pictures/sila-orchestrator-128px.png) sila-orchestrator
 
-A SiLA 2 client for coordinating various SiLA 2 services to build one continuous workflow.
+
+A simple, dynamic SiLA 2 client for coordinating various services. The main goal is to easily link 
+different SiLA 2 commands together to create a automated, continuous workflow between distinct 
+devices.
+
+![The sila-orchestrator client](doc/pictures/screenshot.png)
+
 
 ### Build the Project
 
@@ -13,9 +19,12 @@ mvn clean install -DskipTests
 After that, the resulting `*.jar`-file is located in the `orchestrator-client/target`-directory as 
 `orchestrator-client-exec.jar`.
 
+
 ### Usage
 
-Run the SiLA 2 service: `java -jar orchestrator-client-exec.jar`.
+Starting the silo-orchestrator GUI client: `java -jar orchestrator-client-exec.jar`.
+
+Using the client within the command line:
 ```
 Usage: java -jar orchestrator-client-exec.jar [args]
 -h, --help
@@ -25,6 +34,3 @@ Usage: java -jar orchestrator-client-exec.jar [args]
 --about, --info
     Print some general information about this software.
 ```
-
-A SiLA 2 conform browser to inspect the available service(s) can be found here:
-https://gitlab.com/SiLA2/sila_base/-/wikis/SiLA-Browser-Quickstart#run-the-sila-2-browser
