@@ -583,7 +583,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         toolBar.add(saveFileBtn);
 
-        toolBarSeparator.setSeparatorSize(new java.awt.Dimension(24, 12));
+        toolBarSeparator.setSeparatorSize(new java.awt.Dimension(24, 32));
         toolBar.add(toolBarSeparator);
 
         addDelayBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/delay-add.png"))); // NOI18N
