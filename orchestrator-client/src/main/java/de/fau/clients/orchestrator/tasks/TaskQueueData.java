@@ -1,7 +1,11 @@
 package de.fau.clients.orchestrator.tasks;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import de.fau.clients.orchestrator.queue.TaskQueueTable;
+import de.fau.clients.orchestrator.utils.VersionNumber;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
@@ -19,9 +23,9 @@ public class TaskQueueData {
      * Save-file version identifier to allow managing compatibility with potential older or future
      * releases.
      */
-    public static final String SILO_FILE_VERSION = "1.0.0";
+    public static final VersionNumber SILO_FILE_VERSION = new VersionNumber(1, 0, 0);
+    private VersionNumber loadedFile = null;
     private ArrayList<TaskEntry> tasks = null;
-    private String versionOfLoadedFile = "";
 
     /**
      * Creates a <code>TaskQueueData</code> object and populates it with the task-model data for
@@ -73,17 +77,21 @@ public class TaskQueueData {
     }
 
     public void setTasks(ArrayList<TaskEntry> tasks) {
-        if (!versionOfLoadedFile.equalsIgnoreCase(SILO_FILE_VERSION)) {
-            // TODO: add version check
-        }
         this.tasks = tasks;
     }
 
-    public String getSiloFileVersion() {
-        return SILO_FILE_VERSION;
+    @JsonGetter("siloFileVersion")
+    public String getSupportedSiloFileVersion() {
+        return SILO_FILE_VERSION.toString();
     }
 
-    public void setSiloFileVersion(String version) {
-        this.versionOfLoadedFile = version;
+    @JsonSetter("siloFileVersion")
+    public void setSiloFileVersion(final String version) {
+        loadedFile = VersionNumber.parseVersionString(version);
+    }
+
+    @JsonIgnore
+    public VersionNumber getLoadedSiloFileVersion() {
+        return loadedFile;
     }
 }

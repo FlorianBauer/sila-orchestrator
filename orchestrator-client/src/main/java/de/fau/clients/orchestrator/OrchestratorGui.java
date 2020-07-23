@@ -9,7 +9,9 @@ import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.LocalExecTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskQueueData;
+import static de.fau.clients.orchestrator.tasks.TaskQueueData.SILO_FILE_VERSION;
 import de.fau.clients.orchestrator.tasks.TaskState;
+import de.fau.clients.orchestrator.utils.VersionNumber;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -1086,7 +1088,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                         "File \"" + tmpFile.getName() + "\" already exists in \""
                         + tmpFile.getParent() + "\"!\n"
                         + "Do you want to overwrite the existing file?",
-                        null,
+                        "Overwrite File",
                         JOptionPane.INFORMATION_MESSAGE,
                         JOptionPane.YES_NO_CANCEL_OPTION);
             }
@@ -1109,16 +1111,52 @@ public class OrchestratorGui extends javax.swing.JFrame {
             final File file = fileOpenChooser.getSelectedFile();
             log.info("Opend file: " + file.getAbsolutePath());
             ObjectMapper mapper = new ObjectMapper();
-            TaskQueueData tqd = null;
+            final String loadedVersionStr;
+            try {
+                loadedVersionStr = mapper.readTree(file).get("siloFileVersion").asText();
+            } catch (IOException ex) {
+                log.error(ex.getMessage());
+                return;
+            } catch (Exception ex) {
+                log.error("Could not query file version number: " + ex.getMessage());
+                return;
+            }
+
+            boolean isMinorHigher = false;
+            final VersionNumber loadedFile = VersionNumber.parseVersionString(loadedVersionStr);
+            log.info("Silo-file version: " + loadedFile.toString());
+            if (loadedFile.getMajorNumber() > SILO_FILE_VERSION.getMajorNumber()) {
+                JOptionPane.showMessageDialog(this,
+                        "The opened file with its format version " + loadedFile.toString() + " "
+                        + "is not compatible with this Sowftware. \nOnly file formats up to "
+                        + "version " + SILO_FILE_VERSION.toString() + " are supported!",
+                        "Import Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            } else if (loadedFile.getMinorNumber() > SILO_FILE_VERSION.getMinorNumber()) {
+                // minor number is higher, import may fail
+                isMinorHigher = true;
+            }
+
+            final TaskQueueData tqd;
             try {
                 tqd = mapper.readValue(file, TaskQueueData.class);
             } catch (IOException ex) {
-                log.error(ex.getMessage());
+                if (isMinorHigher) {
+                    JOptionPane.showMessageDialog(this,
+                            "The opened file with its format version " + loadedFile.toString() + " "
+                            + "is not compatible with this Sowftware. \nOnly file formats up to "
+                            + "version " + SILO_FILE_VERSION.toString() + " are supported!",
+                            "Import Error",
+                            JOptionPane.ERROR_MESSAGE);
+                } else {
+                    log.error(ex.getMessage());
+                }
+                return;
             }
 
             if (tqd != null) {
                 clearQueueActionPerformed(evt);
-                log.info("Silo-file version: " + tqd.getSiloFileVersion());
                 tqd.importToTaskQueue(taskQueueTable, serverManager.getServers());
                 enableTaskQueueOperations();
             }
