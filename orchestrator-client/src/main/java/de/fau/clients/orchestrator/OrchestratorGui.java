@@ -32,6 +32,8 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
+import javax.swing.event.TableModelEvent;
+import javax.swing.table.TableModel;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -782,6 +784,21 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 taskQueueTableMouseClicked(evt);
             }
         });
+        taskQueueTable.getModel().addTableModelListener((TableModelEvent evt) -> {
+            int evtType = evt.getType();
+            if (evtType == TableModelEvent.INSERT) {
+                final TableModel model = (TableModel) evt.getSource();
+                if (model.getRowCount() == 1) {
+                    enableTaskQueueOperations();
+                }
+            } else if (evtType == TableModelEvent.DELETE) {
+                final TableModel model = (TableModel) evt.getSource();
+                if (model.getRowCount() <= 0) {
+                    disableTaskQueueOperations();
+                    commandScrollPane.setViewportView(null);
+                }
+            }
+        });
         taskQueueScrollPane.setViewportView(taskQueueTable);
     }
 
@@ -918,7 +935,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 final CommandTreeNode cmdNode = (CommandTreeNode) node;
                 // use the selected node to create a new table entry.
                 taskQueueTable.addCommandTask(cmdNode.createTableEntry());
-                enableTaskQueueOperations();
             }
         }
     }//GEN-LAST:event_addTaskToQueueBtnActionPerformed
@@ -1042,11 +1058,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         removeTaskFromQueueBtn.setEnabled(false);
         removeTaskFromQueueMenuItem.setEnabled(false);
         taskQueueTable.removeRow(selectedRowIdx);
-        if (taskQueueTable.getRowCount() <= 0) {
-            // task queue is now empty
-            disableTaskQueueOperations();
-        }
-        commandScrollPane.setViewportView(null);
     }//GEN-LAST:event_removeTaskFromQueue
 
     private void saveFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveFileActionPerformed
@@ -1158,7 +1169,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
             if (tqd != null) {
                 clearQueueActionPerformed(evt);
                 tqd.importToTaskQueue(taskQueueTable, serverManager.getServers());
-                enableTaskQueueOperations();
             }
         } else {
             log.warn("File access cancelled by user.");
@@ -1166,8 +1176,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_openFileActionPerformed
 
     private void clearQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearQueueActionPerformed
-        disableTaskQueueOperations();
-        commandScrollPane.setViewportView(null);
         taskQueueTable.clearTable();
     }//GEN-LAST:event_clearQueueActionPerformed
 
@@ -1183,12 +1191,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
      */
     private void addDelayTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDelayTaskActionPerformed
         taskQueueTable.addTask(new DelayTask());
-        enableTaskQueueOperations();
     }//GEN-LAST:event_addDelayTaskActionPerformed
 
     private void addLocalExecTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLocalExecTaskActionPerformed
         taskQueueTable.addTask(new LocalExecTask());
-        enableTaskQueueOperations();
     }//GEN-LAST:event_addLocalExecTaskActionPerformed
 
     /**
