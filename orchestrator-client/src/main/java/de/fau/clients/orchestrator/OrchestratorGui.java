@@ -2,6 +2,8 @@ package de.fau.clients.orchestrator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.fau.clients.orchestrator.dnd.CommandNodeTransferHandler;
+import de.fau.clients.orchestrator.dnd.TaskExportTransferHandler;
 import de.fau.clients.orchestrator.nodes.TypeDefLut;
 import de.fau.clients.orchestrator.queue.TaskQueueTable;
 import de.fau.clients.orchestrator.tasks.DelayTask;
@@ -31,6 +33,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableModel;
@@ -395,9 +398,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("No Server Available");
         featureTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         featureTree.setCellRenderer(new FeatureTreeRenderer());
+        featureTree.setDragEnabled(true);
         featureTree.setRowHeight(-1);
         featureTree.setVisibleRowCount(10);
         featureTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        featureTree.setTransferHandler(new CommandNodeTransferHandler());
+        featureTree.setDropTarget(null);
         featureTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
                 featureTreeValueChanged(evt);
@@ -596,6 +602,13 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addDelayBtn.setFocusable(false);
         addDelayBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         addDelayBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        addDelayBtn.setTransferHandler(new TaskExportTransferHandler(() -> (new DelayTask())));
+        addDelayBtn.setDropTarget(null);
+        addDelayBtn.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseDragged(java.awt.event.MouseEvent evt) {
+                addTaskBtnMouseDragged(evt);
+            }
+        });
         addDelayBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addDelayTaskActionPerformed(evt);
@@ -609,6 +622,13 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addLocalExecBtn.setFocusable(false);
         addLocalExecBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         addLocalExecBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        addLocalExecBtn.setTransferHandler(new TaskExportTransferHandler(() -> (new LocalExecTask())));
+        addLocalExecBtn.setDropTarget(null);
+        addLocalExecBtn.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseDragged(java.awt.event.MouseEvent evt) {
+                addTaskBtnMouseDragged(evt);
+            }
+        });
         addLocalExecBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addLocalExecTaskActionPerformed(evt);
@@ -1196,6 +1216,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private void addLocalExecTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLocalExecTaskActionPerformed
         taskQueueTable.addTask(new LocalExecTask());
     }//GEN-LAST:event_addLocalExecTaskActionPerformed
+
+    private void addTaskBtnMouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addTaskBtnMouseDragged
+        JComponent comp = (JComponent) evt.getSource();
+        TransferHandler handler = comp.getTransferHandler();
+        handler.exportAsDrag(comp, evt, TransferHandler.COPY);
+    }//GEN-LAST:event_addTaskBtnMouseDragged
 
     /**
      * Enables all the GUI controls which actions can be applied on entries in the task queue. This

@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator.queue;
 
+import de.fau.clients.orchestrator.dnd.TaskImportTransferHandler;
 import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.QueueTask;
@@ -10,6 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import javax.swing.DefaultCellEditor;
+import javax.swing.DropMode;
 import javax.swing.InputVerifier;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
@@ -82,6 +84,9 @@ public class TaskQueueTable extends JTable {
         this.setFillsViewportHeight(true);
         this.setRowHeight(32);
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.setTransferHandler(new TaskImportTransferHandler());
+        this.setDragEnabled(false);
+        this.setDropMode(DropMode.INSERT_ROWS);
         tch = new TableColumnHider(columnModel, COLUMN_TITLES);
         final TableColumn taskColumn = columnModel.getColumn(COLUMN_TASK_ID_IDX);
         taskColumn.setPreferredWidth(40);
