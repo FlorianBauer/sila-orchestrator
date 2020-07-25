@@ -16,50 +16,104 @@ import lombok.extern.slf4j.Slf4j;
 class TaskQueueTableModel extends DefaultTableModel {
 
     /**
-     * Adds the given command entry to the table and registers a change listener on the state
-     * property.
+     * Adds the given command task at the end of the table and registers a change listener on the
+     * state property.
      *
      * @param taskId The task ID to use for this entry.
-     * @param cmdEntry The command entry to add.
+     * @param cmdTask The command task to add.
      * @param policy The execution policy to add or <code>null</code> for default value
      * <code>ExecPolicy.HALT_AFTER_ERROR</code>.
      *
      * @see ExecPolicy
      */
-    protected void addCommandTableEntry(
+    protected void addCommandTask(
             int taskId,
-            final CommandTask cmdEntry,
+            final CommandTask cmdTask,
             final ExecPolicy policy) {
         final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         addRow(new Object[]{
             taskId,
-            cmdEntry,
-            cmdEntry.getState(),
-            cmdEntry.getServerUuid(),
-            cmdEntry.getStartTimeStamp(),
-            cmdEntry.getEndTimeStamp(),
-            cmdEntry.getDuration(),
-            cmdEntry.getLastExecResult(),
+            cmdTask,
+            cmdTask.getState(),
+            cmdTask.getServerUuid(),
+            cmdTask.getStartTimeStamp(),
+            cmdTask.getEndTimeStamp(),
+            cmdTask.getDuration(),
+            cmdTask.getLastExecResult(),
             pol});
-        addStateListener(cmdEntry);
+        addStateListener(cmdTask);
     }
 
-    protected void addTaskEntry(
+    /**
+     * Inserts a command task at the given row index of the table and registers a change listener on
+     * the state property.
+     *
+     * @param index The row index of the table where to insert the task.
+     * @param taskId The task ID to use for this entry.
+     * @param cmdTask The command task to add.
+     * @param policy The execution policy to add or <code>null</code> for default value
+     * <code>ExecPolicy.HALT_AFTER_ERROR</code>.
+     *
+     * @see ExecPolicy
+     * @see #addTask()
+     * @see #addCommandTask()
+     */
+    protected void insertCommandTask(
+            int index,
             int taskId,
-            final QueueTask taskEntry,
+            final CommandTask cmdTask,
+            final ExecPolicy policy) {
+        final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
+        insertRow(index,
+                new Object[]{
+                    taskId,
+                    cmdTask,
+                    cmdTask.getState(),
+                    cmdTask.getServerUuid(),
+                    cmdTask.getStartTimeStamp(),
+                    cmdTask.getEndTimeStamp(),
+                    cmdTask.getDuration(),
+                    cmdTask.getLastExecResult(),
+                    pol});
+        addStateListener(cmdTask);
+    }
+
+    protected void addTask(
+            int taskId,
+            final QueueTask task,
             final ExecPolicy policy) {
         final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         addRow(new Object[]{
             taskId,
-            taskEntry,
-            taskEntry.getState(),
+            task,
+            task.getState(),
             "",
-            taskEntry.getStartTimeStamp(),
-            taskEntry.getEndTimeStamp(),
-            taskEntry.getDuration(),
-            taskEntry.getLastExecResult(),
+            task.getStartTimeStamp(),
+            task.getEndTimeStamp(),
+            task.getDuration(),
+            task.getLastExecResult(),
             pol});
-        addStateListener(taskEntry);
+        addStateListener(task);
+    }
+
+    protected void insertTask(
+            int index,
+            int taskId,
+            final QueueTask task,
+            final ExecPolicy policy) {
+        final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
+        insertRow(index,
+                new Object[]{
+                    taskId,
+                    task,
+                    task.getState(),
+                    "",
+                    task.getStartTimeStamp(),
+                    task.getEndTimeStamp(),
+                    task.getDuration(),
+                    task.getLastExecResult(),
+                    pol});
+        addStateListener(task);
     }
 
     private void addStateListener(final QueueTask taskEntry) {

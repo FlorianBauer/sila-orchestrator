@@ -207,11 +207,30 @@ public class TaskQueueTable extends JTable {
      * Adds the given command task to the queue table.
      *
      * @param cmdTask The command task to add.
+     *
+     * @see CommandTask
      */
     public void addCommandTask(final CommandTask cmdTask) {
         addUuidToSelectionSet(cmdTask.getServerUuid());
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
-        tqtModel.addCommandTableEntry(generateAndRegisterTaskId(),
+        tqtModel.addCommandTask(generateAndRegisterTaskId(),
+                cmdTask,
+                ExecPolicy.HALT_AFTER_ERROR);
+    }
+
+    /**
+     * Inserts the given command task into the queue table at the given row index.
+     *
+     * @param idx The row index position in the table where to insert the task.
+     * @param cmdTask The command task to add.
+     *
+     * @see CommandTask
+     */
+    public void insertCommandTask(int idx, final CommandTask cmdTask) {
+        addUuidToSelectionSet(cmdTask.getServerUuid());
+        final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
+        tqtModel.insertCommandTask(idx,
+                generateAndRegisterTaskId(),
                 cmdTask,
                 ExecPolicy.HALT_AFTER_ERROR);
     }
@@ -222,6 +241,8 @@ public class TaskQueueTable extends JTable {
      * @param taskId The task ID to use for this entry.
      * @param cmdTask The command task to add.
      * @param policy The execution policy.
+     *
+     * @see CommandTask
      */
     public void addCommandTaskWithId(
             int taskId,
@@ -235,17 +256,34 @@ public class TaskQueueTable extends JTable {
         }
         addUuidToSelectionSet(cmdTask.getServerUuid());
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
-        tqtModel.addCommandTableEntry(uniqueId, cmdTask, policy);
+        tqtModel.addCommandTask(uniqueId, cmdTask, policy);
     }
 
     /**
-     * Adds the given queue task to the table.
+     * Adds the given queue task to the table. The execution policy is set to
+     * <code>ExecPolicy.HALT_AFTER_ERROR</code> on default.
      *
      * @param task The queue task to add.
+     *
+     * @see QueueTask
      */
     public void addTask(final QueueTask task) {
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
-        tqtModel.addTaskEntry(generateAndRegisterTaskId(), task, ExecPolicy.HALT_AFTER_ERROR);
+        tqtModel.addTask(generateAndRegisterTaskId(), task, ExecPolicy.HALT_AFTER_ERROR);
+    }
+
+    /**
+     * Inserts the given command task into the queue table at the given row index. The execution
+     * policy is set to <code>ExecPolicy.HALT_AFTER_ERROR</code> on default.
+     *
+     * @param idx The row index position in the table where to insert the task.
+     * @param task The queue task to add.
+     *
+     * @see QueueTask
+     */
+    public void insertTask(int idx, final QueueTask task) {
+        final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
+        tqtModel.insertTask(idx, generateAndRegisterTaskId(), task, ExecPolicy.HALT_AFTER_ERROR);
     }
 
     /**
@@ -254,6 +292,8 @@ public class TaskQueueTable extends JTable {
      * @param taskId The task ID to use for this entry.
      * @param task The queue task to add.
      * @param policy The execution policy.
+     *
+     * @see QueueTask
      */
     public void addTaskWithId(int taskId, final QueueTask task, final ExecPolicy policy) {
         final int uniqueId;
@@ -263,7 +303,7 @@ public class TaskQueueTable extends JTable {
             uniqueId = generateAndRegisterTaskId();
         }
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
-        tqtModel.addTaskEntry(uniqueId, task, policy);
+        tqtModel.addTask(uniqueId, task, policy);
     }
 
     /**
