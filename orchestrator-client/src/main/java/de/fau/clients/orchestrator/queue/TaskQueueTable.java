@@ -84,6 +84,8 @@ public class TaskQueueTable extends JTable {
         this.setFillsViewportHeight(true);
         this.setRowHeight(32);
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.setRowSelectionAllowed(true);
+        this.setColumnSelectionAllowed(false);
         this.setTransferHandler(new TaskImportTransferHandler());
         this.setDragEnabled(false);
         this.setDropMode(DropMode.INSERT_ROWS);

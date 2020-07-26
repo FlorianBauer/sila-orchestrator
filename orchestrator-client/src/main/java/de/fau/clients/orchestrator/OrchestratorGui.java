@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableModel;
 import javax.swing.text.DefaultFormatterFactory;
@@ -819,6 +820,32 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 }
             }
         });
+        taskQueueTable.getSelectionModel().addListSelectionListener((ListSelectionEvent lse) -> {
+            if (lse.getValueIsAdjusting()) {
+                return;
+            }
+            int selectedRowIdx = taskQueueTable.getSelectedRow();
+            if (selectedRowIdx < 0) {
+                return;
+            }
+            int rowCount = taskQueueTable.getRowCount();
+            if (rowCount > 1) {
+                moveTaskUpBtn.setEnabled(selectedRowIdx > 0);
+                moveTaskDownBtn.setEnabled(selectedRowIdx < rowCount - 1);
+            } else {
+                moveTaskUpBtn.setEnabled(false);
+                moveTaskDownBtn.setEnabled(false);
+            }
+
+            final boolean isTaskRemoveEnabled = (rowCount > 0);
+            removeTaskFromQueueBtn.setEnabled(isTaskRemoveEnabled);
+            removeTaskFromQueueMenuItem.setEnabled(isTaskRemoveEnabled);
+            final QueueTask entry = taskQueueTable.getTaskFromRow(selectedRowIdx);
+            if (entry == null) {
+                return;
+            }
+            commandScrollPane.setViewportView(entry.getPanel());
+        });
         taskQueueScrollPane.setViewportView(taskQueueTable);
     }
 
@@ -831,27 +858,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         // show popup-menu on right-click
         if (evt.getButton() == MouseEvent.BUTTON3) {
             taskQueuePopupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-            return;
         }
-
-        final QueueTask entry = taskQueueTable.getTaskFromRow(selectedRowIdx);
-        if (entry == null) {
-            return;
-        }
-
-        int rowCount = taskQueueTable.getRowCount();
-        if (rowCount > 1) {
-            moveTaskUpBtn.setEnabled(selectedRowIdx > 0);
-            moveTaskDownBtn.setEnabled(selectedRowIdx < rowCount - 1);
-        } else {
-            moveTaskUpBtn.setEnabled(false);
-            moveTaskDownBtn.setEnabled(false);
-        }
-
-        final boolean isTaskRemoveEnabled = (rowCount > 0);
-        removeTaskFromQueueBtn.setEnabled(isTaskRemoveEnabled);
-        removeTaskFromQueueMenuItem.setEnabled(isTaskRemoveEnabled);
-        commandScrollPane.setViewportView(entry.getPanel());
     }
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
