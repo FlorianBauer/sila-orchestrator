@@ -15,8 +15,8 @@ import static de.fau.clients.orchestrator.tasks.TaskQueueData.SILO_FILE_VERSION;
 import de.fau.clients.orchestrator.tasks.TaskState;
 import de.fau.clients.orchestrator.utils.VersionNumber;
 import java.awt.Image;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,10 +27,12 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
@@ -352,6 +354,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         removeTaskFromQueueMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/task-remove-16px.png"))); // NOI18N
         removeTaskFromQueueMenuItem.setMnemonic('r');
         removeTaskFromQueueMenuItem.setText("Remove Entry");
+        removeTaskFromQueueMenuItem.setEnabled(false);
         removeTaskFromQueueMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeTaskFromQueue(evt);
@@ -362,6 +365,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         execRowEntryMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/execute-16px.png"))); // NOI18N
         execRowEntryMenuItem.setMnemonic('x');
         execRowEntryMenuItem.setText("Execute Entry");
+        execRowEntryMenuItem.setEnabled(false);
         execRowEntryMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 execRowEntryMenuItemActionPerformed(evt);
@@ -799,12 +803,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private void initTaskQueueTable() {
         taskQueueTable.setServerManager(serverManager);
         taskQueueTable.setParamsPane(commandScrollPane);
-        taskQueueTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent evt) {
-                taskQueueTableMouseClicked(evt);
-            }
-        });
+        taskQueueTable.setComponentPopupMenu(taskQueuePopupMenu);
+        taskQueueScrollPane.setViewportView(taskQueueTable);
         taskQueueTable.getModel().addTableModelListener((TableModelEvent evt) -> {
             int evtType = evt.getType();
             if (evtType == TableModelEvent.INSERT) {
@@ -840,25 +840,20 @@ public class OrchestratorGui extends javax.swing.JFrame {
             final boolean isTaskRemoveEnabled = (rowCount > 0);
             removeTaskFromQueueBtn.setEnabled(isTaskRemoveEnabled);
             removeTaskFromQueueMenuItem.setEnabled(isTaskRemoveEnabled);
+            execRowEntryMenuItem.setEnabled(isTaskRemoveEnabled);
             final QueueTask entry = taskQueueTable.getTaskFromRow(selectedRowIdx);
             if (entry == null) {
                 return;
             }
             commandScrollPane.setViewportView(entry.getPanel());
         });
-        taskQueueScrollPane.setViewportView(taskQueueTable);
-    }
-
-    private void taskQueueTableMouseClicked(final MouseEvent evt) {
-        int selectedRowIdx = taskQueueTable.getSelectedRow();
-        if (selectedRowIdx < 0) {
-            return;
-        }
-
-        // show popup-menu on right-click
-        if (evt.getButton() == MouseEvent.BUTTON3) {
-            taskQueuePopupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-        }
+        taskQueueTable.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "removeTask");
+        taskQueueTable.getActionMap().put("removeTask", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                removeTaskFromQueue(evt);
+            }
+        });
     }
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
@@ -1084,6 +1079,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         moveTaskDownBtn.setEnabled(false);
         removeTaskFromQueueBtn.setEnabled(false);
         removeTaskFromQueueMenuItem.setEnabled(false);
+        execRowEntryMenuItem.setEnabled(false);
         taskQueueTable.removeRow(selectedRowIdx);
     }//GEN-LAST:event_removeTaskFromQueue
 
@@ -1260,6 +1256,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         saveAsMenuItem.setEnabled(false);
         moveTaskUpBtn.setEnabled(false);
         moveTaskDownBtn.setEnabled(false);
+        removeTaskFromQueueBtn.setEnabled(false);
+        removeTaskFromQueueMenuItem.setEnabled(false);
+        execRowEntryMenuItem.setEnabled(false);
     }
 
     private String getSaveData() {

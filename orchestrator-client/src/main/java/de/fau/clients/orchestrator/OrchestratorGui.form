@@ -1257,6 +1257,7 @@
             </Property>
             <Property name="mnemonic" type="int" value="114"/>
             <Property name="text" type="java.lang.String" value="Remove Entry"/>
+            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeTaskFromQueue"/>
@@ -1272,6 +1273,7 @@
             </Property>
             <Property name="mnemonic" type="int" value="120"/>
             <Property name="text" type="java.lang.String" value="Execute Entry"/>
+            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="execRowEntryMenuItemActionPerformed"/>
