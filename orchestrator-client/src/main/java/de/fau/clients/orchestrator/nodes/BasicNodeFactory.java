@@ -18,7 +18,9 @@ import javax.swing.SpinnerNumberModel;
 import sila_java.library.core.models.BasicType;
 
 /**
- * A Factory for <code>BasicNode</code>-Objects. See also {@link BasicNode}.
+ * A Factory for <code>BasicNode</code> objects.
+ *
+ * @see BasicNode
  */
 public final class BasicNodeFactory {
 
