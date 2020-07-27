@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
@@ -1147,58 +1148,20 @@ public class OrchestratorGui extends javax.swing.JFrame {
         int retVal = fileOpenChooser.showOpenDialog(this);
         if (retVal == JFileChooser.APPROVE_OPTION) {
             final File file = fileOpenChooser.getSelectedFile();
-            log.info("Opend file: " + file.getAbsolutePath());
-            ObjectMapper mapper = new ObjectMapper();
-            final String loadedVersionStr;
-            try {
-                loadedVersionStr = mapper.readTree(file).get("siloFileVersion").asText();
-            } catch (IOException ex) {
-                log.error(ex.getMessage());
-                return;
-            } catch (Exception ex) {
-                log.error("Could not query file version number: " + ex.getMessage());
-                return;
-            }
 
-            boolean isMinorHigher = false;
-            final VersionNumber loadedFile = VersionNumber.parseVersionString(loadedVersionStr);
-            log.info("Silo-file version: " + loadedFile.toString());
-            if (loadedFile.getMajorNumber() > SILO_FILE_VERSION.getMajorNumber()) {
-                JOptionPane.showMessageDialog(this,
-                        "The opened file with its format version " + loadedFile.toString() + " "
-                        + "is not compatible with this Sowftware. \nOnly file formats up to "
-                        + "version " + SILO_FILE_VERSION.toString() + " are supported!",
-                        "Import Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            } else if (loadedFile.getMinorNumber() > SILO_FILE_VERSION.getMinorNumber()) {
-                // minor number is higher, import may fail
-                isMinorHigher = true;
-            }
-
-            final TaskQueueData tqd;
-            try {
-                tqd = mapper.readValue(file, TaskQueueData.class);
-            } catch (IOException ex) {
-                if (isMinorHigher) {
+            StringBuilder outMsg = new StringBuilder();
+            final TaskQueueData tqd = loadQueueDataFromSiloFile(file.getAbsolutePath(), outMsg);
+            if (tqd == null) {
+                if (!outMsg.toString().isEmpty()) {
                     JOptionPane.showMessageDialog(this,
-                            "The opened file with its format version " + loadedFile.toString() + " "
-                            + "is not compatible with this Sowftware. \nOnly file formats up to "
-                            + "version " + SILO_FILE_VERSION.toString() + " are supported!",
+                            outMsg,
                             "Import Error",
                             JOptionPane.ERROR_MESSAGE);
-                } else {
-                    log.error(ex.getMessage());
                 }
                 return;
             }
-
-            if (tqd != null) {
-                clearQueueActionPerformed(evt);
-                tqd.importToTaskQueue(taskQueueTable, serverManager.getServers());
-            }
-        } else {
-            log.warn("File access cancelled by user.");
+            clearQueueActionPerformed(evt);
+            tqd.importToTaskQueue(taskQueueTable, serverManager.getServers());
         }
     }//GEN-LAST:event_openFileActionPerformed
 
@@ -1275,6 +1238,74 @@ public class OrchestratorGui extends javax.swing.JFrame {
             log.error(ex.getMessage());
         }
         return outData;
+    }
+
+    /**
+     * Loads the given *.silo file and returns its content as <code>TaskQueueData</code> object for
+     * further processing.
+     *
+     * @param siloFile The path to the *.silo file.
+     * @param outMsg The output for user messages (e.g. the appropriate error message on failure).
+     * @return The initialized <code>TaskQueueData</code> object containing the data from the file
+     * or <code>null</code> on error.
+     *
+     * @see TaskQueueData
+     */
+    public static TaskQueueData loadQueueDataFromSiloFile(
+            final String siloFile,
+            StringBuilder outMsg) {
+        Path filePath = Paths.get(siloFile);
+        if (Files.notExists(filePath)) {
+            outMsg.append("Could not find file \"").append(filePath).append("\".");
+            return null;
+        }
+
+        log.info("Opend file: " + filePath);
+        ObjectMapper mapper = new ObjectMapper();
+        final String loadedVersionStr;
+        try {
+            loadedVersionStr = mapper.readTree(Files.newInputStream(filePath))
+                    .get("siloFileVersion")
+                    .asText();
+        } catch (IOException ex) {
+            outMsg.append(ex.getMessage());
+            return null;
+        } catch (Exception ex) {
+            outMsg.append("Could not query file version number: ").append(ex.getMessage());
+            return null;
+        }
+
+        boolean isMinorHigher = false;
+        final VersionNumber loadedFile = VersionNumber.parseVersionString(loadedVersionStr);
+        log.info("Silo-file version: " + loadedFile.toString());
+        if (loadedFile.getMajorNumber() > SILO_FILE_VERSION.getMajorNumber()) {
+            final String errMsg = "The opened file with its format version "
+                    + loadedFile.toString() + " is not compatible with this Sowftware."
+                    + "\nOnly file formats up to version " + SILO_FILE_VERSION.toString()
+                    + " are supported!";
+            outMsg.append(errMsg);
+            return null;
+        } else if (loadedFile.getMinorNumber() > SILO_FILE_VERSION.getMinorNumber()) {
+            // minor number is higher, import may fail
+            isMinorHigher = true;
+        }
+
+        final TaskQueueData tqd;
+        try {
+            tqd = mapper.readValue(Files.newInputStream(filePath), TaskQueueData.class);
+        } catch (IOException ex) {
+            if (isMinorHigher) {
+                final String errMsg = "The opened file with its format version "
+                        + loadedFile.toString() + " is not compatible with this Sowftware."
+                        + "\nOnly file formats up to version " + SILO_FILE_VERSION.toString()
+                        + " are supported!";
+                outMsg.append(errMsg);
+            } else {
+                outMsg.append(ex.getMessage());
+            }
+            return null;
+        }
+        return tqd;
     }
 
     /**
