@@ -175,12 +175,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
      * Creates new form OrchestratorGui
      */
     public OrchestratorGui() {
-        try {
-            serverManager = ServerManager.getInstance();
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-            System.exit(1);
-        }
         initComponents();
         initTaskQueueTable();
     }
@@ -1316,6 +1310,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         try {
             // retrieve version info from the maven git plug-in
             properties.load(OrchestratorGui.class.getClassLoader().getResourceAsStream("git.properties"));
+            serverManager = ServerManager.getInstance();
         } catch (IOException ex) {
             log.error(ex.getMessage());
             System.exit(1);
@@ -1329,7 +1324,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         if (args.length > 0) {
             // arguments were set, so we handel erverything in command line and ditch the GUI stuff
-            for (final String arg : args) {
+            for (int i = 0; i < args.length; i++) {
+                final String arg = args[i];
                 if (arg.equalsIgnoreCase("-h") || arg.equalsIgnoreCase("--help")) {
                     System.out.println("Usage: java -jar orchestrator-client-exec.jar [args]"
                             + "\n -h, --help"
@@ -1337,7 +1333,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
                             + "\n -v, --version"
                             + "\n\t Print the version number."
                             + "\n --about, --info"
-                            + "\n\t Print some general information about this software.");
+                            + "\n\t Print some general information about this software."
+                            + "\n -x <silo file>, --execute <silo file>"
+                            + "\n\t Loads and executes the provided silo file.");
                 } else if (arg.equalsIgnoreCase("-v") || arg.equalsIgnoreCase("--version")) {
                     System.out.println(silaOrchestratorVersion);
                 } else if (arg.equalsIgnoreCase("--about") || arg.equalsIgnoreCase("--info")) {
@@ -1349,6 +1347,42 @@ public class OrchestratorGui extends javax.swing.JFrame {
                             + "\n Git Repository: " + gitRepositoryUrl
                             + "\n E-Mail: florian.bauer.dev@gmail.com"
                             + "\n License: Apache-2.0");
+                } else if (arg.equalsIgnoreCase("-x") || arg.equalsIgnoreCase("--execute")) {
+                    if (i + 1 < args.length) {
+                        final String siloFile = args[i + 1];
+                        StringBuilder outMsg = new StringBuilder();
+                        TaskQueueData tcd = OrchestratorGui.loadQueueDataFromSiloFile(siloFile, outMsg);
+                        if (tcd != null) {
+                            TaskQueueTable tqt = new TaskQueueTable();
+                            tcd.importToTaskQueue(tqt, serverManager.getServers());
+                            for (int j = 0; j < tqt.getRowCount(); j++) {
+                                final QueueTask task = tqt.getTaskFromRow(j);
+                                task.run();
+                                if (task.getState() == TaskState.FINISHED_ERROR) {
+                                    // apply execution policy
+                                    if (tqt.getTaskPolicyFromRow(i) == ExecPolicy.HALT_AFTER_ERROR) {
+                                        System.out.println("Halted after task #" + j
+                                                + " \"" + task.toString()
+                                                + "\" with state " + task.getState().toString()
+                                                + " at " + task.getEndTimeStamp() + ".");
+                                        break;
+                                    }
+                                } else {
+                                    System.out.println("Finished task #" + j
+                                            + " \"" + task.toString()
+                                            + "\" with state " + task.getState().toString()
+                                            + " at " + task.getEndTimeStamp() + ".");
+                                }
+                            }
+                        } else {
+                            System.err.println(outMsg);
+                        }
+                        i++;
+                    } else {
+                        System.err.println("Path to silo file is missing.");
+                    }
+                } else {
+                    System.err.println("Unknown argument \"" + arg + "\".");
                 }
             }
             System.exit(0);
