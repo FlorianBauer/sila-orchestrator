@@ -68,12 +68,12 @@ public class DelayTask extends QueueTask {
     }
 
     /**
-     * Presenter
+     * Presenter which widgets to adjust the minutes, seconds, and milliseconds properties.
      *
-     * @return
+     * @return A <code>JPanel</code> populated with widgets for delay adjustments.
      */
     @Override
-    public JPanel getPanel() {
+    public JPanel getPresenter() {
         if (!isPanelBuilt) {
             panel = new JPanel();
             panel.setAlignmentX(JComponent.LEFT_ALIGNMENT);

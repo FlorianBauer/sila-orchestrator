@@ -845,7 +845,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             if (entry == null) {
                 return;
             }
-            commandScrollPane.setViewportView(entry.getPanel());
+            commandScrollPane.setViewportView(entry.getPresenter());
         });
         taskQueueTable.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "removeTask");
         taskQueueTable.getActionMap().put("removeTask", new AbstractAction() {

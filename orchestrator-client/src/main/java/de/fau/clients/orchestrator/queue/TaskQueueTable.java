@@ -350,7 +350,7 @@ public class TaskQueueTable extends JTable {
                 dataModel.setValueAt(task.getState(), editingRow, COLUMN_STATE_IDX);
                 if (paramsPane != null) {
                     // update the parameter panel if available
-                    paramsPane.setViewportView(task.getPanel());
+                    paramsPane.setViewportView(task.getPresenter());
                 }
             }
         }

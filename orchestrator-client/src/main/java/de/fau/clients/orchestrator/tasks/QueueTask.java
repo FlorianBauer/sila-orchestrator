@@ -35,13 +35,14 @@ public abstract class QueueTask implements Runnable {
     abstract public TaskModel getCurrentTaskModel();
 
     /**
-     * Gets a <code>JPanel</code> for the parameter-view. This mechanism should be used to populate
-     * a panel with controls, which allows the user to set the parameters of an task. A returned
-     * <code>null</code> value sets the parameter-view empty.
+     * Gets a <code>JPanel</code> for adjusting the task properties in the parameter-view. This
+     * mechanism should be used to populate a panel with controls and widgets, which allows the user
+     * to set the parameters of an task. A returned <code>null</code> value sets the parameter-view
+     * empty.
      *
      * @return The panel to set task parameters or <code>null</code>.
      */
-    public JPanel getPanel() {
+    public JPanel getPresenter() {
         return null;
     }
 

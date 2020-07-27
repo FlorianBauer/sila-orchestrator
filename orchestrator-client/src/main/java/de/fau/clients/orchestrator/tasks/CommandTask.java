@@ -84,7 +84,7 @@ public class CommandTask extends QueueTask {
      * @return A populated JPanel.
      */
     @Override
-    public JPanel getPanel() {
+    public JPanel getPresenter() {
         if (!commandModel.isValid()) {
             return null;
         }

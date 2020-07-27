@@ -98,7 +98,7 @@ public class LocalExecTask extends QueueTask {
     }
 
     @Override
-    public JPanel getPanel() {
+    public JPanel getPresenter() {
         if (!isPanelBuilt) {
             panel = new JPanel();
             panel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
