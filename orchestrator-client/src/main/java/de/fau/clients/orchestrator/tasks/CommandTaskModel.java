@@ -3,6 +3,8 @@ package de.fau.clients.orchestrator.tasks;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRawValue;
@@ -25,6 +27,7 @@ import sila_java.library.manager.models.Server;
  * @see TaskModel
  */
 @Slf4j
+@JsonInclude(Include.NON_NULL)
 @JsonPropertyOrder({"serverUuid", "featureId", "commandId", "commandParams"})
 public class CommandTaskModel extends TaskModel {
 
@@ -35,7 +38,7 @@ public class CommandTaskModel extends TaskModel {
     private TypeDefLut typeDefs = null;
     private final String commandId;
     private Feature.Command command = null;
-    private String cmdParamsAsString = "";
+    private String cmdParamsAsString = null;
     private JsonNode cmdParamsAsJsonNode = null;
 
     public CommandTaskModel(

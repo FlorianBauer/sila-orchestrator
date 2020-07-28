@@ -20,6 +20,8 @@ import sila_java.library.manager.models.Server;
 
 /**
  * Class responsible for importing and exporting the task-queue from/to a JSON-file.
+ *
+ * @see TaskEntry
  */
 @Slf4j
 @JsonPropertyOrder({"siloFileVersion", "tasks"})
@@ -29,7 +31,7 @@ public class TaskQueueData {
      * Save-file version identifier to allow managing compatibility with potential older or future
      * releases.
      */
-    public static final VersionNumber SILO_FILE_VERSION = new VersionNumber(1, 0, 0);
+    public static final VersionNumber SILO_FILE_VERSION = new VersionNumber(1, 0, 1);
     private static final ObjectMapper mapper = new ObjectMapper();
     private VersionNumber loadedFile = null;
     private ArrayList<TaskEntry> tasks = null;
