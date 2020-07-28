@@ -53,8 +53,8 @@ public class CommandTask extends QueueTask {
     }
 
     /**
-     * Gets the current <code>CommandTaskModel</code> by collecting the set parameters form the view
-     * and storing them in the data-model.
+     * Gets the current <code>CommandTaskModel</code> by collecting the set parameters form the
+     * presenter and stores them in the data-model.
      *
      * @return The task-model of the command with the current parameters.
      * @see TaskModel
@@ -135,7 +135,7 @@ public class CommandTask extends QueueTask {
                 return true;
             }
 
-            JsonNode cmdParams = commandModel.getCommandParamsAsJsonNode();
+            final JsonNode cmdParams = commandModel.getCommandParamsAsJsonNode();
             if (cmdParams == null) {
                 cmdNode = NodeFactory.createFromElements(commandModel.getTypeDefs(), params);
             } else {
