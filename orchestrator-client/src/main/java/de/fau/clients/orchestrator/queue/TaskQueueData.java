@@ -1,11 +1,18 @@
-package de.fau.clients.orchestrator.tasks;
+package de.fau.clients.orchestrator.queue;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.fau.clients.orchestrator.queue.TaskQueueTable;
+import de.fau.clients.orchestrator.tasks.CommandTask;
+import de.fau.clients.orchestrator.tasks.CommandTaskModel;
+import de.fau.clients.orchestrator.tasks.DelayTask;
+import de.fau.clients.orchestrator.tasks.DelayTaskModel;
+import de.fau.clients.orchestrator.tasks.LocalExecTask;
+import de.fau.clients.orchestrator.tasks.LocalExecTaskModel;
+import de.fau.clients.orchestrator.tasks.TaskEntry;
+import de.fau.clients.orchestrator.tasks.TaskModel;
 import de.fau.clients.orchestrator.utils.VersionNumber;
 import java.io.BufferedWriter;
 import java.io.IOException;
