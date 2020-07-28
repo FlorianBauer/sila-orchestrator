@@ -1,7 +1,5 @@
 package de.fau.clients.orchestrator;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.dnd.CommandNodeTransferHandler;
 import de.fau.clients.orchestrator.dnd.TaskExportTransferHandler;
 import de.fau.clients.orchestrator.nodes.TypeDefLut;
@@ -11,15 +9,12 @@ import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.LocalExecTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskQueueData;
-import static de.fau.clients.orchestrator.tasks.TaskQueueData.SILO_FILE_VERSION;
 import de.fau.clients.orchestrator.tasks.TaskState;
-import de.fau.clients.orchestrator.utils.VersionNumber;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -81,7 +76,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final TaskQueueTable taskQueueTable = new TaskQueueTable();
     private boolean isOnExecution = false;
     private boolean wasSaved = false;
-    private String outFilePath = "";
+    private Path outFilePath = null;
     private Thread currentlyExecutedTaskThread = null;
 
     private void addSpecificServer() {
@@ -1083,18 +1078,13 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_removeTaskFromQueue
 
     private void saveFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveFileActionPerformed
-        if (!wasSaved || outFilePath.isEmpty()) {
+        if (!wasSaved || outFilePath == null) {
             saveAsActionPerformed(evt);
         } else {
-            // TODO: give the user some kind of notificatin that the file was saved
-            String outData = getSaveData();
-            if (outData.isEmpty()) {
-                log.warn("Empty save!");
-                return;
-            }
-
+            // TODO: give the user some kind of notification that the file was saved
+            final TaskQueueData tqd = TaskQueueData.createFromTaskQueue(taskQueueTable);
             try {
-                Files.writeString(Paths.get(outFilePath), outData, StandardCharsets.UTF_8);
+                TaskQueueData.writeToFile(outFilePath, tqd);
                 log.info("Saved " + outFilePath);
             } catch (IOException ex) {
                 log.error(ex.getMessage());
@@ -1103,23 +1093,16 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_saveFileActionPerformed
 
     private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
-        String outData = getSaveData();
-        if (outData.isEmpty()) {
-            log.warn("Empty save!");
-            return;
-        }
-
         fileSaveAsChooser.setSelectedFile(new File(LocalDate.now().toString() + ".silo"));
         int retVal = fileSaveAsChooser.showSaveDialog(this);
         if (retVal == JFileChooser.APPROVE_OPTION) {
-            File outFile = fileSaveAsChooser.getSelectedFile();
-            outFilePath = outFile.getAbsolutePath();
-            File tmpFile = new File(outFilePath);
+            final Path outPath = Paths.get(fileSaveAsChooser.getSelectedFile().getAbsolutePath());
+            outFilePath = outPath;
             int userDesition = JOptionPane.OK_OPTION;
-            if (tmpFile.exists() && tmpFile.isFile()) {
+            if (Files.exists(outPath)) {
                 userDesition = JOptionPane.showConfirmDialog(this,
-                        "File \"" + tmpFile.getName() + "\" already exists in \""
-                        + tmpFile.getParent() + "\"!\n"
+                        "File \"" + outPath.getFileName() + "\" already exists in \""
+                        + outPath.getParent() + "\"!\n"
                         + "Do you want to overwrite the existing file?",
                         "Overwrite File",
                         JOptionPane.INFORMATION_MESSAGE,
@@ -1127,10 +1110,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
 
             if (userDesition == JOptionPane.OK_OPTION) {
+                TaskQueueData tqd = TaskQueueData.createFromTaskQueue(taskQueueTable);
                 try {
-                    Files.writeString(Paths.get(outFilePath), outData, StandardCharsets.UTF_8);
+                    TaskQueueData.writeToFile(outPath, tqd);
                     wasSaved = true;
-                    log.info("Saved as file " + outFilePath);
+                    log.info("Saved as file " + outPath);
                 } catch (IOException ex) {
                     log.error(ex.getMessage());
                 }
@@ -1144,7 +1128,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             final File file = fileOpenChooser.getSelectedFile();
 
             StringBuilder outMsg = new StringBuilder();
-            final TaskQueueData tqd = loadQueueDataFromSiloFile(file.getAbsolutePath(), outMsg);
+            final TaskQueueData tqd = TaskQueueData.createFromFile(file.getAbsolutePath(), outMsg);
             if (tqd == null) {
                 if (!outMsg.toString().isEmpty()) {
                     JOptionPane.showMessageDialog(this,
@@ -1222,86 +1206,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         execRowEntryMenuItem.setEnabled(false);
     }
 
-    private String getSaveData() {
-        String outData = "";
-        ObjectMapper mapper = new ObjectMapper();
-        TaskQueueData tqd = TaskQueueData.createFromTaskQueue(taskQueueTable);
-        try {
-            outData = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(tqd);
-        } catch (JsonProcessingException ex) {
-            log.error(ex.getMessage());
-        }
-        return outData;
-    }
-
-    /**
-     * Loads the given *.silo file and returns its content as <code>TaskQueueData</code> object for
-     * further processing.
-     *
-     * @param siloFile The path to the *.silo file.
-     * @param outMsg The output for user messages (e.g. the appropriate error message on failure).
-     * @return The initialized <code>TaskQueueData</code> object containing the data from the file
-     * or <code>null</code> on error.
-     *
-     * @see TaskQueueData
-     */
-    public static TaskQueueData loadQueueDataFromSiloFile(
-            final String siloFile,
-            StringBuilder outMsg) {
-        Path filePath = Paths.get(siloFile);
-        if (Files.notExists(filePath)) {
-            outMsg.append("Could not find file \"").append(filePath).append("\".");
-            return null;
-        }
-
-        log.info("Opend file: " + filePath);
-        ObjectMapper mapper = new ObjectMapper();
-        final String loadedVersionStr;
-        try {
-            loadedVersionStr = mapper.readTree(Files.newInputStream(filePath))
-                    .get("siloFileVersion")
-                    .asText();
-        } catch (IOException ex) {
-            outMsg.append(ex.getMessage());
-            return null;
-        } catch (Exception ex) {
-            outMsg.append("Could not query file version number: ").append(ex.getMessage());
-            return null;
-        }
-
-        boolean isMinorHigher = false;
-        final VersionNumber loadedFile = VersionNumber.parseVersionString(loadedVersionStr);
-        log.info("Silo-file version: " + loadedFile.toString());
-        if (loadedFile.getMajorNumber() > SILO_FILE_VERSION.getMajorNumber()) {
-            final String errMsg = "The opened file with its format version "
-                    + loadedFile.toString() + " is not compatible with this Sowftware."
-                    + "\nOnly file formats up to version " + SILO_FILE_VERSION.toString()
-                    + " are supported!";
-            outMsg.append(errMsg);
-            return null;
-        } else if (loadedFile.getMinorNumber() > SILO_FILE_VERSION.getMinorNumber()) {
-            // minor number is higher, import may fail
-            isMinorHigher = true;
-        }
-
-        final TaskQueueData tqd;
-        try {
-            tqd = mapper.readValue(Files.newInputStream(filePath), TaskQueueData.class);
-        } catch (IOException ex) {
-            if (isMinorHigher) {
-                final String errMsg = "The opened file with its format version "
-                        + loadedFile.toString() + " is not compatible with this Sowftware."
-                        + "\nOnly file formats up to version " + SILO_FILE_VERSION.toString()
-                        + " are supported!";
-                outMsg.append(errMsg);
-            } else {
-                outMsg.append(ex.getMessage());
-            }
-            return null;
-        }
-        return tqd;
-    }
-
     /**
      * @param args the command line arguments
      */
@@ -1351,7 +1255,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     if (i + 1 < args.length) {
                         final String siloFile = args[i + 1];
                         StringBuilder outMsg = new StringBuilder();
-                        TaskQueueData tcd = OrchestratorGui.loadQueueDataFromSiloFile(siloFile, outMsg);
+                        TaskQueueData tcd = TaskQueueData.createFromFile(siloFile, outMsg);
                         if (tcd != null) {
                             TaskQueueTable tqt = new TaskQueueTable();
                             tcd.importToTaskQueue(tqt, serverManager.getServers());
