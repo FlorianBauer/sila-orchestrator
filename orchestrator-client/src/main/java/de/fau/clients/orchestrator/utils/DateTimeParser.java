@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator.nodes;
+package de.fau.clients.orchestrator.utils;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -17,12 +17,12 @@ import java.util.List;
  * A utility class which provides functions to parse ISO-8601 represented Date- and Time-Strings to
  * native data types using the Time API introduced in Java 8.
  */
-public final class DateTimeUtils {
+public final class DateTimeParser {
 
     public static final ZoneOffset LOCAL_OFFSET = ZoneId.systemDefault().getRules().getOffset(Instant.now());
     public static final int LOCAL_OFFSET_IN_SEC = LOCAL_OFFSET.getTotalSeconds();
 
-    private DateTimeUtils() {
+    private DateTimeParser() {
         throw new UnsupportedOperationException("Instantiation not allowed.");
     }
 

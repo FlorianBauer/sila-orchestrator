@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator.nodes;
 
+import de.fau.clients.orchestrator.utils.DateTimeParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.awt.Dimension;
 import java.time.LocalDate;
@@ -81,13 +82,13 @@ public final class BasicNodeFactory {
             dateSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
             final LocalDate localDate;
             if (jsonNode != null) {
-                localDate = DateTimeUtils.parseIsoDate(jsonNode.asText());
+                localDate = DateTimeParser.parseIsoDate(jsonNode.asText());
             } else {
                 localDate = LocalDate.now();
             }
-            model.setValue(Date.from(localDate.atStartOfDay().atOffset(DateTimeUtils.LOCAL_OFFSET).toInstant()));
+            model.setValue(Date.from(localDate.atStartOfDay().atOffset(DateTimeParser.LOCAL_OFFSET).toInstant()));
             final Supplier<String> supp = () -> {
-                return LocalDate.ofInstant(model.getDate().toInstant(), DateTimeUtils.LOCAL_OFFSET).toString();
+                return LocalDate.ofInstant(model.getDate().toInstant(), DateTimeParser.LOCAL_OFFSET).toString();
             };
             return new BasicNode(BasicType.DATE, dateSpinner, supp);
         } else {
@@ -179,13 +180,13 @@ public final class BasicNodeFactory {
             timeSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
             final OffsetDateTime dateTime;
             if (jsonNode != null) {
-                dateTime = DateTimeUtils.parseIsoTime(jsonNode.asText()).atDate(LocalDate.now());
+                dateTime = DateTimeParser.parseIsoTime(jsonNode.asText()).atDate(LocalDate.now());
             } else {
                 dateTime = OffsetDateTime.now();
             }
             model.setValue(Date.from(dateTime.toInstant()));
             final Supplier<String> supp = () -> {
-                return OffsetTime.ofInstant(model.getDate().toInstant(), DateTimeUtils.LOCAL_OFFSET)
+                return OffsetTime.ofInstant(model.getDate().toInstant(), DateTimeParser.LOCAL_OFFSET)
                         .withOffsetSameInstant(ZoneOffset.UTC)
                         .truncatedTo(ChronoUnit.MILLIS)
                         .toString();
@@ -225,7 +226,7 @@ public final class BasicNodeFactory {
             timeStampSpinner.setMaximumSize(MAX_SIZE_TIMESTAMP_SPINNER);
             final OffsetDateTime dateTime;
             if (jsonNode != null) {
-                dateTime = DateTimeUtils.parseIsoDateTime(jsonNode.asText());
+                dateTime = DateTimeParser.parseIsoDateTime(jsonNode.asText());
             } else {
                 dateTime = OffsetDateTime.now();
             }
