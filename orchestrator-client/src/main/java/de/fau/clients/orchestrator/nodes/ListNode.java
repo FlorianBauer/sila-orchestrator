@@ -24,8 +24,8 @@ import sila_java.library.core.models.ListType;
 @Slf4j
 final class ListNode implements SilaNode {
 
-    private static final ImageIcon ADD_ICON = new ImageIcon("src/main/resources/icons/list-add.png");
-    private static final ImageIcon REMOVE_ICON = new ImageIcon("src/main/resources/icons/list-remove.png");
+    private static final ImageIcon ADD_ICON = new ImageIcon(ListNode.class.getResource("/icons/list-add.png"));
+    private static final ImageIcon REMOVE_ICON = new ImageIcon(ListNode.class.getResource("/icons/list-remove.png"));
 
     /**
      * Look-up table for data-types defined by the corresponding SiLA-Feature.

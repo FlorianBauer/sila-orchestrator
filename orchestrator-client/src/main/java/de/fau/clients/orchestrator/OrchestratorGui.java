@@ -54,9 +54,9 @@ import sila_java.library.manager.models.Server;
 @SuppressWarnings("serial")
 public class OrchestratorGui extends javax.swing.JFrame {
 
-    private static final Image ICON_IMG = new ImageIcon("src/main/resources/icons/sila-orchestrator-16px.png").getImage();
-    private static final ImageIcon START_QUEUE_EXEC_ICON = new ImageIcon("src/main/resources/icons/queue-exec-start.png");
-    private static final ImageIcon STOP_QUEUE_EXEC_ICON = new ImageIcon("src/main/resources/icons/queue-exec-stop.png");
+    private static final Image ICON_IMG = new ImageIcon(OrchestratorGui.class.getResource("/icons/sila-orchestrator-16px.png")).getImage();
+    private static final ImageIcon START_QUEUE_EXEC_ICON = new ImageIcon(OrchestratorGui.class.getResource("/icons/queue-exec-start.png"));
+    private static final ImageIcon STOP_QUEUE_EXEC_ICON = new ImageIcon(OrchestratorGui.class.getResource("/icons/queue-exec-stop.png"));
     private static final String START_QUEUE_EXEC_LABEL = "Start Execute All";
     private static final String STOP_QUEUE_EXEC_LABEL = "Stop Execute All";
     private static ServerManager serverManager;

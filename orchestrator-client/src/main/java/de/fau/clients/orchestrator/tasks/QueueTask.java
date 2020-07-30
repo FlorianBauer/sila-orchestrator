@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 
 public abstract class QueueTask implements Runnable {
 
-    public static final ImageIcon EXECUTE_ICON = new ImageIcon("src/main/resources/icons/execute.png");
+    public static final ImageIcon EXECUTE_ICON = new ImageIcon(QueueTask.class.getResource("/icons/execute.png"));
     /**
      * Identifier for signaling change events on the task state property.
      */

@@ -1,7 +1,7 @@
 package de.fau.clients.orchestrator.nodes;
 
-import de.fau.clients.orchestrator.utils.DateTimeParser;
 import com.fasterxml.jackson.databind.JsonNode;
+import de.fau.clients.orchestrator.utils.DateTimeParser;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.math.BigInteger;
@@ -55,8 +55,8 @@ public class ConstraintBasicNode extends BasicNode {
      */
     private static final String TIME_FORMAT = "HH:mm:ss";
     private static final String DATE_TIME_FORMAT = DATE_FORMAT + " " + TIME_FORMAT;
-    private static final ImageIcon VALIDATON_OK = new ImageIcon("src/main/resources/icons/status-ok.png");
-    private static final ImageIcon VALIDATON_WARN = new ImageIcon("src/main/resources/icons/status-warning.png");
+    private static final ImageIcon VALIDATON_OK = new ImageIcon(ConstraintBasicNode.class.getResource("/icons/status-ok.png"));
+    private static final ImageIcon VALIDATON_WARN = new ImageIcon(ConstraintBasicNode.class.getResource("/icons/status-warning.png"));
     /**
      * The horizontal gap size between parameter component, condition description and validation
      * icon. Only used for components with constraints.

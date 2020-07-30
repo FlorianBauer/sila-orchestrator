@@ -10,10 +10,10 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 @SuppressWarnings("serial")
 class FeatureTreeRenderer extends DefaultTreeCellRenderer {
 
-    private static final Icon serverIcon = new ImageIcon("src/main/resources/icons/server-online.png");
-    private static final Icon silaIcon = new ImageIcon("src/main/resources/icons/sila-feature.png");
-    private static final Icon commandIcon = new ImageIcon("src/main/resources/icons/command.png");
-    private static final Icon propertyIcon = new ImageIcon("src/main/resources/icons/property.png");
+    private static final Icon serverIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/server-online.png"));
+    private static final Icon silaIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/sila-feature.png"));
+    private static final Icon commandIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/command.png"));
+    private static final Icon propertyIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/property.png"));
 
     public FeatureTreeRenderer() {
         this.openIcon = null;

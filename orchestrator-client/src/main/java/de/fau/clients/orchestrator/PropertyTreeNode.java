@@ -28,7 +28,7 @@ import sila_java.library.manager.models.SiLACall;
 @SuppressWarnings("serial")
 public class PropertyTreeNode extends DefaultMutableTreeNode {
 
-    public static final ImageIcon REFRESH_ICON = new ImageIcon("src/main/resources/icons/refresh.png");
+    public static final ImageIcon REFRESH_ICON = new ImageIcon(PropertyTreeNode.class.getResource("/icons/refresh.png"));
     /**
      * Index to place and update the contents of the panel.
      */
