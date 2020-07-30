@@ -14,7 +14,6 @@ class FeatureTreeRenderer extends DefaultTreeCellRenderer {
     private static final Icon silaIcon = new ImageIcon("src/main/resources/icons/sila-feature.png");
     private static final Icon commandIcon = new ImageIcon("src/main/resources/icons/command.png");
     private static final Icon propertyIcon = new ImageIcon("src/main/resources/icons/property.png");
-    private static final Icon metaIcon = new ImageIcon("src/main/resources/icons/meta.png");
 
     public FeatureTreeRenderer() {
         this.openIcon = null;
@@ -62,8 +61,6 @@ class FeatureTreeRenderer extends DefaultTreeCellRenderer {
                 this.setIcon(propertyIcon);
                 break;
             case META:
-                this.setIcon(metaIcon);
-                break;
             case DEFAULT:
             default:
             // no icon on default
