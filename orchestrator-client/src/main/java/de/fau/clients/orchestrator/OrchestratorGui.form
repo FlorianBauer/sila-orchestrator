@@ -1623,6 +1623,7 @@
                     <Property name="visibleRowCount" type="int" value="10"/>
                   </Properties>
                   <Events>
+                    <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="featureTreeFocusGained"/>
                     <EventHandler event="valueChanged" listener="javax.swing.event.TreeSelectionListener" parameters="javax.swing.event.TreeSelectionEvent" handler="featureTreeValueChanged"/>
                   </Events>
                   <AuxValues>

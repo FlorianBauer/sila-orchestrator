@@ -12,6 +12,8 @@ import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -399,6 +401,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
         featureTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         featureTree.setTransferHandler(new CommandNodeTransferHandler());
         featureTree.setDropTarget(null);
+        featureTree.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                featureTreeFocusGained(evt);
+            }
+        });
         featureTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
                 featureTreeValueChanged(evt);
@@ -814,28 +821,16 @@ public class OrchestratorGui extends javax.swing.JFrame {
             if (lse.getValueIsAdjusting()) {
                 return;
             }
-            int selectedRowIdx = taskQueueTable.getSelectedRow();
-            if (selectedRowIdx < 0) {
-                return;
+            viewSelectedTask();
+        });
+        taskQueueTable.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent fe) {
+                if (fe.isTemporary()) {
+                    return;
+                }
+                viewSelectedTask();
             }
-            int rowCount = taskQueueTable.getRowCount();
-            if (rowCount > 1) {
-                moveTaskUpBtn.setEnabled(selectedRowIdx > 0);
-                moveTaskDownBtn.setEnabled(selectedRowIdx < rowCount - 1);
-            } else {
-                moveTaskUpBtn.setEnabled(false);
-                moveTaskDownBtn.setEnabled(false);
-            }
-
-            final boolean isTaskRemoveEnabled = (rowCount > 0);
-            removeTaskFromQueueBtn.setEnabled(isTaskRemoveEnabled);
-            removeTaskFromQueueMenuItem.setEnabled(isTaskRemoveEnabled);
-            execRowEntryMenuItem.setEnabled(isTaskRemoveEnabled);
-            final QueueTask entry = taskQueueTable.getTaskFromRow(selectedRowIdx);
-            if (entry == null) {
-                return;
-            }
-            commandScrollPane.setViewportView(entry.getPresenter());
         });
         taskQueueTable.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "removeTask");
         taskQueueTable.getActionMap().put("removeTask", new AbstractAction() {
@@ -844,6 +839,31 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 removeTaskFromQueue(evt);
             }
         });
+    }
+
+    private void viewSelectedTask() {
+        int selectedRowIdx = taskQueueTable.getSelectedRow();
+        if (selectedRowIdx < 0) {
+            return;
+        }
+        int rowCount = taskQueueTable.getRowCount();
+        if (rowCount > 1) {
+            moveTaskUpBtn.setEnabled(selectedRowIdx > 0);
+            moveTaskDownBtn.setEnabled(selectedRowIdx < rowCount - 1);
+        } else {
+            moveTaskUpBtn.setEnabled(false);
+            moveTaskDownBtn.setEnabled(false);
+        }
+
+        final boolean isTaskRemoveEnabled = (rowCount > 0);
+        removeTaskFromQueueBtn.setEnabled(isTaskRemoveEnabled);
+        removeTaskFromQueueMenuItem.setEnabled(isTaskRemoveEnabled);
+        execRowEntryMenuItem.setEnabled(isTaskRemoveEnabled);
+        final QueueTask entry = taskQueueTable.getTaskFromRow(selectedRowIdx);
+        if (entry == null) {
+            return;
+        }
+        commandScrollPane.setViewportView(entry.getPresenter());
     }
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
@@ -914,27 +934,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         serverManager.close();
     }//GEN-LAST:event_formWindowClosing
-
-    private void featureTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_featureTreeValueChanged
-        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) featureTree.getLastSelectedPathComponent();
-        if (node == null) {
-            return;
-        }
-
-        boolean isAddBtnToEnable = false;
-        JComponent viewportView = null;
-        if (node.isLeaf()) {
-            if (node instanceof CommandTreeNode) {
-                isAddBtnToEnable = true;
-            } else if (node instanceof PropertyTreeNode) {
-                PropertyTreeNode propNode = (PropertyTreeNode) node;
-                propNode.requestPropertyData();
-                viewportView = propNode.getPanel();
-            }
-        }
-        addTaskToQueueBtn.setEnabled(isAddBtnToEnable);
-        commandScrollPane.setViewportView(viewportView);
-    }//GEN-LAST:event_featureTreeValueChanged
 
     private void addTaskToQueueBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTaskToQueueBtnActionPerformed
         final DefaultMutableTreeNode node = (DefaultMutableTreeNode) featureTree.getLastSelectedPathComponent();
@@ -1170,6 +1169,38 @@ public class OrchestratorGui extends javax.swing.JFrame {
         TransferHandler handler = comp.getTransferHandler();
         handler.exportAsDrag(comp, evt, TransferHandler.COPY);
     }//GEN-LAST:event_addTaskBtnMouseDragged
+
+    private void featureTreeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_featureTreeFocusGained
+        if (evt.isTemporary()) {
+            return;
+        }
+        viewSelectedTreeNode();
+    }//GEN-LAST:event_featureTreeFocusGained
+
+    private void featureTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_featureTreeValueChanged
+        viewSelectedTreeNode();
+    }//GEN-LAST:event_featureTreeValueChanged
+
+    private void viewSelectedTreeNode() {
+        if (featureTree.isSelectionEmpty()) {
+            return;
+        }
+
+        boolean isAddBtnToEnable = false;
+        JComponent viewportView = null;
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) featureTree.getLastSelectedPathComponent();
+        if (node.isLeaf()) {
+            if (node instanceof CommandTreeNode) {
+                isAddBtnToEnable = true;
+            } else if (node instanceof PropertyTreeNode) {
+                PropertyTreeNode propNode = (PropertyTreeNode) node;
+                propNode.requestPropertyData();
+                viewportView = propNode.getPanel();
+            }
+        }
+        addTaskToQueueBtn.setEnabled(isAddBtnToEnable);
+        commandScrollPane.setViewportView(viewportView);
+    }
 
     /**
      * Enables all the GUI controls which actions can be applied on entries in the task queue. This
