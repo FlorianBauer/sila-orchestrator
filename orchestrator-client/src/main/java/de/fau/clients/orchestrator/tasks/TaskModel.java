@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * list. Also the import routines in the <code>TaskQueueData</code> class, as well as the supported
  * <code>SILO_FILE_VERSION</code> may require adjustments.
  *
- * @see TaskQueueData
+ * @see de.fau.clients.orchestrator.queue.TaskQueueData
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonSubTypes({
