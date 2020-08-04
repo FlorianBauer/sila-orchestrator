@@ -1296,7 +1296,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                             for (int j = 0; j < tqt.getRowCount(); j++) {
                                 final QueueTask task = tqt.getTaskFromRow(j);
                                 task.run();
-                                if (task.getState() == TaskState.FINISHED_ERROR) {
+                                if (task.getState() != TaskState.FINISHED_SUCCESS) {
                                     // apply execution policy
                                     if (tqt.getTaskPolicyFromRow(i) == ExecPolicy.HALT_AFTER_ERROR) {
                                         System.out.println("Halted after task #" + j
