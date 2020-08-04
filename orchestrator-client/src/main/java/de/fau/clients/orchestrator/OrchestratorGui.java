@@ -1174,7 +1174,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
         if (evt.isTemporary()) {
             return;
         }
-        viewSelectedTreeNode();
+        if (evt.getOppositeComponent() == taskQueueTable) {
+            // only refresh view when the taskQueuTable lost the focus
+            viewSelectedTreeNode();
+        }
     }//GEN-LAST:event_featureTreeFocusGained
 
     private void featureTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_featureTreeValueChanged

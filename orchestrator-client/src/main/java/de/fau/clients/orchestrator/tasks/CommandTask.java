@@ -117,6 +117,7 @@ public class CommandTask extends QueueTask {
                 executeCommandBtnActionPerformed();
             });
             panel.add(execBtn);
+            panel.setFocusCycleRoot(true);
             isPanelBuilt = true;
         }
         return panel;
