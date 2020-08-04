@@ -26,7 +26,7 @@ import sila_java.library.manager.models.SiLACall;
  */
 @Slf4j
 @SuppressWarnings("serial")
-public class PropertyTreeNode extends DefaultMutableTreeNode {
+public class PropertyTreeNode extends DefaultMutableTreeNode implements Presentable {
 
     public static final ImageIcon REFRESH_ICON = new ImageIcon(PropertyTreeNode.class.getResource("/icons/refresh.png"));
     /**
@@ -62,11 +62,11 @@ public class PropertyTreeNode extends DefaultMutableTreeNode {
     }
 
     /**
-     * Gets a <code>JPanel</code> populated with GUI components viewing the current SiLA Property.
+     * Gets a <code>JPanel</code> populated with widgets viewing the current SiLA Property.
      *
      * @return A <code>JPanel</code> representing the SiLA Property.
      */
-    public JPanel getPanel() {
+    public JPanel getPresenter() {
         if (panel == null) {
             panel = new JPanel();
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));

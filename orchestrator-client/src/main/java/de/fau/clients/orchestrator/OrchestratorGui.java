@@ -1198,7 +1198,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             } else if (node instanceof PropertyTreeNode) {
                 PropertyTreeNode propNode = (PropertyTreeNode) node;
                 propNode.requestPropertyData();
-                viewportView = propNode.getPanel();
+                viewportView = propNode.getPresenter();
             }
         }
         addTaskToQueueBtn.setEnabled(isAddBtnToEnable);

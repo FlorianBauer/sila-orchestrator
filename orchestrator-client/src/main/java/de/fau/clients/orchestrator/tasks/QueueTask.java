@@ -1,14 +1,14 @@
 package de.fau.clients.orchestrator.tasks;
 
+import de.fau.clients.orchestrator.Presentable;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import javax.swing.ImageIcon;
-import javax.swing.JPanel;
 
-public abstract class QueueTask implements Runnable {
+public abstract class QueueTask implements Runnable, Presentable {
 
     public static final ImageIcon EXECUTE_ICON = new ImageIcon(QueueTask.class.getResource("/icons/execute.png"));
     /**
@@ -33,18 +33,6 @@ public abstract class QueueTask implements Runnable {
      * @return The task model with the current parameters.
      */
     abstract public TaskModel getCurrentTaskModel();
-
-    /**
-     * Gets a <code>JPanel</code> for adjusting the task properties in the parameter-view. This
-     * mechanism should be used to populate a panel with controls and widgets, which allows the user
-     * to set the parameters of an task. A returned <code>null</code> value sets the parameter-view
-     * empty.
-     *
-     * @return The panel to set task parameters or <code>null</code>.
-     */
-    public JPanel getPresenter() {
-        return null;
-    }
 
     /**
      * Gets the timestamp of the execution start. The start-time thereby should be set at the begin
