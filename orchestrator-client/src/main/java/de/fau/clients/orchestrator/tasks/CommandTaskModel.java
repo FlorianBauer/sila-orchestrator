@@ -82,13 +82,13 @@ public class CommandTaskModel extends TaskModel {
             return false;
         }
 
-        final List<Feature> featureList = serverMap.get(serverUuid).getFeatures();
-        for (final Feature feat : featureList) {
+        final Server server = serverMap.get(serverUuid);
+        for (final Feature feat : server.getFeatures()) {
             if (feat.getIdentifier().equalsIgnoreCase(featureId)) {
                 final List<Feature.Command> commandList = feat.getCommand();
                 for (final Feature.Command cmd : commandList) {
                     if (cmd.getIdentifier().equalsIgnoreCase(commandId)) {
-                        this.typeDefs = new TypeDefLut(feat);
+                        this.typeDefs = new TypeDefLut(server, feat);
                         this.command = cmd;
                         this.isValid = true;
                         return true;
@@ -120,13 +120,12 @@ public class CommandTaskModel extends TaskModel {
             return;
         }
 
-        final List<Feature> featureList = server.getFeatures();
-        for (final Feature feat : featureList) {
+        for (final Feature feat : server.getFeatures()) {
             if (feat.getIdentifier().equalsIgnoreCase(featureId)) {
                 final List<Feature.Command> commandList = feat.getCommand();
                 for (final Feature.Command cmd : commandList) {
                     if (cmd.getIdentifier().equalsIgnoreCase(commandId)) {
-                        this.typeDefs = new TypeDefLut(feat);
+                        this.typeDefs = new TypeDefLut(server, feat);
                         this.command = cmd;
                         this.isValid = true;
                         return;

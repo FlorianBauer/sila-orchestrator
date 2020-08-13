@@ -132,7 +132,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 featureNode.setUserObject(new FeatureTreeType(feature));
                 serverNode.add(featureNode);
 
-                final TypeDefLut typeDefs = new TypeDefLut(feature);
+                final TypeDefLut typeDefs = new TypeDefLut(server, feature);
                 if (feature.getProperty() != null && !feature.getProperty().isEmpty()) {
                     DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode("Properties");
                     featureNode.add(propertyNode);
