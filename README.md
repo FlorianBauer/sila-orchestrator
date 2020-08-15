@@ -1,16 +1,17 @@
 # ![sila-orchestrator logo](doc/pictures/sila-orchestrator-logo-128px.png) sila-orchestrator
 
 
-A simple, dynamic SiLA 2 client for coordinating various services. The main goal is to easily link 
-different SiLA 2 commands together to create a automated, continuous workflow between distinct 
-devices.
+A simple, dynamic [SiLA 2](https://sila-standard.com/) compliant client for coordinating various 
+services. The main goal of this client is to easily link different SiLA 2 commands together, to 
+create a automated, continuous workflow between distinct devices.
 
 ![The sila-orchestrator client](doc/pictures/sila-orchestrator-gui.png)
 
 
 ### Build the Project
 
-Enter the project directory and use the following command to build the project:
+To build this project, a moderately current JDK and Maven installation is required.
+Enter the project directory and use the following command to to start the build process:
 
 ```bash
 mvn clean install -DskipTests
