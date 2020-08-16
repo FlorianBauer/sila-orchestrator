@@ -40,9 +40,9 @@ class FeatureTreeRenderer extends DefaultTreeCellRenderer {
                 rowIdx,
                 hasFocus);
 
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
         final Object obj = node.getUserObject();
-        if (obj == null || !(obj instanceof FeatureTreeType)) {
+        if (!(obj instanceof FeatureTreeType)) {
             return this;
         }
 
