@@ -68,7 +68,7 @@ class FeatureTreeRenderer extends DefaultTreeCellRenderer {
 
         final String desc = nodeInfo.getDescripton();
         if (desc != null) {
-            this.setToolTipText(desc);
+            this.setToolTipText(desc.strip());
         }
 
         return this;
