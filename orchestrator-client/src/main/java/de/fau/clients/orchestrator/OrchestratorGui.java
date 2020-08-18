@@ -23,8 +23,10 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -49,8 +51,10 @@ import sila_java.library.core.models.Feature.Command;
 import sila_java.library.core.models.Feature.Property;
 import sila_java.library.manager.ServerAdditionException;
 import sila_java.library.manager.ServerFinder;
+import sila_java.library.manager.ServerListener;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
+import sila_java.library.manager.models.Server.Status;
 
 @Slf4j
 @SuppressWarnings("serial")
@@ -75,6 +79,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             + "E-Mail: florian.bauer.dev@gmail.com<br>"
             + "License: Apache-2.0<br>"
             + "</p></html>";
+    private final HashMap<UUID, DefaultMutableTreeNode> treeServerMap = new HashMap<>();
     private final TaskQueueTable taskQueueTable = new TaskQueueTable();
     private boolean isOnExecution = false;
     private boolean wasSaved = false;
@@ -118,22 +123,23 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }
 
     private void addFeaturesToTree(final Collection<Server> serverList) {
-        DefaultTreeModel model = (DefaultTreeModel) featureTree.getModel();
-        DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
+        final DefaultTreeModel model = (DefaultTreeModel) featureTree.getModel();
+        final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
 
         for (final Server server : serverList) {
-            DefaultMutableTreeNode serverNode = new DefaultMutableTreeNode();
+            final DefaultMutableTreeNode serverNode = new DefaultMutableTreeNode();
+            treeServerMap.put(server.getConfiguration().getUuid(), serverNode);
             serverNode.setUserObject(new FeatureTreeType(server));
             rootNode.add(serverNode);
 
             for (final Feature feature : server.getFeatures()) {
-                DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode();
+                final DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode();
                 featureNode.setUserObject(new FeatureTreeType(feature));
                 serverNode.add(featureNode);
 
                 final TypeDefLut typeDefs = new TypeDefLut(server, feature);
                 if (feature.getProperty() != null && !feature.getProperty().isEmpty()) {
-                    DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode("Properties");
+                    final DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode("Properties");
                     featureNode.add(propertyNode);
                     for (final Property prop : feature.getProperty()) {
                         final PropertyTreeNode ptn = new PropertyTreeNode(
@@ -147,7 +153,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 }
 
                 if (feature.getCommand() != null && !feature.getCommand().isEmpty()) {
-                    DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
+                    final DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
                     featureNode.add(commandNode);
                     for (final Command command : feature.getCommand()) {
                         final CommandTreeNode ctn = new CommandTreeNode(
@@ -173,6 +179,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     public OrchestratorGui() {
         initComponents();
         initTaskQueueTable();
+        initServerListeners();
     }
 
     /**
@@ -836,6 +843,30 @@ public class OrchestratorGui extends javax.swing.JFrame {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 removeTaskFromQueue(evt);
+            }
+        });
+    }
+
+    private void initServerListeners() {
+        serverManager.addServerListener(new ServerListener() {
+            @Override
+            public void onServerChange(UUID uuid, Server server) {
+                final DefaultMutableTreeNode serverNode = treeServerMap.get(uuid);
+                if (serverNode != null) {
+                    final Object obj = serverNode.getUserObject();
+                    if (!(obj instanceof FeatureTreeType)) {
+                        return;
+                    }
+                    final FeatureTreeType ftt = (FeatureTreeType) obj;
+                    if (server.getStatus() == Status.OFFLINE) {
+                        ftt.setNodeEnum(NodeEnum.SERVER_OFFLINE);
+                        ftt.setDescription("Server is offline");
+                    } else {
+                        ftt.setNodeEnum(NodeEnum.SERVER_ONLINE);
+                        ftt.setDescription("Joined on " + server.getJoined().toInstant());
+                    }
+                    featureTree.repaint();
+                }
             }
         });
     }

@@ -10,7 +10,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 @SuppressWarnings("serial")
 class FeatureTreeRenderer extends DefaultTreeCellRenderer {
 
-    private static final Icon serverIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/server-online.png"));
+    private static final Icon serverOnlineIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/server-online.png"));
+    private static final Icon serverOfflineIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/server-offline.png"));
     private static final Icon silaIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/sila-feature.png"));
     private static final Icon commandIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/command.png"));
     private static final Icon propertyIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/property.png"));
@@ -47,9 +48,12 @@ class FeatureTreeRenderer extends DefaultTreeCellRenderer {
         }
 
         final FeatureTreeType nodeInfo = (FeatureTreeType) (obj);
-        switch (nodeInfo.nodeEnum) {
-            case SERVER:
-                this.setIcon(serverIcon);
+        switch (nodeInfo.getNodeEnum()) {
+            case SERVER_ONLINE:
+                this.setIcon(serverOnlineIcon);
+                break;
+            case SERVER_OFFLINE:
+                this.setIcon(serverOfflineIcon);
                 break;
             case FEATURE:
                 this.setIcon(silaIcon);
@@ -61,7 +65,6 @@ class FeatureTreeRenderer extends DefaultTreeCellRenderer {
                 this.setIcon(propertyIcon);
                 break;
             case META:
-            case DEFAULT:
             default:
             // no icon on default
         }

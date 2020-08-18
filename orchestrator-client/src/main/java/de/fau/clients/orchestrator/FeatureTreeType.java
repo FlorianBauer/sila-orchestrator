@@ -2,19 +2,21 @@ package de.fau.clients.orchestrator;
 
 import sila_java.library.core.models.Feature;
 import sila_java.library.core.models.Feature.Command;
-import sila_java.library.core.models.Feature.Metadata;
 import sila_java.library.core.models.Feature.Property;
 import sila_java.library.manager.models.Server;
 
-public class FeatureTreeType {
+/**
+ * Class only for representing various node widgets in the <code>JTree</code> (featureTree).
+ */
+class FeatureTreeType {
 
-    final NodeEnum nodeEnum;
-    String description = null;
-    String displayName = "";
+    private NodeEnum nodeEnum;
+    private String description = null;
+    private String displayName = "";
 
     public FeatureTreeType(final Server server) {
-        this.nodeEnum = NodeEnum.SERVER;
-        description = "Joined on " + server.getJoined();
+        this.nodeEnum = NodeEnum.SERVER_ONLINE;
+        description = "Joined on " + server.getJoined().toInstant();
         displayName = "<html>"
                 + "<p>" + server.getConfiguration().getName() + "</p>"
                 + "<p>UUID: " + server.getConfiguration().getUuid().toString() + "</p>"
@@ -40,18 +42,20 @@ public class FeatureTreeType {
         displayName = prop.getDisplayName();
     }
 
-    public FeatureTreeType(final Metadata meta) {
-        this.nodeEnum = NodeEnum.META;
-        description = meta.getDescription();
-        displayName = meta.getDisplayName();
-    }
-
     public NodeEnum getNodeEnum() {
         return nodeEnum;
     }
 
+    public void setNodeEnum(NodeEnum nodeEnum) {
+        this.nodeEnum = nodeEnum;
+    }
+
     public String getDescripton() {
         return description;
+    }
+
+    public void setDescription(final String description) {
+        this.description = description;
     }
 
     @Override
