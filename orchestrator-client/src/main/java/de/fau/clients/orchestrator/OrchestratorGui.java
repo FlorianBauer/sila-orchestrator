@@ -120,7 +120,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private void addFeaturesToTree(final Collection<Server> serverList) {
         DefaultTreeModel model = (DefaultTreeModel) featureTree.getModel();
         DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
-        rootNode.removeAllChildren();
 
         for (final Server server : serverList) {
             DefaultMutableTreeNode serverNode = new DefaultMutableTreeNode();
@@ -891,12 +890,17 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_serverDialogOkBtnActionPerformed
 
     /**
-     * Scans the network for available SiLA-Servers which are enabled for discovery. This method is
-     * not thread safe. The scan-routine runs in a dedicated thread just to prevent the GUI from
-     * freezing while scanning.
+     * Scans the network for available SiLA-Servers which are enabled for discovery. The
+     * scan-routine runs in a dedicated thread to avoid freezing while scanning. The synchronization
+     * with the involved GUI components has to be done with
+     * <code>SwingUtilities.invokeLater(() -> { ... });</code> to grant thread safety.
      */
     private void scanNetworkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanNetworkActionPerformed
         scanServerBtn.setEnabled(false);
+        final DefaultTreeModel model = (DefaultTreeModel) featureTree.getModel();
+        final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
+        rootNode.removeAllChildren();
+
         final Runnable scan = () -> {
             serverManager.getDiscovery().scanNetwork();
             final List<Server> serverList = ServerFinder.filterBy(ServerFinder.Filter.status(Server.Status.ONLINE)).find();
@@ -911,6 +915,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             } else {
                 // show the "No Server Available" string.
                 isTreeRootVisible = true;
+                model.reload();
             }
 
             // update components in the GUI thread
