@@ -2,6 +2,7 @@ package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
+import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.math.BigInteger;
@@ -24,9 +25,6 @@ import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
 import lombok.NonNull;
 import sila_java.library.core.models.BasicType;
 import sila_java.library.core.models.Constraints;
@@ -181,14 +179,14 @@ public class ConstraintBasicNode extends BasicNode {
                     conditionDesc = "match " + pattern;
                 } else if (constraints.getLength() != null) {
                     final int len = constraints.getLength().intValue();
-                    ((AbstractDocument) strField.getDocument()).setDocumentFilter(new LengthFilter(len));
+                    ((AbstractDocument) strField.getDocument()).setDocumentFilter(new DocumentLengthFilter(len));
                     validator = () -> (strField.getText().length() == len);
                     conditionDesc = "= " + len;
                 } else {
                     final BigInteger min = constraints.getMinimalLength();
                     final BigInteger max = constraints.getMaximalLength();
                     if (max != null) {
-                        ((AbstractDocument) strField.getDocument()).setDocumentFilter(new LengthFilter(max.intValue()));
+                        ((AbstractDocument) strField.getDocument()).setDocumentFilter(new DocumentLengthFilter(max.intValue()));
                     }
 
                     if (min != null && max != null) {
@@ -585,54 +583,5 @@ public class ConstraintBasicNode extends BasicNode {
 
         final Date initDate = Date.from(init.toInstant());
         return new SpinnerDateModel(initDate, startTime, endTime, Calendar.MINUTE);
-    }
-
-    private static class LengthFilter extends DocumentFilter {
-
-        /**
-         * The character input limit (inclusive).
-         */
-        private final int charLimit;
-
-        /**
-         * Creates a length constraint <code>DocumentFilter</code>.
-         *
-         * @param maxLength The maximal character input limit (inclusive).
-         */
-        public LengthFilter(int maxLength) {
-            this.charLimit = maxLength;
-        }
-
-        /**
-         * Gets the character limit.
-         *
-         * @return The character input limit (inclusive).
-         */
-        public int getCharLimit() {
-            return charLimit;
-        }
-
-        @Override
-        public void insertString(DocumentFilter.FilterBypass fb,
-                int offset,
-                String str,
-                AttributeSet attrs) throws BadLocationException {
-            final int len = fb.getDocument().getLength() + str.length();
-            if (len < charLimit) {
-                super.insertString(fb, offset, str, attrs);
-            }
-        }
-
-        @Override
-        public void replace(DocumentFilter.FilterBypass fb,
-                int offset,
-                int length,
-                String str,
-                AttributeSet attrs) throws BadLocationException {
-            final int len = fb.getDocument().getLength() + length;
-            if (len < charLimit) {
-                super.replace(fb, offset, length, str, attrs);
-            }
-        }
     }
 }
