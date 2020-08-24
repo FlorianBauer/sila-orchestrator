@@ -3,7 +3,6 @@ package de.fau.clients.orchestrator;
 import sila_java.library.core.models.Feature;
 import sila_java.library.core.models.Feature.Command;
 import sila_java.library.core.models.Feature.Property;
-import sila_java.library.manager.models.Server;
 
 /**
  * Class only for representing various node widgets in the <code>JTree</code> (featureTree).
@@ -14,14 +13,10 @@ class FeatureTreeType {
     private String description = null;
     private String displayName = "";
 
-    public FeatureTreeType(final Server server) {
+    public FeatureTreeType(final ServerTreeNode serverNode) {
         this.nodeEnum = NodeEnum.SERVER_ONLINE;
-        description = "Joined on " + server.getJoined().toInstant();
-        displayName = "<html>"
-                + "<p>" + server.getConfiguration().getName() + "</p>"
-                + "<p>UUID: " + server.getConfiguration().getUuid().toString() + "</p>"
-                + "<p>Addr: " + server.getHostAndPort().toString() + "</p>"
-                + "</html>";
+        description = serverNode.getDescription();
+        displayName = serverNode.getServerLabel();
     }
 
     public FeatureTreeType(final Feature feat) {

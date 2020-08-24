@@ -79,7 +79,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             + "E-Mail: florian.bauer.dev@gmail.com<br>"
             + "License: Apache-2.0<br>"
             + "</p></html>";
-    private final HashMap<UUID, DefaultMutableTreeNode> treeServerMap = new HashMap<>();
+    private final HashMap<UUID, ServerTreeNode> treeServerMap = new HashMap<>();
     private final TaskQueueTable taskQueueTable = new TaskQueueTable();
     private boolean isOnExecution = false;
     private boolean wasSaved = false;
@@ -127,9 +127,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
 
         for (final Server server : serverList) {
-            final DefaultMutableTreeNode serverNode = new DefaultMutableTreeNode();
+            final ServerTreeNode serverNode = new ServerTreeNode(server);
             treeServerMap.put(server.getConfiguration().getUuid(), serverNode);
-            serverNode.setUserObject(new FeatureTreeType(server));
+            serverNode.setUserObject(new FeatureTreeType(serverNode));
             rootNode.add(serverNode);
 
             for (final Feature feature : server.getFeatures()) {
@@ -851,7 +851,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         serverManager.addServerListener(new ServerListener() {
             @Override
             public void onServerChange(UUID uuid, Server server) {
-                final DefaultMutableTreeNode serverNode = treeServerMap.get(uuid);
+                final ServerTreeNode serverNode = treeServerMap.get(uuid);
                 if (serverNode != null) {
                     final Object obj = serverNode.getUserObject();
                     if (!(obj instanceof FeatureTreeType)) {
@@ -860,11 +860,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     final FeatureTreeType ftt = (FeatureTreeType) obj;
                     if (server.getStatus() == Status.OFFLINE) {
                         ftt.setNodeEnum(NodeEnum.SERVER_OFFLINE);
-                        ftt.setDescription("Server is offline");
                     } else {
                         ftt.setNodeEnum(NodeEnum.SERVER_ONLINE);
-                        ftt.setDescription("Joined on " + server.getJoined().toInstant());
                     }
+                    ftt.setDescription(serverNode.getDescription());
                     featureTree.repaint();
                 }
             }
@@ -1232,9 +1231,14 @@ public class OrchestratorGui extends javax.swing.JFrame {
             if (node instanceof CommandTreeNode) {
                 isAddBtnToEnable = true;
             } else if (node instanceof PropertyTreeNode) {
-                PropertyTreeNode propNode = (PropertyTreeNode) node;
+                final PropertyTreeNode propNode = (PropertyTreeNode) node;
                 propNode.requestPropertyData();
                 viewportView = propNode.getPresenter();
+            }
+        } else {
+            if (node instanceof ServerTreeNode) {
+                final ServerTreeNode serverNode = (ServerTreeNode) node;
+                viewportView = serverNode.getPresenter();
             }
         }
         addTaskToQueueBtn.setEnabled(isAddBtnToEnable);
