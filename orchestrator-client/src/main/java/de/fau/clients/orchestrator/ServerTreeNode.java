@@ -140,7 +140,7 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
                     + "Type: " + server.getInformation().getType() + "<br>"
                     + "Vendor URL: " + server.getInformation().getVendorURL() + "<br>"
                     + "Version: " + server.getInformation().getVersion() + "<br>"
-                    + "<br></html>";
+                    + "<br></p></html>";
             final JTextPane serverInfoTextPane = new JTextPane();
             serverInfoTextPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             serverInfoTextPane.setEditable(false);
