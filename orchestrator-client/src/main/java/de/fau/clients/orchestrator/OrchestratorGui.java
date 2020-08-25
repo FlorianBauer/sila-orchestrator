@@ -127,8 +127,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
 
         for (final Server server : serverList) {
-            final ServerTreeNode serverNode = new ServerTreeNode(server);
-            treeServerMap.put(server.getConfiguration().getUuid(), serverNode);
+            final UUID serverUuid = server.getConfiguration().getUuid();
+            final ServerTreeNode serverNode = new ServerTreeNode(serverManager, serverUuid);
+            treeServerMap.put(serverUuid, serverNode);
             serverNode.setUserObject(new FeatureTreeType(serverNode));
             rootNode.add(serverNode);
 

@@ -16,9 +16,9 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.text.AbstractDocument;
 import javax.swing.tree.DefaultMutableTreeNode;
+import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 import sila_java.library.manager.models.Server.Status;
-import sila_java.library.server_base.config.ServerConfiguration;
 
 @SuppressWarnings("serial")
 public class ServerTreeNode extends DefaultMutableTreeNode implements Presentable {
@@ -27,12 +27,16 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
     private static final int MAX_WIDTH = 1024;
     private static final Dimension MAX_DIM = new Dimension(MAX_WIDTH, MAX_HEIGHT);
     private final Server server;
+    private final ServerManager manager;
+    private final UUID serverUuid;
     private JPanel panel = null;
     private JTextField serverNameTextField = null;
     private JButton applyNewServerNameBtn = null;
 
-    public ServerTreeNode(final Server server) {
-        this.server = server;
+    public ServerTreeNode(final ServerManager manager, final UUID serverUuid) {
+        this.manager = manager;
+        this.serverUuid = serverUuid;
+        this.server = manager.getServers().get(serverUuid);
     }
 
     public String getServerLabel() {
@@ -71,7 +75,8 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
             ((AbstractDocument) serverNameTextField.getDocument())
                     .setDocumentFilter(new DocumentLengthFilter(MAX_NAME_LEN));
 
-            applyNewServerNameBtn = new JButton("Apply New Server Name");
+            applyNewServerNameBtn = new JButton("Apply Server Name");
+            applyNewServerNameBtn.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             applyNewServerNameBtn.addActionListener((ActionEvent evt) -> {
                 changeServerName();
             });
@@ -149,15 +154,14 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
     }
 
     private void changeServerName() {
-        String selectedServerName = serverNameTextField.getText();
-        if (selectedServerName.equals(server.getConfiguration().getName())) {
+        String newServerName = serverNameTextField.getText();
+        if (newServerName.equals(server.getConfiguration().getName())) {
             return;
         }
 
-        if (selectedServerName.length() > MAX_NAME_LEN) {
-            selectedServerName = selectedServerName.substring(0, MAX_NAME_LEN);
+        if (newServerName.length() > MAX_NAME_LEN) {
+            newServerName = newServerName.substring(0, MAX_NAME_LEN);
         }
-        ServerConfiguration config = server.getConfiguration().withName(selectedServerName);
-        server.setConfiguration(config);
+        manager.setServerName(serverUuid, newServerName);
     }
 }
