@@ -9,40 +9,40 @@ import sila_java.library.core.models.Feature.Property;
  */
 class FeatureTreeType {
 
-    private NodeEnum nodeEnum;
+    private NodeRenderSymbol symbol;
     private String description = null;
     private String displayName = "";
 
     public FeatureTreeType(final ServerTreeNode serverNode) {
-        this.nodeEnum = NodeEnum.SERVER_ONLINE;
+        this.symbol = NodeRenderSymbol.SERVER_ONLINE;
         description = serverNode.getDescription();
         displayName = serverNode.getServerLabel();
     }
 
     public FeatureTreeType(final Feature feat) {
-        this.nodeEnum = NodeEnum.FEATURE;
+        this.symbol = NodeRenderSymbol.FEATURE;
         description = feat.getDescription();
         displayName = "<html><b>" + feat.getDisplayName() + "</b></html>";
     }
 
     public FeatureTreeType(final Command cmd) {
-        this.nodeEnum = NodeEnum.COMMAND;
+        this.symbol = NodeRenderSymbol.COMMAND;
         description = cmd.getDescription();
         displayName = cmd.getDisplayName();
     }
 
     public FeatureTreeType(final Property prop) {
-        this.nodeEnum = NodeEnum.PROPERTY;
+        this.symbol = NodeRenderSymbol.PROPERTY;
         description = prop.getDescription();
         displayName = prop.getDisplayName();
     }
 
-    public NodeEnum getNodeEnum() {
-        return nodeEnum;
+    public NodeRenderSymbol getNodeRenderSymbol() {
+        return symbol;
     }
 
-    public void setNodeEnum(NodeEnum nodeEnum) {
-        this.nodeEnum = nodeEnum;
+    public void setNodeRenderSymbol(NodeRenderSymbol symbol) {
+        this.symbol = symbol;
     }
 
     public String getDescripton() {

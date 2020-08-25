@@ -860,9 +860,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     }
                     final FeatureTreeType ftt = (FeatureTreeType) obj;
                     if (server.getStatus() == Status.OFFLINE) {
-                        ftt.setNodeEnum(NodeEnum.SERVER_OFFLINE);
+                        ftt.setNodeRenderSymbol(NodeRenderSymbol.SERVER_OFFLINE);
                     } else {
-                        ftt.setNodeEnum(NodeEnum.SERVER_ONLINE);
+                        ftt.setNodeRenderSymbol(NodeRenderSymbol.SERVER_ONLINE);
                     }
                     ftt.setDescription(serverNode.getDescription());
                     featureTree.repaint();

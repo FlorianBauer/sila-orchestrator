@@ -47,8 +47,8 @@ class FeatureTreeRenderer extends DefaultTreeCellRenderer {
             return this;
         }
 
-        final FeatureTreeType nodeInfo = (FeatureTreeType) (obj);
-        switch (nodeInfo.getNodeEnum()) {
+        final FeatureTreeType nodeInfo = (FeatureTreeType) obj;
+        switch (nodeInfo.getNodeRenderSymbol()) {
             case SERVER_ONLINE:
                 this.setIcon(serverOnlineIcon);
                 break;
