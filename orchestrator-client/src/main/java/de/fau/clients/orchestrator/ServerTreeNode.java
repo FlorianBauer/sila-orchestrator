@@ -1,7 +1,6 @@
 package de.fau.clients.orchestrator;
 
 import static de.fau.clients.orchestrator.nodes.BasicNodeFactory.MAX_HEIGHT;
-import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.UUID;
@@ -14,12 +13,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.text.AbstractDocument;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import lombok.extern.slf4j.Slf4j;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 import sila_java.library.manager.models.Server.Status;
 
+@Slf4j
 @SuppressWarnings("serial")
 public class ServerTreeNode extends DefaultMutableTreeNode implements Presentable {
 
@@ -29,9 +31,15 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
     private final Server server;
     private final ServerManager manager;
     private final UUID serverUuid;
+    private boolean wasBuilt = false;
     private JPanel panel = null;
     private JTextField serverNameTextField = null;
     private JButton applyNewServerNameBtn = null;
+    private JTextField hostTextField = null;
+    private JTextField portTextField = null;
+    private JTextField statusTextField = null;
+    private JTextField joinedTextField = null;
+    private JTextField negoTypeTextField = null;
 
     public ServerTreeNode(final ServerManager manager, final UUID serverUuid) {
         this.manager = manager;
@@ -60,7 +68,7 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
 
     @Override
     public JPanel getPresenter() {
-        if (panel == null) {
+        if (!wasBuilt) {
             panel = new JPanel();
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
             panel.setBorder(BorderFactory.createCompoundBorder(
@@ -72,11 +80,26 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
             serverNameTextField.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             serverNameTextField.setMaximumSize(MAX_DIM);
             serverNameTextField.setEditable(true);
-            ((AbstractDocument) serverNameTextField.getDocument())
-                    .setDocumentFilter(new DocumentLengthFilter(MAX_NAME_LEN));
+            serverNameTextField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent de) {
+                    validateAndEnableServerNameChange();
+                }
 
-            applyNewServerNameBtn = new JButton("Apply Server Name");
+                @Override
+                public void removeUpdate(DocumentEvent de) {
+                    validateAndEnableServerNameChange();
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent de) {
+                    // not needed on plain-text fields
+                }
+            });
+
+            applyNewServerNameBtn = new JButton("Apply Change");
             applyNewServerNameBtn.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            applyNewServerNameBtn.setEnabled(false);
             applyNewServerNameBtn.addActionListener((ActionEvent evt) -> {
                 changeServerName();
             });
@@ -94,7 +117,7 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
             panel.add(Box.createVerticalStrut(10));
 
             panel.add(new JLabel("Host"));
-            final JTextField hostTextField = new JTextField(server.getHost());
+            hostTextField = new JTextField(server.getHost());
             hostTextField.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             hostTextField.setMaximumSize(MAX_DIM);
             hostTextField.setEditable(false);
@@ -102,7 +125,7 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
             panel.add(Box.createVerticalStrut(10));
 
             panel.add(new JLabel("Port"));
-            final JTextField portTextField = new JTextField(server.getPort().toString());
+            portTextField = new JTextField(server.getPort().toString());
             portTextField.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             portTextField.setMaximumSize(MAX_DIM);
             portTextField.setEditable(false);
@@ -111,7 +134,7 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
 
             panel.add(new JLabel("Status"));
             final String statusText = (server.getStatus() == Status.ONLINE) ? "Online" : "Offline";
-            final JTextField statusTextField = new JTextField(statusText);
+            statusTextField = new JTextField(statusText);
             statusTextField.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             statusTextField.setMaximumSize(MAX_DIM);
             statusTextField.setEditable(false);
@@ -119,7 +142,7 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
             panel.add(Box.createVerticalStrut(10));
 
             panel.add(new JLabel("Joined"));
-            final JTextField joinedTextField = new JTextField(server.getJoined().toInstant().toString());
+            joinedTextField = new JTextField(server.getJoined().toInstant().toString());
             joinedTextField.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             joinedTextField.setMaximumSize(MAX_DIM);
             joinedTextField.setEditable(false);
@@ -127,7 +150,7 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
             panel.add(Box.createVerticalStrut(10));
 
             panel.add(new JLabel("Negotiation Type"));
-            final JTextField negoTypeTextField = new JTextField(server.getNegotiationType().toString());
+            negoTypeTextField = new JTextField(server.getNegotiationType().toString());
             negoTypeTextField.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             negoTypeTextField.setMaximumSize(MAX_DIM);
             negoTypeTextField.setEditable(false);
@@ -149,19 +172,61 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
             serverInfoTextPane.putClientProperty(javax.swing.JTextPane.HONOR_DISPLAY_PROPERTIES, true);
             panel.add(serverInfoTextPane);
             panel.add(Box.createVerticalStrut(10));
+            wasBuilt = true;
+        } else {
+            // just update the widgets with changeable content
+            serverNameTextField.setText(server.getConfiguration().getName());
+            hostTextField.setText(server.getHost());
+            portTextField.setText(server.getPort().toString());
+            statusTextField.setText((server.getStatus() == Status.ONLINE) ? "Online" : "Offline");
+            joinedTextField.setText(server.getJoined().toInstant().toString());
+            negoTypeTextField.setText(server.getNegotiationType().toString());
         }
         return panel;
     }
 
-    private void changeServerName() {
-        String newServerName = serverNameTextField.getText();
-        if (newServerName.equals(server.getConfiguration().getName())) {
-            return;
+    private boolean validateServerName(final String changedName) {
+        if (changedName.isBlank()) {
+            return false;
         }
 
-        if (newServerName.length() > MAX_NAME_LEN) {
-            newServerName = newServerName.substring(0, MAX_NAME_LEN);
+        if (changedName.equals(server.getConfiguration().getName())) {
+            return false;
         }
-        manager.setServerName(serverUuid, newServerName);
+
+        if (changedName.length() > MAX_NAME_LEN) {
+            return false;
+        }
+
+        if (server.getStatus() != Status.ONLINE) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Validates the server name and dis-/enables the "Apply Change"-button accordingly.
+     */
+    private void validateAndEnableServerNameChange() {
+        final String text = serverNameTextField.getText();
+        final boolean isValid = validateServerName(text);
+
+        if (applyNewServerNameBtn.isEnabled() != isValid) {
+            applyNewServerNameBtn.setEnabled(isValid);
+        }
+    }
+
+    /**
+     * Changes the server name without validation checks and disables the "Apply Change"-button.
+     */
+    private void changeServerName() {
+        final String newServerName = serverNameTextField.getText();
+        try {
+            manager.setServerName(serverUuid, newServerName);
+        } catch (Exception ex) {
+            log.warn("Could not set server name to '" + newServerName + "'");
+            return;
+        }
+        applyNewServerNameBtn.setEnabled(false);
     }
 }
