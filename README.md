@@ -10,7 +10,7 @@ create a automated, continuous workflow between distinct devices.
 
 ### Build the Project
 
-To build this project, a moderately current JDK and Maven installation is required.
+To build this project, JDK 11 or higher and a moderately current Maven installation is required.
 Enter the project directory and use the following command to to start the build process:
 
 ```bash
