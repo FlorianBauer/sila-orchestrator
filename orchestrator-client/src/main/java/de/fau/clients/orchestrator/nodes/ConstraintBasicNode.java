@@ -3,17 +3,22 @@ package de.fau.clients.orchestrator.nodes;
 import com.fasterxml.jackson.databind.JsonNode;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
+import de.fau.clients.orchestrator.utils.LocalTimeSpinnerEditor;
+import de.fau.clients.orchestrator.utils.LocalTimeSpinnerModel;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Supplier;
+import javax.swing.AbstractSpinnerModel;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -261,22 +266,54 @@ public class ConstraintBasicNode extends BasicNode {
                     };
                     comp = timeComboBox;
                 } else {
-                    final JSpinner timeSpinner = new JSpinner(
-                            // FIXME: The out-commented function below seems to return a valid 
-                            // spinner-model, but the spinner itself does not work correctly. Therefore 
-                            // a unrestrained default-spinner-model is used as a temporary hack.
-                            createRangeConstrainedTimeModel(constraints)
-                    // new SpinnerDateModel()
-                    );
+                    String minBounds = null;
+                    if (constraints.getMinimalExclusive() != null) {
+                        minBounds = "> " + DateTimeParser.parseIsoTime(constraints.getMinimalExclusive()).toLocalTime().toString();
+                    } else if (constraints.getMinimalInclusive() != null) {
+                        minBounds = ">= " + DateTimeParser.parseIsoTime(constraints.getMinimalInclusive()).toLocalTime().toString();
+                    }
+
+                    String maxBounds = null;
+                    if (constraints.getMaximalExclusive() != null) {
+                        maxBounds = "< " + DateTimeParser.parseIsoTime(constraints.getMaximalExclusive()).toLocalTime().toString();
+                    } else if (constraints.getMaximalInclusive() != null) {
+                        maxBounds = "<= " + DateTimeParser.parseIsoTime(constraints.getMaximalInclusive()).toLocalTime().toString();
+                    }
+
+                    final String conditionDescr;
+                    if (minBounds != null && maxBounds != null) {
+                        conditionDescr = minBounds + " && " + maxBounds;
+                    } else if (minBounds != null) {
+                        conditionDescr = minBounds;
+                    } else if (maxBounds != null) {
+                        conditionDescr = maxBounds;
+                    } else {
+                        conditionDescr = "invalid constraint";
+                    }
+
+                    final JSpinner timeSpinner = new JSpinner();
+                    LocalTime initTime = LocalTime.now().truncatedTo(ChronoUnit.MINUTES);
+                    if (jsonNode != null) {
+                        try {
+                            initTime = LocalTime.parse(jsonNode.asText());
+                        } catch (Exception ex) {
+                            // do nothing and use the current time instead
+                        }
+                    }
+                    timeSpinner.setModel(createRangeConstrainedTimeModel(initTime, constraints));
                     timeSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
-                    timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
+                    timeSpinner.setEditor(new LocalTimeSpinnerEditor(timeSpinner));
+
                     supp = () -> {
-                        Date time = (Date) timeSpinner.getValue();
-                        return OffsetTime.ofInstant(time.toInstant(), DateTimeParser.LOCAL_OFFSET)
-                                .withOffsetSameInstant(ZoneOffset.UTC)
-                                .toString();
+                        return timeSpinner.getValue().toString();
                     };
-                    comp = timeSpinner;
+
+                    final Box box = Box.createHorizontalBox();
+                    box.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+                    box.add(timeSpinner);
+                    box.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
+                    box.add(new JLabel(conditionDescr));
+                    comp = box;
                 }
                 break;
             case TIMESTAMP:
@@ -536,52 +573,48 @@ public class ConstraintBasicNode extends BasicNode {
     }
 
     /**
-     * FIXME: The Swing spinner is buggy. The underlying model seems to be correct, however the
-     * component does not accept the range-limit.
+     * Creates a Time based, range-limited model to constrain input in
+     * <code>JSpinner</code>-components. This functions does not consider any
+     * <code>Set</code>-constraints.
      *
-     * @param constraints
-     * @return
-     * @hidden bug
+     * @param initTime The initial time value the model is set to.
+     * @param constraints The SiLA-Constraints element defining the time limits.
+     * @return The spinner-model for a <code>JSpinner</code>-component.
      */
-    private static SpinnerDateModel createRangeConstrainedTimeModel(final Constraints constraints) {
-        OffsetDateTime init = OffsetDateTime.now();
-        OffsetDateTime start = null;
+    public static AbstractSpinnerModel createRangeConstrainedTimeModel(
+            LocalTime initTime,
+            final Constraints constraints) {
+        final LocalTime start;
         if (constraints.getMinimalExclusive() != null) {
             start = DateTimeParser.parseIsoTime(constraints.getMinimalExclusive())
-                    .atDate(init.toLocalDate())
+                    .toLocalTime()
                     .plusSeconds(1);
         } else if (constraints.getMinimalInclusive() != null) {
             start = DateTimeParser.parseIsoTime(constraints.getMinimalInclusive())
-                    .atDate(init.toLocalDate());
+                    .toLocalTime();
+        } else {
+            start = LocalTime.MIN;
         }
 
-        Date startTime = null;
-        if (start != null) {
-            if (start.compareTo(init) >= 0) {
-                init = start.plusSeconds(1);
-            }
-            startTime = Date.from(start.toInstant());
-        }
-
-        OffsetDateTime end = null;
+        final LocalTime end;
         if (constraints.getMaximalExclusive() != null) {
             end = DateTimeParser.parseIsoTime(constraints.getMaximalExclusive())
-                    .atDate(init.toLocalDate())
+                    .toLocalTime()
                     .minusSeconds(1);
         } else if (constraints.getMaximalInclusive() != null) {
             end = DateTimeParser.parseIsoTime(constraints.getMaximalInclusive())
-                    .atDate(init.toLocalDate());
+                    .toLocalTime();
+        } else {
+            end = LocalTime.MAX.truncatedTo(ChronoUnit.SECONDS);
         }
 
-        Date endTime = null;
-        if (end != null) {
-            if (end.compareTo(init) <= 0) {
-                init = end.minusSeconds(1);
-            }
-            endTime = Date.from(end.toInstant());
+        if (initTime.compareTo(start) < 0) {
+            initTime = start;
         }
 
-        final Date initDate = Date.from(init.toInstant());
-        return new SpinnerDateModel(initDate, startTime, endTime, Calendar.MINUTE);
+        if (initTime.compareTo(end) > 0) {
+            initTime = end;
+        }
+        return new LocalTimeSpinnerModel(initTime, start, end, ChronoUnit.MINUTES);
     }
 }
