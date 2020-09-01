@@ -54,7 +54,7 @@ public final class DateTimeParser {
      * Parses ISO-8601 time-Strings of the form <code>HH:mm:ss</code>.
      *
      * @param isoTimeStr A ISO-8601 conform time-String.
-     * @return A OffsetTime-timestamp adjusted to the time-offset of current system or
+     * @return A OffsetTime-timestamp adjusted to the offset of the current system or
      * <code>null</code> on error.
      */
     public static OffsetTime parseIsoTime(String isoTimeStr) {
