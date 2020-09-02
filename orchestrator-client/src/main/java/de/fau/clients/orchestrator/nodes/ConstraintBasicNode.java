@@ -174,10 +174,15 @@ public class ConstraintBasicNode extends BasicNode {
                     final List<String> numberSet = constraints.getSet().getValue();
                     final JComboBox<String> numberComboBox = new JComboBox<>(numberSet.toArray(new String[0]));
                     numberComboBox.setMaximumSize(BasicNodeFactory.MAX_SIZE_NUMERIC_SPINNER);
+
+                    if (jsonNode != null) {
+                        numberComboBox.setSelectedItem(jsonNode.asText());
+                    }
+
                     if (type == BasicType.INTEGER) {
-                        supp = () -> (Integer.valueOf((String) numberComboBox.getSelectedItem()).toString());
+                        supp = () -> (Integer.valueOf(numberComboBox.getSelectedItem().toString()).toString());
                     } else { // REAL
-                        supp = () -> (Double.valueOf((String) numberComboBox.getSelectedItem()).toString());
+                        supp = () -> (Double.valueOf(numberComboBox.getSelectedItem().toString()).toString());
                     }
                     comp = numberComboBox;
                 } else {
@@ -186,6 +191,13 @@ public class ConstraintBasicNode extends BasicNode {
                             : createRangeConstrainedRealModel(constraints);
                     final JSpinner numericSpinner = new JSpinner(model);
                     numericSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_NUMERIC_SPINNER);
+                    if (jsonNode != null) {
+                        if (type == BasicType.INTEGER) {
+                            numericSpinner.setValue(jsonNode.asInt());
+                        } else { // REAL
+                            numericSpinner.setValue(jsonNode.asDouble());
+                        }
+                    }
                     if (constraints.getUnit() != null) {
                         final Box hbox = Box.createHorizontalBox();
                         hbox.add(numericSpinner);
