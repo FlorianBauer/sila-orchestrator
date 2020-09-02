@@ -9,8 +9,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.text.DefaultFormatterFactory;
 
 /**
- * A custom Spinner editor based on the new <code>LocalTime</code> type introduced in Java 8. This
- * is to simplify the handling of time types without converting to legacy types like the old
+ * A custom Spinner editor based on the <code>LocalTime</code> type introduced in Java 8. This is to
+ * simplify the handling of time types without converting to legacy types like the old
  * <code>Date</code>-type.
  */
 @SuppressWarnings("serial")
@@ -18,10 +18,11 @@ public class LocalTimeSpinnerEditor extends JSpinner.DefaultEditor {
 
     private static final JFormattedTextField.AbstractFormatter ltf = new LocalTimeFormatter();
 
-    public LocalTimeSpinnerEditor(JSpinner spinner) {
+    public LocalTimeSpinnerEditor(final JSpinner spinner) {
         super(spinner);
-        this.getTextField().setFormatterFactory(new DefaultFormatterFactory(ltf, ltf, ltf));
-        this.getTextField().setEditable(true);
+        final JFormattedTextField ftf = this.getTextField();
+        ftf.setFormatterFactory(new DefaultFormatterFactory(ltf, ltf, ltf));
+        ftf.setEditable(true);
     }
 
     @Override

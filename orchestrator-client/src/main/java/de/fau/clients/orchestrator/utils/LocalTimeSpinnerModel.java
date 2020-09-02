@@ -5,7 +5,7 @@ import java.time.temporal.ChronoUnit;
 import javax.swing.AbstractSpinnerModel;
 
 /**
- * A custom Spinner model based on the new <code>LocalTime</code> type introduced in Java 8. This is
+ * A custom Spinner model based on the <code>LocalTime</code> type introduced in Java 8. This is
  * necessary since the default <code>SpinnerDateModel</code>, based on the old <code>Date</code>
  * type, is buggy and broken beyond repairs.
  */
@@ -17,11 +17,23 @@ public class LocalTimeSpinnerModel extends AbstractSpinnerModel {
     private final ChronoUnit step;
     private LocalTime currentValue;
 
+    /**
+     * Constructor.
+     *
+     * @param initValue The time to initialize the spinner with (must not be <code>null</code>).
+     * @param start The min. time limit or <code>null</code> for the start of the day.
+     * @param end The max. time limit or <code>null</code> for the end of the day.
+     * @param step The step size (e.g. <code>ChronoUnit.MINUTES</code>,
+     * <code>ChronoUnit.SECONDS</code>).
+     *
+     * @see LocalTime
+     * @see ChronoUnit
+     */
     public LocalTimeSpinnerModel(
-            LocalTime initValue,
-            LocalTime start,
-            LocalTime end,
-            ChronoUnit step) {
+            final LocalTime initValue,
+            final LocalTime start,
+            final LocalTime end,
+            final ChronoUnit step) {
         this.currentValue = initValue;
         this.start = start;
         this.end = end;
@@ -47,7 +59,7 @@ public class LocalTimeSpinnerModel extends AbstractSpinnerModel {
 
     @Override
     public Object getNextValue() {
-        final LocalTime next = currentValue.plus(step.getDuration());
+        final LocalTime next = currentValue.plus(1, step);
         if (next.isAfter(end)) {
             return null;
         } else {
@@ -57,7 +69,7 @@ public class LocalTimeSpinnerModel extends AbstractSpinnerModel {
 
     @Override
     public Object getPreviousValue() {
-        final LocalTime previous = currentValue.minus(step.getDuration());
+        final LocalTime previous = currentValue.minus(1, step);
         if (previous.isBefore(start)) {
             return null;
         } else {
