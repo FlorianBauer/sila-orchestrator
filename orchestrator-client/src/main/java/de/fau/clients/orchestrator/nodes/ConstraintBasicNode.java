@@ -3,6 +3,8 @@ package de.fau.clients.orchestrator.nodes;
 import com.fasterxml.jackson.databind.JsonNode;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
+import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
+import de.fau.clients.orchestrator.utils.LocalDateSpinnerModel;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerModel;
 import java.awt.event.FocusAdapter;
@@ -14,7 +16,6 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Supplier;
@@ -119,14 +120,52 @@ public class ConstraintBasicNode extends BasicNode {
                     };
                     comp = dateComboBox;
                 } else {
-                    final JSpinner dateSpinner = new JSpinner(createRangeConstrainedDateModel(constraints));
+                    String minBounds = null;
+                    if (constraints.getMinimalExclusive() != null) {
+                        minBounds = "> " + DateTimeParser.parseIsoDate(constraints.getMinimalExclusive()).toString();
+                    } else if (constraints.getMinimalInclusive() != null) {
+                        minBounds = ">= " + DateTimeParser.parseIsoDate(constraints.getMinimalInclusive()).toString();
+                    }
+
+                    String maxBounds = null;
+                    if (constraints.getMaximalExclusive() != null) {
+                        maxBounds = "< " + DateTimeParser.parseIsoDate(constraints.getMaximalExclusive()).toString();
+                    } else if (constraints.getMaximalInclusive() != null) {
+                        maxBounds = "<= " + DateTimeParser.parseIsoDate(constraints.getMaximalInclusive()).toString();
+                    }
+
+                    final String conditionDesc;
+                    if (minBounds != null && maxBounds != null) {
+                        conditionDesc = minBounds + " && " + maxBounds;
+                    } else if (minBounds != null) {
+                        conditionDesc = minBounds;
+                    } else if (maxBounds != null) {
+                        conditionDesc = maxBounds;
+                    } else {
+                        conditionDesc = "invalid constraint";
+                    }
+
+                    LocalDate initDate = LocalDate.now();
+                    if (jsonNode != null) {
+                        try {
+                            initDate = DateTimeParser.parseIsoDate(jsonNode.asText());
+                        } catch (Exception ex) {
+                            // do nothing
+                        }
+                    }
+
+                    final JSpinner dateSpinner = new JSpinner(createRangeConstrainedDateModel(initDate, constraints));
                     dateSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
-                    dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
+                    dateSpinner.setEditor(new LocalDateSpinnerEditor(dateSpinner));
                     supp = () -> {
-                        Date date = (Date) dateSpinner.getValue();
-                        return LocalDate.ofInstant(date.toInstant(), DateTimeParser.LOCAL_OFFSET).toString();
+                        return dateSpinner.getValue().toString();
                     };
-                    comp = dateSpinner;
+                    final Box hbox = Box.createHorizontalBox();
+                    hbox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+                    hbox.add(dateSpinner);
+                    hbox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
+                    hbox.add(new JLabel(conditionDesc));
+                    comp = hbox;
                 }
                 break;
             case INTEGER:
@@ -529,15 +568,18 @@ public class ConstraintBasicNode extends BasicNode {
     }
 
     /**
-     * Creates a Date based, range-limited model to constrain input in
+     * Creates a date based, range-limited model to constrain input in
      * <code>JSpinner</code>-components. This functions does not consider any
      * <code>Set</code>-constraints.
      *
+     * @param initDate The initial date value the model is set to.
      * @param constraints The SiLA-Constraints element defining the date limits.
      * @return The spinner-model for a <code>JSpinner</code>-component.
      */
-    private static SpinnerDateModel createRangeConstrainedDateModel(final Constraints constraints) {
-        LocalDate init = LocalDate.now();
+    public static AbstractSpinnerModel createRangeConstrainedDateModel(
+            LocalDate initDate,
+            final Constraints constraints) {
+
         LocalDate start = null;
         if (constraints.getMinimalExclusive() != null) {
             start = DateTimeParser.parseIsoDate(constraints.getMinimalExclusive()).plusDays(1);
@@ -545,12 +587,8 @@ public class ConstraintBasicNode extends BasicNode {
             start = DateTimeParser.parseIsoDate(constraints.getMinimalInclusive());
         }
 
-        Date startDate = null;
-        if (start != null) {
-            if (start.isAfter(init)) {
-                init = start;
-            }
-            startDate = Date.from(start.atStartOfDay(DateTimeParser.LOCAL_OFFSET).toInstant());
+        if (start != null && start.isAfter(initDate)) {
+            initDate = start;
         }
 
         LocalDate end = null;
@@ -560,16 +598,10 @@ public class ConstraintBasicNode extends BasicNode {
             end = DateTimeParser.parseIsoDate(constraints.getMaximalInclusive());
         }
 
-        Date endDate = null;
-        if (end != null) {
-            if (end.isBefore(init)) {
-                init = end;
-            }
-            endDate = Date.from(end.atStartOfDay(DateTimeParser.LOCAL_OFFSET).toInstant());
+        if (end != null && end.isBefore(initDate)) {
+            initDate = end;
         }
-
-        final Date initDate = Date.from(init.atStartOfDay(DateTimeParser.LOCAL_OFFSET).toInstant());
-        return new SpinnerDateModel(initDate, startDate, endDate, Calendar.DAY_OF_MONTH);
+        return new LocalDateSpinnerModel(initDate, start, end, ChronoUnit.DAYS);
     }
 
     /**
