@@ -209,85 +209,83 @@ public class ConstraintBasicNode extends BasicNode {
                     }
                     comp = comboBox;
                     supp = () -> ((String) comboBox.getSelectedItem());
-                    break;
-                }
-
-                final JFormattedTextField strField = new JFormattedTextField();
-                strField.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
-                final Supplier<Boolean> validator;
-                final String conditionDesc;
-
-                if (constraints.getPattern() != null) {
-                    final String pattern = constraints.getPattern();
-                    validator = () -> (strField.getText().matches(pattern));
-                    conditionDesc = "match " + pattern;
-                } else if (constraints.getLength() != null) {
-                    final int len = constraints.getLength().intValue();
-                    ((AbstractDocument) strField.getDocument()).setDocumentFilter(new DocumentLengthFilter(len));
-                    validator = () -> (strField.getText().length() == len);
-                    conditionDesc = "= " + len;
                 } else {
-                    final BigInteger min = constraints.getMinimalLength();
-                    final BigInteger max = constraints.getMaximalLength();
-                    if (max != null) {
-                        ((AbstractDocument) strField.getDocument()).setDocumentFilter(new DocumentLengthFilter(max.intValue()));
-                    }
+                    final JFormattedTextField strField = new JFormattedTextField();
+                    strField.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
+                    final Supplier<Boolean> validator;
+                    final String conditionDesc;
 
-                    if (min != null && max != null) {
-                        validator = () -> {
-                            final int len = strField.getText().length();
-                            return (len >= min.intValue() && len <= max.intValue());
-                        };
-                        conditionDesc = ">= " + min + " && <= " + max;
-                    } else if (min != null) {
-                        validator = () -> (strField.getText().length() >= min.intValue());
-                        conditionDesc = ">= " + min;
-                    } else if (max != null) {
-                        validator = () -> (strField.getText().length() <= max.intValue());
-                        conditionDesc = "<= " + max;
-                    } else if (constraints.getFullyQualifiedIdentifier() != null) {
-                        final String fqi = constraints.getFullyQualifiedIdentifier();
-                        validator = () -> (ConstraintBasicNode.vlidateFullyQualifiedIdentifier(fqi, strField.getText(), typeDefs));
-                        conditionDesc = fqi;
+                    if (constraints.getPattern() != null) {
+                        final String pattern = constraints.getPattern();
+                        validator = () -> (strField.getText().matches(pattern));
+                        conditionDesc = "match " + pattern;
+                    } else if (constraints.getLength() != null) {
+                        final int len = constraints.getLength().intValue();
+                        ((AbstractDocument) strField.getDocument()).setDocumentFilter(new DocumentLengthFilter(len));
+                        validator = () -> (strField.getText().length() == len);
+                        conditionDesc = "= " + len;
                     } else {
-                        validator = () -> (false);
-                        conditionDesc = "invalid constraint";
+                        final BigInteger min = constraints.getMinimalLength();
+                        final BigInteger max = constraints.getMaximalLength();
+                        if (max != null) {
+                            ((AbstractDocument) strField.getDocument()).setDocumentFilter(new DocumentLengthFilter(max.intValue()));
+                        }
+
+                        if (min != null && max != null) {
+                            validator = () -> {
+                                final int len = strField.getText().length();
+                                return (len >= min.intValue() && len <= max.intValue());
+                            };
+                            conditionDesc = ">= " + min + " && <= " + max;
+                        } else if (min != null) {
+                            validator = () -> (strField.getText().length() >= min.intValue());
+                            conditionDesc = ">= " + min;
+                        } else if (max != null) {
+                            validator = () -> (strField.getText().length() <= max.intValue());
+                            conditionDesc = "<= " + max;
+                        } else if (constraints.getFullyQualifiedIdentifier() != null) {
+                            final String fqi = constraints.getFullyQualifiedIdentifier();
+                            validator = () -> (ConstraintBasicNode.vlidateFullyQualifiedIdentifier(fqi, strField.getText(), typeDefs));
+                            conditionDesc = fqi;
+                        } else {
+                            validator = () -> (false);
+                            conditionDesc = "invalid constraint";
+                        }
                     }
-                }
 
-                final JLabel validationLabel = new JLabel(VALIDATON_OK);
-                validationLabel.setDisabledIcon(VALIDATON_WARN);
-                validationLabel.setEnabled(false);
+                    final JLabel validationLabel = new JLabel(VALIDATON_OK);
+                    validationLabel.setDisabledIcon(VALIDATON_WARN);
+                    validationLabel.setEnabled(false);
 
-                // validate on enter
-                strField.addActionListener((evt) -> {
-                    validationLabel.setEnabled(validator.get());
-                });
+                    // validate on enter
+                    strField.addActionListener((evt) -> {
+                        validationLabel.setEnabled(validator.get());
+                    });
 
-                // validate after focus was lost
-                strField.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent evt) {
+                    // validate after focus was lost
+                    strField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent evt) {
+                            validationLabel.setEnabled(validator.get());
+                        }
+                    });
+
+                    final Box hbox = Box.createHorizontalBox();
+                    hbox.add(strField);
+                    hbox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
+                    hbox.add(new JLabel(conditionDesc));
+                    hbox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
+                    hbox.add(validationLabel);
+                    hbox.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
+
+                    if (jsonNode != null) {
+                        strField.setText(jsonNode.asText());
+                        // validate after import
                         validationLabel.setEnabled(validator.get());
                     }
-                });
-
-                final Box hbox = Box.createHorizontalBox();
-                hbox.add(strField);
-                hbox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
-                hbox.add(new JLabel(conditionDesc));
-                hbox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
-                hbox.add(validationLabel);
-                hbox.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
-
-                if (jsonNode != null) {
-                    strField.setText(jsonNode.asText());
-                    // validate after import
-                    validationLabel.setEnabled(validator.get());
+                    comp = hbox;
+                    supp = () -> (strField.getText());
                 }
-
-                comp = hbox;
-                supp = () -> (strField.getText());
                 break;
             case TIME:
                 if (constraints.getSet() != null) {
@@ -347,12 +345,12 @@ public class ConstraintBasicNode extends BasicNode {
                         return timeSpinner.getValue().toString();
                     };
 
-                    final Box box = Box.createHorizontalBox();
-                    box.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-                    box.add(timeSpinner);
-                    box.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
-                    box.add(new JLabel(conditionDescr));
-                    comp = box;
+                    final Box hbox = Box.createHorizontalBox();
+                    hbox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+                    hbox.add(timeSpinner);
+                    hbox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
+                    hbox.add(new JLabel(conditionDescr));
+                    comp = hbox;
                 }
                 break;
             case TIMESTAMP:
@@ -605,7 +603,7 @@ public class ConstraintBasicNode extends BasicNode {
     }
 
     /**
-     * Creates a Time based, range-limited model to constrain input in
+     * Creates a local time based, range-limited model to constrain input in
      * <code>JSpinner</code>-components. This functions does not consider any
      * <code>Set</code>-constraints.
      *
