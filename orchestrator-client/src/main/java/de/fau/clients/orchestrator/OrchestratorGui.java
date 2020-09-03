@@ -32,6 +32,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -474,7 +475,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         java.awt.GridBagLayout taskQueuePanelLayout = new java.awt.GridBagLayout();
         taskQueuePanelLayout.columnWidths = new int[] {3};
-        taskQueuePanelLayout.rowHeights = new int[] {3};
+        taskQueuePanelLayout.rowHeights = new int[] {4};
         taskQueuePanel.setLayout(taskQueuePanelLayout);
 
         addTaskToQueueBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/add-entry.png"))); // NOI18N
@@ -489,7 +490,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         taskQueuePanel.add(addTaskToQueueBtn, gridBagConstraints);
 
@@ -504,17 +505,32 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         taskQueuePanel.add(executeAllBtn, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.weighty = 0.5;
         taskQueuePanel.add(taskQueueScrollPane, gridBagConstraints);
+
+        showOrHideTableColumnBtn.setText("..."); // NOI18N
+        showOrHideTableColumnBtn.setToolTipText("Show/hide table columns.");
+        showOrHideTableColumnBtn.setMaximumSize(new java.awt.Dimension(64, 24));
+        showOrHideTableColumnBtn.setMinimumSize(new java.awt.Dimension(38, 24));
+        showOrHideTableColumnBtn.setPreferredSize(new java.awt.Dimension(38, 24));
+        showOrHideTableColumnBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showOrHideTableColumnBtnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        taskQueuePanel.add(showOrHideTableColumnBtn, gridBagConstraints);
 
         moveTaskUpBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/move-up.png"))); // NOI18N
         moveTaskUpBtn.setToolTipText("Move selcted task one place up in the queue order");
@@ -527,7 +543,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 0.5;
         taskQueuePanel.add(moveTaskUpBtn, gridBagConstraints);
@@ -543,7 +559,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 0.5;
         taskQueuePanel.add(moveTaskDownBtn, gridBagConstraints);
@@ -559,7 +575,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         taskQueuePanel.add(removeTaskFromQueueBtn, gridBagConstraints);
 
@@ -1220,6 +1236,15 @@ public class OrchestratorGui extends javax.swing.JFrame {
         viewSelectedTreeNode();
     }//GEN-LAST:event_featureTreeValueChanged
 
+    private void showOrHideTableColumnBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showOrHideTableColumnBtnActionPerformed
+        final JPopupMenu columnPopupMenu = taskQueueTable.getColumnHeaderPopupMenu();
+        if (!columnPopupMenu.isVisible()) {
+            columnPopupMenu.show(showOrHideTableColumnBtn, 0, showOrHideTableColumnBtn.getHeight());
+        } else {
+            columnPopupMenu.setVisible(false);
+        }
+    }//GEN-LAST:event_showOrHideTableColumnBtnActionPerformed
+
     private void viewSelectedTreeNode() {
         if (featureTree.isSelectionEmpty()) {
             return;
@@ -1445,6 +1470,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JFormattedTextField serverPortFormattedTextField = new javax.swing.JFormattedTextField();
     private final javax.swing.JLabel serverPortLabel = new javax.swing.JLabel();
     private final javax.swing.JSplitPane serverSplitPane = new javax.swing.JSplitPane();
+    private final javax.swing.JButton showOrHideTableColumnBtn = new javax.swing.JButton();
     private final javax.swing.JPanel taskQueuePanel = new javax.swing.JPanel();
     private final javax.swing.JPopupMenu taskQueuePopupMenu = new javax.swing.JPopupMenu();
     private final javax.swing.JScrollPane taskQueueScrollPane = new javax.swing.JScrollPane();

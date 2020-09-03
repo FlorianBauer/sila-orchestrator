@@ -340,6 +340,10 @@ public class TaskQueueTable extends JTable {
         }
     }
 
+    public JPopupMenu getColumnHeaderPopupMenu() {
+        return this.taskQueueHeaderPopupMenu;
+    }
+
     private void changeTaskUuidActionPerformed() {
         if (editingRow >= 0) {
             if (serverManager != null) {
