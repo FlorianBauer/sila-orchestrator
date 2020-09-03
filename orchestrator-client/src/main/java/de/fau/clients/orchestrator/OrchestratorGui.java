@@ -520,8 +520,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
         showOrHideTableColumnBtn.setText("..."); // NOI18N
         showOrHideTableColumnBtn.setToolTipText("Show/hide table columns.");
         showOrHideTableColumnBtn.setMaximumSize(new java.awt.Dimension(64, 24));
-        showOrHideTableColumnBtn.setMinimumSize(new java.awt.Dimension(38, 24));
-        showOrHideTableColumnBtn.setPreferredSize(new java.awt.Dimension(38, 24));
+        showOrHideTableColumnBtn.setMinimumSize(new java.awt.Dimension(36, 24));
+        showOrHideTableColumnBtn.setPreferredSize(new java.awt.Dimension(36, 24));
         showOrHideTableColumnBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showOrHideTableColumnBtnActionPerformed(evt);
@@ -535,7 +535,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         moveTaskUpBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/move-up.png"))); // NOI18N
         moveTaskUpBtn.setToolTipText("Move selcted task one place up in the queue order");
         moveTaskUpBtn.setEnabled(false);
-        moveTaskUpBtn.setMargin(new java.awt.Insets(4, 0, 4, 0));
+        moveTaskUpBtn.setMaximumSize(new java.awt.Dimension(64, 1024));
+        moveTaskUpBtn.setMinimumSize(new java.awt.Dimension(36, 36));
+        moveTaskUpBtn.setPreferredSize(new java.awt.Dimension(36, 48));
         moveTaskUpBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveTaskUpBtnActionPerformed(evt);
@@ -551,7 +553,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         moveTaskDownBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/move-down.png"))); // NOI18N
         moveTaskDownBtn.setToolTipText("Move selected task one place down in the queue order");
         moveTaskDownBtn.setEnabled(false);
-        moveTaskDownBtn.setMargin(new java.awt.Insets(4, 0, 4, 0));
+        moveTaskDownBtn.setMaximumSize(new java.awt.Dimension(64, 1024));
+        moveTaskDownBtn.setMinimumSize(new java.awt.Dimension(36, 36));
+        moveTaskDownBtn.setPreferredSize(new java.awt.Dimension(36, 48));
         moveTaskDownBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveTaskDownBtnActionPerformed(evt);
@@ -567,7 +571,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         removeTaskFromQueueBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/task-remove.png"))); // NOI18N
         removeTaskFromQueueBtn.setToolTipText("Remove selected task from queue");
         removeTaskFromQueueBtn.setEnabled(false);
-        removeTaskFromQueueBtn.setMargin(new java.awt.Insets(2, 0, 2, 0));
+        removeTaskFromQueueBtn.setMaximumSize(new java.awt.Dimension(64, 38));
+        removeTaskFromQueueBtn.setMinimumSize(new java.awt.Dimension(36, 24));
+        removeTaskFromQueueBtn.setPreferredSize(new java.awt.Dimension(36, 32));
         removeTaskFromQueueBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeTaskFromQueue(evt);
@@ -576,7 +582,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         taskQueuePanel.add(removeTaskFromQueueBtn, gridBagConstraints);
 
         mainPanelSplitPane.setLeftComponent(taskQueuePanel);
