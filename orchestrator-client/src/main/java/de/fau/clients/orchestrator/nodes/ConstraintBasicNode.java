@@ -198,16 +198,42 @@ public class ConstraintBasicNode extends BasicNode {
                             numericSpinner.setValue(jsonNode.asDouble());
                         }
                     }
+
+                    final String conditionDesc;
                     if (constraints.getUnit() != null) {
-                        final Box hbox = Box.createHorizontalBox();
-                        hbox.add(numericSpinner);
-                        hbox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
-                        hbox.add(new JLabel(constraints.getUnit().getLabel()));
-                        hbox.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
-                        comp = hbox;
+                        conditionDesc = constraints.getUnit().getLabel();
                     } else {
-                        comp = numericSpinner;
+                        String minBounds = null;
+                        if (constraints.getMinimalExclusive() != null) {
+                            minBounds = "> " + constraints.getMinimalExclusive();
+                        } else if (constraints.getMinimalInclusive() != null) {
+                            minBounds = ">= " + constraints.getMinimalInclusive();
+                        }
+
+                        String maxBounds = null;
+                        if (constraints.getMaximalExclusive() != null) {
+                            maxBounds = "< " + constraints.getMaximalExclusive();
+                        } else if (constraints.getMaximalInclusive() != null) {
+                            maxBounds = "<= " + constraints.getMaximalInclusive();
+                        }
+
+                        if (minBounds != null && maxBounds != null) {
+                            conditionDesc = minBounds + " && " + maxBounds;
+                        } else if (minBounds != null) {
+                            conditionDesc = minBounds;
+                        } else if (maxBounds != null) {
+                            conditionDesc = maxBounds;
+                        } else {
+                            conditionDesc = "invalid constraint";
+                        }
                     }
+
+                    final Box hbox = Box.createHorizontalBox();
+                    hbox.add(numericSpinner);
+                    hbox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
+                    hbox.add(new JLabel(conditionDesc));
+                    hbox.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
+                    comp = hbox;
                     supp = () -> (numericSpinner.getValue().toString());
                 }
                 break;
