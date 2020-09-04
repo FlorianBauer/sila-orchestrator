@@ -72,6 +72,12 @@ public class ConstraintBasicNode extends BasicNode {
      * icon. Only used for components with constraints.
      */
     private static final int HORIZONTAL_STRUT = 5;
+    private static final String LESS_THAN = "< ";
+    private static final String GREATER_THAN = "> ";
+    private static final String LESS_OR_EQUAL = "≤ "; // '\u2264'
+    private static final String GREATER_OR_EQUAL = "≥ "; // '\u2265'
+    private static final String AND_SIGN = " ∧ "; // '\u2227'
+    private static final String INVALID_CONSTRAINT = "Invalid Constraint";
     private final TypeDefLut typeDefs;
     private final Constraints constraints;
 
@@ -122,27 +128,31 @@ public class ConstraintBasicNode extends BasicNode {
                 } else {
                     String minBounds = null;
                     if (constraints.getMinimalExclusive() != null) {
-                        minBounds = "> " + DateTimeParser.parseIsoDate(constraints.getMinimalExclusive()).toString();
+                        minBounds = GREATER_THAN + DateTimeParser.parseIsoDate(
+                                constraints.getMinimalExclusive()).toString();
                     } else if (constraints.getMinimalInclusive() != null) {
-                        minBounds = ">= " + DateTimeParser.parseIsoDate(constraints.getMinimalInclusive()).toString();
+                        minBounds = GREATER_OR_EQUAL + DateTimeParser.parseIsoDate(
+                                constraints.getMinimalInclusive()).toString();
                     }
 
                     String maxBounds = null;
                     if (constraints.getMaximalExclusive() != null) {
-                        maxBounds = "< " + DateTimeParser.parseIsoDate(constraints.getMaximalExclusive()).toString();
+                        maxBounds = LESS_THAN + DateTimeParser.parseIsoDate(
+                                constraints.getMaximalExclusive()).toString();
                     } else if (constraints.getMaximalInclusive() != null) {
-                        maxBounds = "<= " + DateTimeParser.parseIsoDate(constraints.getMaximalInclusive()).toString();
+                        maxBounds = LESS_OR_EQUAL + DateTimeParser.parseIsoDate(
+                                constraints.getMaximalInclusive()).toString();
                     }
 
                     final String conditionDesc;
                     if (minBounds != null && maxBounds != null) {
-                        conditionDesc = minBounds + " && " + maxBounds;
+                        conditionDesc = minBounds + AND_SIGN + maxBounds;
                     } else if (minBounds != null) {
                         conditionDesc = minBounds;
                     } else if (maxBounds != null) {
                         conditionDesc = maxBounds;
                     } else {
-                        conditionDesc = "invalid constraint";
+                        conditionDesc = INVALID_CONSTRAINT;
                     }
 
                     LocalDate initDate = LocalDate.now();
@@ -205,26 +215,26 @@ public class ConstraintBasicNode extends BasicNode {
                     } else {
                         String minBounds = null;
                         if (constraints.getMinimalExclusive() != null) {
-                            minBounds = "> " + constraints.getMinimalExclusive();
+                            minBounds = GREATER_THAN + constraints.getMinimalExclusive();
                         } else if (constraints.getMinimalInclusive() != null) {
-                            minBounds = ">= " + constraints.getMinimalInclusive();
+                            minBounds = GREATER_OR_EQUAL + constraints.getMinimalInclusive();
                         }
 
                         String maxBounds = null;
                         if (constraints.getMaximalExclusive() != null) {
-                            maxBounds = "< " + constraints.getMaximalExclusive();
+                            maxBounds = LESS_THAN + constraints.getMaximalExclusive();
                         } else if (constraints.getMaximalInclusive() != null) {
-                            maxBounds = "<= " + constraints.getMaximalInclusive();
+                            maxBounds = LESS_OR_EQUAL + constraints.getMaximalInclusive();
                         }
 
                         if (minBounds != null && maxBounds != null) {
-                            conditionDesc = minBounds + " && " + maxBounds;
+                            conditionDesc = minBounds + AND_SIGN + maxBounds;
                         } else if (minBounds != null) {
                             conditionDesc = minBounds;
                         } else if (maxBounds != null) {
                             conditionDesc = maxBounds;
                         } else {
-                            conditionDesc = "invalid constraint";
+                            conditionDesc = INVALID_CONSTRAINT;;
                         }
                     }
 
@@ -259,14 +269,16 @@ public class ConstraintBasicNode extends BasicNode {
                         conditionDesc = "match " + pattern;
                     } else if (constraints.getLength() != null) {
                         final int len = constraints.getLength().intValue();
-                        ((AbstractDocument) strField.getDocument()).setDocumentFilter(new DocumentLengthFilter(len));
+                        ((AbstractDocument) strField.getDocument()).setDocumentFilter(
+                                new DocumentLengthFilter(len));
                         validator = () -> (strField.getText().length() == len);
                         conditionDesc = "= " + len;
                     } else {
                         final BigInteger min = constraints.getMinimalLength();
                         final BigInteger max = constraints.getMaximalLength();
                         if (max != null) {
-                            ((AbstractDocument) strField.getDocument()).setDocumentFilter(new DocumentLengthFilter(max.intValue()));
+                            ((AbstractDocument) strField.getDocument()).setDocumentFilter(
+                                    new DocumentLengthFilter(max.intValue()));
                         }
 
                         if (min != null && max != null) {
@@ -274,20 +286,23 @@ public class ConstraintBasicNode extends BasicNode {
                                 final int len = strField.getText().length();
                                 return (len >= min.intValue() && len <= max.intValue());
                             };
-                            conditionDesc = ">= " + min + " && <= " + max;
+                            conditionDesc = GREATER_OR_EQUAL + min + AND_SIGN + GREATER_OR_EQUAL + max;
                         } else if (min != null) {
                             validator = () -> (strField.getText().length() >= min.intValue());
-                            conditionDesc = ">= " + min;
+                            conditionDesc = GREATER_OR_EQUAL + min;
                         } else if (max != null) {
                             validator = () -> (strField.getText().length() <= max.intValue());
-                            conditionDesc = "<= " + max;
+                            conditionDesc = LESS_OR_EQUAL + max;
                         } else if (constraints.getFullyQualifiedIdentifier() != null) {
                             final String fqi = constraints.getFullyQualifiedIdentifier();
-                            validator = () -> (ConstraintBasicNode.vlidateFullyQualifiedIdentifier(fqi, strField.getText(), typeDefs));
+                            validator = () -> (ConstraintBasicNode.vlidateFullyQualifiedIdentifier(
+                                    fqi,
+                                    strField.getText(),
+                                    typeDefs));
                             conditionDesc = fqi;
                         } else {
                             validator = () -> (false);
-                            conditionDesc = "invalid constraint";
+                            conditionDesc = INVALID_CONSTRAINT;
                         }
                     }
 
@@ -343,27 +358,31 @@ public class ConstraintBasicNode extends BasicNode {
                 } else {
                     String minBounds = null;
                     if (constraints.getMinimalExclusive() != null) {
-                        minBounds = "> " + DateTimeParser.parseIsoTime(constraints.getMinimalExclusive()).toLocalTime().toString();
+                        minBounds = GREATER_THAN + DateTimeParser.parseIsoTime(
+                                constraints.getMinimalExclusive()).toLocalTime().toString();
                     } else if (constraints.getMinimalInclusive() != null) {
-                        minBounds = ">= " + DateTimeParser.parseIsoTime(constraints.getMinimalInclusive()).toLocalTime().toString();
+                        minBounds = GREATER_OR_EQUAL + DateTimeParser.parseIsoTime(
+                                constraints.getMinimalInclusive()).toLocalTime().toString();
                     }
 
                     String maxBounds = null;
                     if (constraints.getMaximalExclusive() != null) {
-                        maxBounds = "< " + DateTimeParser.parseIsoTime(constraints.getMaximalExclusive()).toLocalTime().toString();
+                        maxBounds = LESS_THAN + DateTimeParser.parseIsoTime(
+                                constraints.getMaximalExclusive()).toLocalTime().toString();
                     } else if (constraints.getMaximalInclusive() != null) {
-                        maxBounds = "<= " + DateTimeParser.parseIsoTime(constraints.getMaximalInclusive()).toLocalTime().toString();
+                        maxBounds = LESS_OR_EQUAL + DateTimeParser.parseIsoTime(
+                                constraints.getMaximalInclusive()).toLocalTime().toString();
                     }
 
                     final String conditionDescr;
                     if (minBounds != null && maxBounds != null) {
-                        conditionDescr = minBounds + " && " + maxBounds;
+                        conditionDescr = minBounds + AND_SIGN + maxBounds;
                     } else if (minBounds != null) {
                         conditionDescr = minBounds;
                     } else if (maxBounds != null) {
                         conditionDescr = maxBounds;
                     } else {
-                        conditionDescr = "invalid constraint";
+                        conditionDescr = INVALID_CONSTRAINT;;
                     }
 
                     final JSpinner timeSpinner = new JSpinner();
