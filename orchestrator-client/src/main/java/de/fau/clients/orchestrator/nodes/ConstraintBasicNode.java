@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
@@ -306,8 +307,8 @@ public class ConstraintBasicNode extends BasicNode {
                             }
                             conditionDesc = "Xml";
                         } else if (schemaType.equalsIgnoreCase("Json")) {
-                            // TODO: Implement Json schema handling.
-                            validator = () -> (false);
+                            // TODO: Implement proper JSON schema handling by URL and Inline.
+                            validator = () -> (isJsonValid(strField.getText()));
                             conditionDesc = "Json";
                         } else {
                             validator = () -> (false);
@@ -781,6 +782,28 @@ public class ConstraintBasicNode extends BasicNode {
             builder.parse(xml);
             return true;
         } catch (IOException | ParserConfigurationException | SAXException ex) {
+            log.warn(ex.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Checks if the given JSON string is valid.
+     *
+     * @deprecated A proper schema validation is not done yet. This may change in the future when
+     * the standardization of JSON-schema is final. A library to do this can be found here:
+     * https://github.com/networknt/json-schema-validator (2020-09-05, florian.bauer.dev@gmail.com)
+     *
+     * @param jsonStr The JSON string to validate.
+     * @return <code>true</code> if valid, otherwise <code>false</code>.
+     */
+    @Deprecated
+    public static boolean isJsonValid(final String jsonStr) {
+        try {
+            final ObjectMapper mapper = new ObjectMapper();
+            mapper.readTree(jsonStr);
+            return true;
+        } catch (IOException ex) {
             log.warn(ex.getMessage());
             return false;
         }
