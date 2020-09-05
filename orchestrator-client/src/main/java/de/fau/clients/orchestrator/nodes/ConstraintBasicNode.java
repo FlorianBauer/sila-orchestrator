@@ -9,7 +9,11 @@ import de.fau.clients.orchestrator.utils.LocalTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerModel;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
@@ -31,7 +35,16 @@ import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.text.AbstractDocument;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.xml.sax.SAXException;
 import sila_java.library.core.models.BasicType;
 import sila_java.library.core.models.Constraints;
 import sila_java.library.core.models.Feature;
@@ -47,6 +60,7 @@ import sila_java.library.core.models.SiLAElement;
  * @see BasicNode
  * @see BasicNodeFactory
  */
+@Slf4j
 public class ConstraintBasicNode extends BasicNode {
 
     /**
@@ -273,6 +287,39 @@ public class ConstraintBasicNode extends BasicNode {
                                 new DocumentLengthFilter(len));
                         validator = () -> (strField.getText().length() == len);
                         conditionDesc = "= " + len;
+                    } else if (constraints.getSchema() != null) {
+                        final Constraints.Schema schema = constraints.getSchema();
+                        final String schemaType = schema.getType();
+                        if (schemaType.equalsIgnoreCase("Xml")) {
+                            if (schema.getUrl() != null) {
+                                validator = () -> (isXmlValid(new ByteArrayInputStream(
+                                        strField.getText().getBytes(StandardCharsets.UTF_8)),
+                                        new StreamSource(schema.getUrl())));
+                            } else if (schema.getInline() != null) {
+                                validator = () -> (isXmlValid(new ByteArrayInputStream(
+                                        strField.getText().getBytes(StandardCharsets.UTF_8)),
+                                        new StreamSource(new ByteArrayInputStream(schema
+                                                .getInline()
+                                                .getBytes(StandardCharsets.UTF_8)))));
+                            } else {
+                                validator = () -> (false);
+                            }
+                            conditionDesc = "Xml";
+                        } else if (schemaType.equalsIgnoreCase("Json")) {
+                            // TODO: Implement Json schema handling.
+                            validator = () -> (false);
+                            conditionDesc = "Json";
+                        } else {
+                            validator = () -> (false);
+                            conditionDesc = INVALID_CONSTRAINT;
+                        }
+                    } else if (constraints.getFullyQualifiedIdentifier() != null) {
+                        final String fqi = constraints.getFullyQualifiedIdentifier();
+                        validator = () -> (ConstraintBasicNode.vlidateFullyQualifiedIdentifier(
+                                fqi,
+                                strField.getText(),
+                                typeDefs));
+                        conditionDesc = fqi;
                     } else {
                         final BigInteger min = constraints.getMinimalLength();
                         final BigInteger max = constraints.getMaximalLength();
@@ -293,13 +340,6 @@ public class ConstraintBasicNode extends BasicNode {
                         } else if (max != null) {
                             validator = () -> (strField.getText().length() <= max.intValue());
                             conditionDesc = LESS_OR_EQUAL + max;
-                        } else if (constraints.getFullyQualifiedIdentifier() != null) {
-                            final String fqi = constraints.getFullyQualifiedIdentifier();
-                            validator = () -> (ConstraintBasicNode.vlidateFullyQualifiedIdentifier(
-                                    fqi,
-                                    strField.getText(),
-                                    typeDefs));
-                            conditionDesc = fqi;
                         } else {
                             validator = () -> (false);
                             conditionDesc = INVALID_CONSTRAINT;
@@ -703,5 +743,46 @@ public class ConstraintBasicNode extends BasicNode {
             initTime = end;
         }
         return new LocalTimeSpinnerModel(initTime, start, end, ChronoUnit.MINUTES);
+    }
+
+    /**
+     * Checks the given XML data. If a XML Schema Definition (XSD) is provided, a validation against
+     * the schema is done as well.
+     *
+     * @deprecated This code is experimental and is most likely not conform with the intended
+     * behavior described in the SiLA 2 standard (v1.0). However, it serves as a useful placeholder
+     * and may be rewritten, extended or removed in the future. (2020-09-05,
+     * florian.bauer.dev@gmail.com)
+     *
+     * @param xml The actual XML data to check.
+     * @param xsd The stream source of the XSD data to validate against or <code>null</code> to
+     * check only on a correct XML format.
+     *
+     * @return <code>true</code> if valid, otherwise <code>false</code>.
+     *
+     * @see https://www.edankert.com/validate.html
+     * @see https://docs.oracle.com/javase/tutorial/jaxp/dom/validating.html
+     */
+    @Deprecated
+    public static boolean isXmlValid(final InputStream xml, final StreamSource xsd) {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setValidating(false);
+        factory.setNamespaceAware(true);
+        try {
+            if (xsd != null) {
+                final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                final Schema schema = schemaFactory.newSchema(xsd);
+                factory.setSchema(schema);
+                final javax.xml.validation.Validator validator = schema.newValidator();
+                validator.validate(new StreamSource(xml));
+            }
+            final DocumentBuilder builder = factory.newDocumentBuilder();
+            builder.setErrorHandler(null); // suppress error prints
+            builder.parse(xml);
+            return true;
+        } catch (IOException | ParserConfigurationException | SAXException ex) {
+            log.warn(ex.getMessage());
+            return false;
+        }
     }
 }
