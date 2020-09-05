@@ -422,7 +422,7 @@ public class ConstraintBasicNode extends BasicNode {
                     } else if (maxBounds != null) {
                         conditionDescr = maxBounds;
                     } else {
-                        conditionDescr = INVALID_CONSTRAINT;;
+                        conditionDescr = INVALID_CONSTRAINT;
                     }
 
                     final JSpinner timeSpinner = new JSpinner();
