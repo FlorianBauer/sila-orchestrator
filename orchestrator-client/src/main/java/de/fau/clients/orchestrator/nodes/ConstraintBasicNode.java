@@ -43,6 +43,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.xml.sax.SAXException;
@@ -293,15 +294,24 @@ public class ConstraintBasicNode extends BasicNode {
                         final String schemaType = schema.getType();
                         if (schemaType.equalsIgnoreCase("Xml")) {
                             if (schema.getUrl() != null) {
-                                validator = () -> (isXmlValid(new ByteArrayInputStream(
-                                        strField.getText().getBytes(StandardCharsets.UTF_8)),
-                                        new StreamSource(schema.getUrl())));
+                                validator = () -> (isXmlWellFormed(new ByteArrayInputStream(
+                                        strField.getText().getBytes(StandardCharsets.UTF_8))) // 
+                                        // FIXME: A proper validation against the schema is not done
+                                        //        yet due to the poor support and the optional 
+                                        //        character of this feature. To enable validation,
+                                        //        simply uncomment the code blocks below. 
+                                        //        (2020-09-06, florian.bauer.dev@gmail.com)
+                                        /* && isXmlValid(new ByteArrayInputStream(
+                                                   strField.getText().getBytes(StandardCharsets.UTF_8)),
+                                                   new StreamSource(schema.getUrl())) */);
                             } else if (schema.getInline() != null) {
-                                validator = () -> (isXmlValid(new ByteArrayInputStream(
-                                        strField.getText().getBytes(StandardCharsets.UTF_8)),
-                                        new StreamSource(new ByteArrayInputStream(schema
-                                                .getInline()
-                                                .getBytes(StandardCharsets.UTF_8)))));
+                                validator = () -> (isXmlWellFormed(new ByteArrayInputStream(
+                                        strField.getText().getBytes(StandardCharsets.UTF_8))) /*
+                                        && isXmlValid(new ByteArrayInputStream(
+                                                strField.getText().getBytes(StandardCharsets.UTF_8)),
+                                                new StreamSource(new ByteArrayInputStream(schema
+                                                        .getInline()
+                                                        .getBytes(StandardCharsets.UTF_8))))*/);
                             } else {
                                 validator = () -> (false);
                             }
@@ -747,41 +757,60 @@ public class ConstraintBasicNode extends BasicNode {
     }
 
     /**
-     * Checks the given XML data. If a XML Schema Definition (XSD) is provided, a validation against
-     * the schema is done as well.
+     * Checks if the given XML input contains correct, well-formed XML syntax. To validate against a
+     * schema, please see <code> isXmlValid()</code>.
+     *
+     * @param xml The XML input to check.
+     * @return <code>true</code> if valid, otherwise <code>false</code>.
+     *
+     * @see #isXmlValid
+     */
+    public static boolean isXmlWellFormed(final InputStream xml) {
+        final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setValidating(false);
+        factory.setNamespaceAware(true);
+        try {
+            final DocumentBuilder builder = factory.newDocumentBuilder();
+            builder.setErrorHandler(null); // suppress error prints
+            builder.parse(xml);
+            return true;
+        } catch (IOException | ParserConfigurationException | SAXException ex) {
+            log.warn(ex.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Validates the given XML data against the provided XML Schema Definition (XSD). If just a
+     * check on correct XML syntax is needed, please use <code>isXmlWellFormed()</code> instead.
      *
      * @deprecated This code is experimental and is most likely not conform with the intended
      * behavior described in the SiLA 2 standard (v1.0). However, it serves as a useful placeholder
      * and may be rewritten, extended or removed in the future. (2020-09-05,
      * florian.bauer.dev@gmail.com)
      *
-     * @param xml The actual XML data to check.
-     * @param xsd The stream source of the XSD data to validate against or <code>null</code> to
-     * check only on a correct XML format.
+     * @param xml The XML input to validate.
+     * @param xsd The stream source of the XSD data to validate against.
      *
      * @return <code>true</code> if valid, otherwise <code>false</code>.
      *
      * @see https://www.edankert.com/validate.html
      * @see https://docs.oracle.com/javase/tutorial/jaxp/dom/validating.html
+     * @see #isXmlWellFormed
      */
     @Deprecated
     public static boolean isXmlValid(final InputStream xml, final StreamSource xsd) {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setValidating(false);
         factory.setNamespaceAware(true);
         try {
-            if (xsd != null) {
-                final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-                final Schema schema = schemaFactory.newSchema(xsd);
-                factory.setSchema(schema);
-                final javax.xml.validation.Validator validator = schema.newValidator();
-                validator.validate(new StreamSource(xml));
-            }
-            final DocumentBuilder builder = factory.newDocumentBuilder();
-            builder.setErrorHandler(null); // suppress error prints
-            builder.parse(xml);
+            final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            final Schema schema = schemaFactory.newSchema(xsd);
+            factory.setSchema(schema);
+            final Validator validator = schema.newValidator();
+            validator.validate(new StreamSource(xml));
             return true;
-        } catch (IOException | ParserConfigurationException | SAXException ex) {
+        } catch (IOException | SAXException ex) {
             log.warn(ex.getMessage());
             return false;
         }
