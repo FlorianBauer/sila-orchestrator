@@ -325,12 +325,11 @@ public class ConstraintBasicNode extends BasicNode {
                             conditionDesc = INVALID_CONSTRAINT;
                         }
                     } else if (constraints.getFullyQualifiedIdentifier() != null) {
-                        final String fqi = constraints.getFullyQualifiedIdentifier();
-                        validator = () -> (ConstraintBasicNode.vlidateFullyQualifiedIdentifier(
-                                fqi,
+                        final String fqiType = constraints.getFullyQualifiedIdentifier();
+                        validator = () -> (vlidateFullyQualifiedIdentifier(fqiType,
                                 strField.getText(),
                                 typeDefs));
-                        conditionDesc = fqi;
+                        conditionDesc = fqiType;
                     } else {
                         final BigInteger min = constraints.getMinimalLength();
                         final BigInteger max = constraints.getMaximalLength();
@@ -513,86 +512,149 @@ public class ConstraintBasicNode extends BasicNode {
     }
 
     /**
-     * Validates a <code>FullyQualifiedIdentifier</code>.
+     * Validates a <code>FullyQualifiedIdentifier</code>. Example:
+     * <code>org.silastandard/core/SiLAService/v1</code>.
      *
-     * @param fqi The <code>FullyQualifiedIdentifier</code> to validate.
-     * @param txt The text to validate.
+     * @param fqiType The <code>FullyQualifiedIdentifier</code>-type to validate (e.g.
+     * <code>FeatureIdentifier</code>).
+     * @param fqiUri The FQI string to validate (e.g.
+     * <code>org.silastandard/core/SiLAService/v1</code>).
      * @param typeDefs The type definitions.
      * @return <code>true</code> if valid, otherwise <code>false</code>.
      */
     private static boolean vlidateFullyQualifiedIdentifier(
-            final String fqi,
-            final String txt,
+            final String fqiType,
+            final String fqiUri,
             final TypeDefLut typeDefs) {
-        boolean isValid = false;
-        if (fqi.equals(FullyQualifiedIdentifier.FEATURE_IDENTIFIER.toString())) {
-            for (final Feature feat : typeDefs.getServer().getFeatures()) {
-                if (feat.getIdentifier().equals(txt)) {
-                    isValid = true;
-                    break;
+        final List<Feature> featList = typeDefs.getServer().getFeatures();
+        final String[] sections = fqiUri.split("/");
+        if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.FEATURE_IDENTIFIER.toString())) {
+            if (sections.length < FullyQualifiedIdentifier.FEATURE_IDENTIFIER.getSectionCount()) {
+                return false;
+            }
+            for (final Feature feat : featList) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                    return true;
                 }
             }
-        } else if (fqi.equals(FullyQualifiedIdentifier.COMMAND_IDENTIFIER.toString())) {
-            for (final Command cmd : typeDefs.getFeature().getCommand()) {
-                if (cmd.getIdentifier().equals(txt)) {
-                    isValid = true;
-                    break;
-                }
+        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.COMMAND_IDENTIFIER.toString())) {
+            if (sections.length < FullyQualifiedIdentifier.COMMAND_IDENTIFIER.getSectionCount()) {
+                return false;
             }
-        } else if (fqi.equals(FullyQualifiedIdentifier.COMMAND_PARAMETER_IDENTIFIER.toString())) {
-            for (final Command cmd : typeDefs.getFeature().getCommand()) {
-                for (final SiLAElement param : cmd.getParameter()) {
-                    if (param.getIdentifier().equals(txt)) {
-                        isValid = true;
-                        break;
+            for (final Feature feat : featList) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                    for (final Command cmd : feat.getCommand()) {
+                        if (cmd.getIdentifier().equalsIgnoreCase(sections[5])) {
+                            return true;
+                        }
                     }
                 }
             }
-        } else if (fqi.equals(FullyQualifiedIdentifier.COMMAND_RESPONSE_IDENTIFIER.toString())) {
-            for (final Command cmd : typeDefs.getFeature().getCommand()) {
-                for (final SiLAElement resp : cmd.getResponse()) {
-                    if (resp.getIdentifier().equals(txt)) {
-                        isValid = true;
-                        break;
+        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.COMMAND_PARAMETER_IDENTIFIER.toString())) {
+            if (sections.length < FullyQualifiedIdentifier.COMMAND_PARAMETER_IDENTIFIER.getSectionCount()) {
+                return false;
+            }
+            for (final Feature feat : featList) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                    for (final Command cmd : feat.getCommand()) {
+                        if (cmd.getIdentifier().equalsIgnoreCase(sections[5])) {
+                            for (final SiLAElement param : cmd.getParameter()) {
+                                if (param.getIdentifier().equalsIgnoreCase(sections[7])) {
+                                    return true;
+                                }
+                            }
+                        }
                     }
                 }
             }
-        } else if (fqi.equals(FullyQualifiedIdentifier.INTERMEDIATE_COMMAND_RESPONSEIDENTIFIER.toString())) {
-            for (final Command cmd : typeDefs.getFeature().getCommand()) {
-                for (final SiLAElement interResp : cmd.getIntermediateResponse()) {
-                    if (interResp.getIdentifier().equals(txt)) {
-                        isValid = true;
-                        break;
+        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.COMMAND_RESPONSE_IDENTIFIER.toString())) {
+            if (sections.length < FullyQualifiedIdentifier.COMMAND_RESPONSE_IDENTIFIER.getSectionCount()) {
+                return false;
+            }
+            for (final Feature feat : featList) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                    for (final Command cmd : feat.getCommand()) {
+                        if (cmd.getIdentifier().equalsIgnoreCase(sections[5])) {
+                            for (final SiLAElement resp : cmd.getResponse()) {
+                                if (resp.getIdentifier().equalsIgnoreCase(sections[7])) {
+                                    return true;
+                                }
+                            }
+                        }
                     }
                 }
             }
-        } else if (fqi.equals(FullyQualifiedIdentifier.DEFINED_EXECUTION_ERROR_IDENTIFIER.toString())) {
-            for (final DefinedExecutionError err : typeDefs.getFeature().getDefinedExecutionError()) {
-                if (err.getIdentifier().equals(txt)) {
-                    isValid = true;
-                    break;
+        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.INTERMEDIATE_COMMAND_RESPONSEIDENTIFIER.toString())) {
+            if (sections.length < FullyQualifiedIdentifier.INTERMEDIATE_COMMAND_RESPONSEIDENTIFIER.getSectionCount()) {
+                return false;
+            }
+            for (final Feature feat : featList) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                    for (final Command cmd : feat.getCommand()) {
+                        if (cmd.getIdentifier().equalsIgnoreCase(sections[5])) {
+                            for (final SiLAElement interResp : cmd.getIntermediateResponse()) {
+                                if (interResp.getIdentifier().equalsIgnoreCase(sections[7])) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        } else if (fqi.equals(FullyQualifiedIdentifier.PROPERTY_IDENTIFIER.toString())) {
-            for (final Property prop : typeDefs.getFeature().getProperty()) {
-                if (prop.getIdentifier().equals(txt)) {
-                    isValid = true;
-                    break;
+        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.DEFINED_EXECUTION_ERROR_IDENTIFIER.toString())) {
+            if (sections.length < FullyQualifiedIdentifier.DEFINED_EXECUTION_ERROR_IDENTIFIER.getSectionCount()) {
+                return false;
+            }
+            for (final Feature feat : featList) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                    for (final DefinedExecutionError err : feat.getDefinedExecutionError()) {
+                        if (err.getIdentifier().equalsIgnoreCase(sections[5])) {
+                            return true;
+                        }
+                    }
                 }
             }
-        } else if (fqi.equals(FullyQualifiedIdentifier.TYPE_IDENTIFIER.toString())) {
-            if (typeDefs.getElement(txt) != null) {
-                isValid = true;
+        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.PROPERTY_IDENTIFIER.toString())) {
+            if (sections.length < FullyQualifiedIdentifier.PROPERTY_IDENTIFIER.getSectionCount()) {
+                return false;
             }
-        } else if (fqi.equals(FullyQualifiedIdentifier.METADATA_IDENTIFIER.toString())) {
-            for (final Metadata meta : typeDefs.getFeature().getMetadata()) {
-                if (meta.getIdentifier().equals(txt)) {
-                    isValid = true;
-                    break;
+            for (final Feature feat : featList) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                    for (final Property prop : feat.getProperty()) {
+                        if (prop.getIdentifier().equalsIgnoreCase(sections[5])) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.TYPE_IDENTIFIER.toString())) {
+            if (sections.length < FullyQualifiedIdentifier.TYPE_IDENTIFIER.getSectionCount()) {
+                return false;
+            }
+            for (final Feature feat : featList) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                    for (final SiLAElement dataTypeDef : feat.getDataTypeDefinition()) {
+                        if (dataTypeDef.getIdentifier().equalsIgnoreCase(sections[5])) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.METADATA_IDENTIFIER.toString())) {
+            if (sections.length < FullyQualifiedIdentifier.METADATA_IDENTIFIER.getSectionCount()) {
+                return false;
+            }
+            for (final Feature feat : featList) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                    for (final Metadata meta : feat.getMetadata()) {
+                        if (meta.getIdentifier().equalsIgnoreCase(sections[5])) {
+                            return true;
+                        }
+                    }
                 }
             }
         }
-        return isValid;
+        return false;
     }
 
     /**
