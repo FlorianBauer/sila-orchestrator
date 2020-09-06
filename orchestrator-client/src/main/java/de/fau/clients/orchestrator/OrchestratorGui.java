@@ -66,6 +66,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private static final ImageIcon STOP_QUEUE_EXEC_ICON = new ImageIcon(OrchestratorGui.class.getResource("/icons/queue-exec-stop.png"));
     private static final String START_QUEUE_EXEC_LABEL = "Start Execute All";
     private static final String STOP_QUEUE_EXEC_LABEL = "Stop Execute All";
+    private static final String COPYRIGHT_NOTICE = "Copyright © 2020 Florian Bauer";
     private static ServerManager serverManager;
     private static String silaOrchestratorVersion;
     private static String gitCommit;
@@ -313,7 +314,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         aboutLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         aboutLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/sila-orchestrator-128px.png"))); // NOI18N
-        aboutLabel.setText("<html><h1>sila-orchestrator</h1<p>Copyright © 2020 Florian Bauer</p></html>"); // NOI18N
+        aboutLabel.setText("<html><h1>sila-orchestrator</h1<p>" + COPYRIGHT_NOTICE + "</p></html>");
         aboutLabel.setAlignmentX(0.5F);
         aboutLabel.setIconTextGap(32);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1350,7 +1351,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     System.out.println(silaOrchestratorVersion);
                 } else if (arg.equalsIgnoreCase("--about") || arg.equalsIgnoreCase("--info")) {
                     System.out.println("sila-orchestrator"
-                            + "\n Copyright © 2020 Florian Bauer"
+                            + "\n " + COPYRIGHT_NOTICE
                             + "\n Version: " + silaOrchestratorVersion
                             + "\n Git Commit: " + gitCommit
                             + "\n Timestamp: " + gitCommitTimestamp
