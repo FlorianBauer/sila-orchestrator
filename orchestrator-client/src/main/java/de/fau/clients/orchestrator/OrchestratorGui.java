@@ -136,7 +136,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             rootNode.add(serverNode);
 
             for (final Feature feature : server.getFeatures()) {
-                final DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode();
+                final FeatureTreeNode featureNode = new FeatureTreeNode(feature);
                 featureNode.setUserObject(new FeatureTreeType(feature));
                 serverNode.add(featureNode);
 
@@ -1256,23 +1256,21 @@ public class OrchestratorGui extends javax.swing.JFrame {
         if (featureTree.isSelectionEmpty()) {
             return;
         }
-
         boolean isAddBtnToEnable = false;
         JComponent viewportView = null;
         final DefaultMutableTreeNode node = (DefaultMutableTreeNode) featureTree.getLastSelectedPathComponent();
-        if (node.isLeaf()) {
-            if (node instanceof CommandTreeNode) {
-                isAddBtnToEnable = true;
-            } else if (node instanceof PropertyTreeNode) {
-                final PropertyTreeNode propNode = (PropertyTreeNode) node;
-                propNode.requestPropertyData();
-                viewportView = propNode.getPresenter();
-            }
-        } else {
-            if (node instanceof ServerTreeNode) {
-                final ServerTreeNode serverNode = (ServerTreeNode) node;
-                viewportView = serverNode.getPresenter();
-            }
+        if (node instanceof CommandTreeNode) {
+            isAddBtnToEnable = true;
+        } else if (node instanceof PropertyTreeNode) {
+            final PropertyTreeNode propNode = (PropertyTreeNode) node;
+            propNode.requestPropertyData();
+            viewportView = propNode.getPresenter();
+        } else if (node instanceof FeatureTreeNode) {
+            final FeatureTreeNode featNode = (FeatureTreeNode) node;
+            viewportView = featNode.getPresenter();
+        } else if (node instanceof ServerTreeNode) {
+            final ServerTreeNode serverNode = (ServerTreeNode) node;
+            viewportView = serverNode.getPresenter();
         }
         addTaskToQueueBtn.setEnabled(isAddBtnToEnable);
         commandScrollPane.setViewportView(viewportView);
