@@ -29,6 +29,9 @@ import lombok.extern.slf4j.Slf4j;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 
+/**
+ * Table component responsible for managing queue-tasks with all their properties.
+ */
 @Slf4j
 @SuppressWarnings("serial")
 public class TaskQueueTable extends JTable {

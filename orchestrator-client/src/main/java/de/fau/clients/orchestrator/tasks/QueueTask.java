@@ -8,6 +8,11 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import javax.swing.ImageIcon;
 
+/**
+ * The abstract class each task has to extend to become manageable by the task-queue table.
+ *
+ * @see de.fau.clients.orchestrator.queue.TaskQueueTable
+ */
 public abstract class QueueTask implements Runnable, Presentable {
 
     public static final ImageIcon EXECUTE_ICON = new ImageIcon(QueueTask.class.getResource("/icons/execute.png"));
