@@ -12,8 +12,6 @@ import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +32,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
@@ -853,15 +852,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
             viewSelectedTask();
         });
-        taskQueueTable.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent fe) {
-                if (fe.isTemporary()) {
-                    return;
-                }
-                viewSelectedTask();
-            }
-        });
         taskQueueTable.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "removeTask");
         taskQueueTable.getActionMap().put("removeTask", new AbstractAction() {
             @Override
@@ -894,10 +884,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
     }
 
+    /**
+     * Loads the presenter of the selected task-queue entry into the context sensitive view panel
+     * and sets the state of the affected GUI controls accordingly.
+     *
+     * @see viewSelectedTreeNode
+     */
     private void viewSelectedTask() {
         int selectedRowIdx = taskQueueTable.getSelectedRow();
         if (selectedRowIdx < 0) {
             return;
+        }
+        if (!featureTree.isSelectionEmpty()) {
+            featureTree.getSelectionModel().clearSelection();
         }
         int rowCount = taskQueueTable.getRowCount();
         if (rowCount > 1) {
@@ -907,7 +906,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
             moveTaskUpBtn.setEnabled(false);
             moveTaskDownBtn.setEnabled(false);
         }
-
         final boolean isTaskRemoveEnabled = (rowCount > 0);
         removeTaskFromQueueBtn.setEnabled(isTaskRemoveEnabled);
         removeTaskFromQueueMenuItem.setEnabled(isTaskRemoveEnabled);
@@ -1252,9 +1250,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_showOrHideTableColumnBtnActionPerformed
 
+    /**
+     * Loads the presenter of the selected tree node into the context sensitive view panel and sets
+     * the state of the affected GUI controls accordingly.
+     *
+     * @see #viewSelectedTask
+     */
     private void viewSelectedTreeNode() {
         if (featureTree.isSelectionEmpty()) {
             return;
+        }
+        final ListSelectionModel taskQueueLsm = taskQueueTable.getSelectionModel();
+        if (!taskQueueLsm.isSelectionEmpty()) {
+            taskQueueLsm.clearSelection();
         }
         boolean isAddBtnToEnable = false;
         JComponent viewportView = null;
