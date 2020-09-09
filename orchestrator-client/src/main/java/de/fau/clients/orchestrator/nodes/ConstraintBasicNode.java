@@ -533,7 +533,7 @@ public class ConstraintBasicNode extends BasicNode {
                 return false;
             }
             for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
                     return true;
                 }
             }
@@ -542,7 +542,7 @@ public class ConstraintBasicNode extends BasicNode {
                 return false;
             }
             for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
                     for (final Command cmd : feat.getCommand()) {
                         if (cmd.getIdentifier().equalsIgnoreCase(sections[5])) {
                             return true;
@@ -555,7 +555,7 @@ public class ConstraintBasicNode extends BasicNode {
                 return false;
             }
             for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
                     for (final Command cmd : feat.getCommand()) {
                         if (cmd.getIdentifier().equalsIgnoreCase(sections[5])) {
                             for (final SiLAElement param : cmd.getParameter()) {
@@ -572,7 +572,7 @@ public class ConstraintBasicNode extends BasicNode {
                 return false;
             }
             for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
                     for (final Command cmd : feat.getCommand()) {
                         if (cmd.getIdentifier().equalsIgnoreCase(sections[5])) {
                             for (final SiLAElement resp : cmd.getResponse()) {
@@ -589,7 +589,7 @@ public class ConstraintBasicNode extends BasicNode {
                 return false;
             }
             for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
                     for (final Command cmd : feat.getCommand()) {
                         if (cmd.getIdentifier().equalsIgnoreCase(sections[5])) {
                             for (final SiLAElement interResp : cmd.getIntermediateResponse()) {
@@ -606,7 +606,7 @@ public class ConstraintBasicNode extends BasicNode {
                 return false;
             }
             for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
                     for (final DefinedExecutionError err : feat.getDefinedExecutionError()) {
                         if (err.getIdentifier().equalsIgnoreCase(sections[5])) {
                             return true;
@@ -619,7 +619,7 @@ public class ConstraintBasicNode extends BasicNode {
                 return false;
             }
             for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
                     for (final Property prop : feat.getProperty()) {
                         if (prop.getIdentifier().equalsIgnoreCase(sections[5])) {
                             return true;
@@ -632,7 +632,7 @@ public class ConstraintBasicNode extends BasicNode {
                 return false;
             }
             for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
                     for (final SiLAElement dataTypeDef : feat.getDataTypeDefinition()) {
                         if (dataTypeDef.getIdentifier().equalsIgnoreCase(sections[5])) {
                             return true;
@@ -645,7 +645,7 @@ public class ConstraintBasicNode extends BasicNode {
                 return false;
             }
             for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[3])) {
+                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
                     for (final Metadata meta : feat.getMetadata()) {
                         if (meta.getIdentifier().equalsIgnoreCase(sections[5])) {
                             return true;
