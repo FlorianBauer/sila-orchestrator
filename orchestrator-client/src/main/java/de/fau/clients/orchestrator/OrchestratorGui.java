@@ -972,6 +972,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         final DefaultTreeModel model = (DefaultTreeModel) featureTree.getModel();
         final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
         rootNode.removeAllChildren();
+        serverManager.clear();
 
         final Runnable scan = () -> {
             serverManager.getDiscovery().scanNetwork();
