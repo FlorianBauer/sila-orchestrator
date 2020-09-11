@@ -65,6 +65,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private static final String START_QUEUE_EXEC_LABEL = "Start Execute All";
     private static final String STOP_QUEUE_EXEC_LABEL = "Stop Execute All";
     private static final String COPYRIGHT_NOTICE = "Copyright © 2020 Florian Bauer";
+    private static final String NO_ERROR_STR = "<No Error>";
     private static ServerManager serverManager;
     private static String silaOrchestratorVersion;
     private static String gitCommit;
@@ -115,6 +116,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         }
 
+        serverAddErrorEditorPane.setText(NO_ERROR_STR);
         featureTree.setRootVisible(false);
         addServerDialog.setVisible(false);
         addServerDialog.dispose();
@@ -195,7 +197,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addServerDialog.setAlwaysOnTop(true);
         addServerDialog.setIconImage(ICON_IMG);
         addServerDialog.setName("addServerDialog"); // NOI18N
-        addServerDialog.setPreferredSize(new java.awt.Dimension(400, 250));
+        addServerDialog.setPreferredSize(new java.awt.Dimension(400, 280));
         addServerDialog.setResizable(false);
         addServerDialog.setLocationRelativeTo(null);
         java.awt.GridBagLayout addServerDialogLayout = new java.awt.GridBagLayout();
@@ -215,6 +217,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addServerDialog.getContentPane().add(serverAddressLabel, gridBagConstraints);
 
         serverAddressTextField.setToolTipText("e.g. localhost, 192.168.0.2");
+        serverAddressTextField.setPreferredSize(new java.awt.Dimension(64, 32));
         serverAddressTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverAddressTextFieldActionPerformed(evt);
@@ -238,11 +241,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
         addServerDialog.getContentPane().add(serverPortLabel, gridBagConstraints);
 
         serverPortFormattedTextField.setToolTipText("e.g. 50052, 55001 ");
+        serverPortFormattedTextField.setPreferredSize(new java.awt.Dimension(64, 32));
         final NumberFormatter formatter = new NumberFormatter(new DecimalFormat("#0"));
         formatter.setMinimum(1024);
         formatter.setMaximum(65535);
@@ -258,19 +261,20 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 10);
         addServerDialog.getContentPane().add(serverPortFormattedTextField, gridBagConstraints);
 
         serverAddErrorScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         serverAddErrorScrollPane.setEnabled(false);
         serverAddErrorScrollPane.setFocusable(false);
+        serverAddErrorScrollPane.setMinimumSize(new java.awt.Dimension(64, 48));
+        serverAddErrorScrollPane.setPreferredSize(new java.awt.Dimension(64, 52));
 
         serverAddErrorEditorPane.setEditable(false);
-        serverAddErrorEditorPane.setText("< No Error >");
+        serverAddErrorEditorPane.setText(NO_ERROR_STR);
         serverAddErrorEditorPane.setEnabled(false);
         serverAddErrorEditorPane.setFocusable(false);
-        serverAddErrorEditorPane.setPreferredSize(new java.awt.Dimension(32, 48));
+        serverAddErrorEditorPane.setMargin(new java.awt.Insets(4, 4, 4, 24));
         serverAddErrorScrollPane.setViewportView(serverAddErrorEditorPane);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -292,8 +296,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LAST_LINE_START;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 5, 5);
         addServerDialog.getContentPane().add(serverDialogOkBtn, gridBagConstraints);
 
@@ -308,8 +311,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LAST_LINE_END;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(10, 5, 5, 10);
         addServerDialog.getContentPane().add(serverDialogCancelBtn, gridBagConstraints);
 
