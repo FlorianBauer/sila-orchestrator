@@ -8,8 +8,13 @@ import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerModel;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerModel;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,13 +29,16 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Supplier;
+import javax.imageio.ImageIO;
 import javax.swing.AbstractSpinnerModel;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerModel;
@@ -49,6 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.xml.sax.SAXException;
 import sila_java.library.core.models.BasicType;
 import sila_java.library.core.models.Constraints;
+import sila_java.library.core.models.Constraints.ContentType;
 import sila_java.library.core.models.Feature;
 import sila_java.library.core.models.Feature.Command;
 import sila_java.library.core.models.Feature.DefinedExecutionError;
@@ -122,8 +131,33 @@ public class ConstraintBasicNode extends BasicNode {
                 supp = () -> ("not implemented 03");
                 break;
             case BINARY:
-                // TODO: implement
-                comp = new JLabel("placeholder 04");
+                final ContentType contentType = constraints.getContentType();
+                if (contentType != null) {
+                    if (contentType.getType().equalsIgnoreCase("image")) {
+                        final String subType = contentType.getSubtype();
+                        if (subType.equalsIgnoreCase("jpeg")
+                                || subType.equalsIgnoreCase("png")
+                                || subType.equalsIgnoreCase("bmp")
+                                || subType.equalsIgnoreCase("tiff")
+                                || subType.equalsIgnoreCase("gif")) {
+                            BufferedImage img = null;
+                            try {
+                                img = ImageIO.read(new ByteArrayInputStream(jsonNode.binaryValue()));
+                            } catch (IOException ex) {
+                                System.err.println(ex.getMessage());
+                            }
+
+                            if (img != null) {
+                                comp = new ImagePanel(img);
+                                supp = () -> ("error in constrained image/* binary type");
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // TODO: implement more constrained types
+                comp = new JLabel("Unknown constrained binary type");
                 supp = () -> ("not implemented 04");
                 break;
             case BOOLEAN:
@@ -897,6 +931,27 @@ public class ConstraintBasicNode extends BasicNode {
         } catch (IOException ex) {
             log.warn(ex.getMessage());
             return false;
+        }
+    }
+
+    @SuppressWarnings("serial")
+    static private class ImagePanel extends JPanel {
+
+        private final BufferedImage img;
+
+        public ImagePanel(final BufferedImage img) {
+            this.img = img;
+            final Dimension dim = new Dimension(img.getWidth() + 1, img.getHeight() + 1);
+            this.setMaximumSize(dim);
+            this.setPreferredSize(dim);
+            this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        }
+
+        @Override
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            final Graphics2D g2d = (Graphics2D) g;
+            g2d.drawImage(img, null, 0, 0);
         }
     }
 }
