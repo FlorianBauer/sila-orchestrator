@@ -49,7 +49,6 @@ import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Feature;
 import sila_java.library.core.models.Feature.Command;
 import sila_java.library.core.models.Feature.Property;
-import sila_java.library.manager.ServerAdditionException;
 import sila_java.library.manager.ServerFinder;
 import sila_java.library.manager.ServerListener;
 import sila_java.library.manager.ServerManager;
@@ -93,7 +92,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         try {
             port = Integer.parseUnsignedInt(serverPortFormattedTextField.getText());
         } catch (NumberFormatException ex) {
-            // do not accept invalid input
+            serverAddErrorEditorPane.setText("Invalid port number. Possible range [1024..65535]");
             return;
         } catch (Exception ex) {
             log.error(ex.getMessage());
@@ -102,11 +101,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         try {
             serverManager.addServer(addr, port);
-        } catch (ServerAdditionException ex) {
-            log.warn(ex.getMessage());
-            return;
         } catch (Exception ex) {
             log.warn(ex.getMessage());
+            serverAddErrorEditorPane.setText(ex.getMessage());
             return;
         }
 
@@ -195,20 +192,20 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         addServerDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addServerDialog.setTitle("Add Server");
+        addServerDialog.setAlwaysOnTop(true);
         addServerDialog.setIconImage(ICON_IMG);
-        addServerDialog.setModal(true);
         addServerDialog.setName("addServerDialog"); // NOI18N
-        addServerDialog.setPreferredSize(new java.awt.Dimension(300, 200));
-        addServerDialog.setSize(new java.awt.Dimension(300, 200));
+        addServerDialog.setPreferredSize(new java.awt.Dimension(400, 250));
+        addServerDialog.setResizable(false);
         addServerDialog.setLocationRelativeTo(null);
         java.awt.GridBagLayout addServerDialogLayout = new java.awt.GridBagLayout();
         addServerDialogLayout.columnWidths = new int[] {2};
-        addServerDialogLayout.rowHeights = new int[] {5};
+        addServerDialogLayout.rowHeights = new int[] {6};
         addServerDialogLayout.columnWeights = new double[] {0.5, 0.5};
         addServerDialog.getContentPane().setLayout(addServerDialogLayout);
 
         serverAddressLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        serverAddressLabel.setText("Server Address:");
+        serverAddressLabel.setText("Server Address");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -217,6 +214,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
         addServerDialog.getContentPane().add(serverAddressLabel, gridBagConstraints);
 
+        serverAddressTextField.setToolTipText("e.g. localhost, 192.168.0.2");
         serverAddressTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverAddressTextFieldActionPerformed(evt);
@@ -233,7 +231,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         serverAddressTextField.getAccessibleContext().setAccessibleParent(this);
 
         serverPortLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        serverPortLabel.setText("Server Port:");
+        serverPortLabel.setText("Server Port");
         serverPortLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -244,42 +242,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
         addServerDialog.getContentPane().add(serverPortLabel, gridBagConstraints);
 
-        serverDialogOkBtn.setMnemonic('o');
-        serverDialogOkBtn.setText("Ok");
-        serverDialogOkBtn.setPreferredSize(new java.awt.Dimension(80, 30));
-        serverDialogOkBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                serverDialogOkBtnActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LAST_LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(10, 10, 5, 5);
-        addServerDialog.getContentPane().add(serverDialogOkBtn, gridBagConstraints);
-
-        serverDialogCancelBtn.setMnemonic('c');
-        serverDialogCancelBtn.setText("Cancel");
-        serverDialogCancelBtn.setPreferredSize(new java.awt.Dimension(80, 30));
-        serverDialogCancelBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                serverDialogCancelBtnActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LAST_LINE_END;
-        gridBagConstraints.insets = new java.awt.Insets(10, 5, 5, 10);
-        addServerDialog.getContentPane().add(serverDialogCancelBtn, gridBagConstraints);
-
+        serverPortFormattedTextField.setToolTipText("e.g. 50052, 55001 ");
         final NumberFormatter formatter = new NumberFormatter(new DecimalFormat("#0"));
-        formatter.setMinimum(0);
-        formatter.setMaximum(99999);
-        formatter.setAllowsInvalid(false);
+        formatter.setMinimum(1024);
+        formatter.setMaximum(65535);
+        formatter.setAllowsInvalid(true);
         serverPortFormattedTextField.setFormatterFactory(new DefaultFormatterFactory(formatter));
         serverPortFormattedTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -294,6 +261,57 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 10);
         addServerDialog.getContentPane().add(serverPortFormattedTextField, gridBagConstraints);
+
+        serverAddErrorScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        serverAddErrorScrollPane.setEnabled(false);
+        serverAddErrorScrollPane.setFocusable(false);
+
+        serverAddErrorEditorPane.setEditable(false);
+        serverAddErrorEditorPane.setText("< No Error >");
+        serverAddErrorEditorPane.setEnabled(false);
+        serverAddErrorEditorPane.setFocusable(false);
+        serverAddErrorEditorPane.setPreferredSize(new java.awt.Dimension(32, 48));
+        serverAddErrorScrollPane.setViewportView(serverAddErrorEditorPane);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 10);
+        addServerDialog.getContentPane().add(serverAddErrorScrollPane, gridBagConstraints);
+
+        serverDialogOkBtn.setMnemonic('o');
+        serverDialogOkBtn.setText("Ok");
+        serverDialogOkBtn.setPreferredSize(new java.awt.Dimension(80, 42));
+        serverDialogOkBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                serverDialogOkBtnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LAST_LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(10, 10, 5, 5);
+        addServerDialog.getContentPane().add(serverDialogOkBtn, gridBagConstraints);
+
+        serverDialogCancelBtn.setMnemonic('c');
+        serverDialogCancelBtn.setText("Cancel");
+        serverDialogCancelBtn.setPreferredSize(new java.awt.Dimension(80, 42));
+        serverDialogCancelBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                serverDialogCancelBtnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LAST_LINE_END;
+        gridBagConstraints.insets = new java.awt.Insets(10, 5, 5, 10);
+        addServerDialog.getContentPane().add(serverDialogCancelBtn, gridBagConstraints);
 
         addServerDialog.getAccessibleContext().setAccessibleParent(this);
 
@@ -1474,6 +1492,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JMenuItem saveMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem scanNetworkMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton scanServerBtn = new javax.swing.JButton();
+    private final javax.swing.JEditorPane serverAddErrorEditorPane = new javax.swing.JEditorPane();
+    private final javax.swing.JScrollPane serverAddErrorScrollPane = new javax.swing.JScrollPane();
     private final javax.swing.JLabel serverAddressLabel = new javax.swing.JLabel();
     private final javax.swing.JTextField serverAddressTextField = new javax.swing.JTextField();
     private final javax.swing.JButton serverDialogCancelBtn = new javax.swing.JButton();
