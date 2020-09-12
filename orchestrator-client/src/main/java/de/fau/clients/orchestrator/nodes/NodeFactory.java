@@ -7,6 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.DataTypeType;
 import sila_java.library.core.models.SiLAElement;
 
+/**
+ * The main Factory for all <code>SilaNode</code>s. This class can completely create all available
+ * node types from a SiLA Feature.
+ *
+ * @see SilaNode
+ * @see BasicNode
+ * @see CompositNode
+ * @see ListNode
+ * @see DefTypeNode
+ */
 @Slf4j
 public final class NodeFactory {
 
