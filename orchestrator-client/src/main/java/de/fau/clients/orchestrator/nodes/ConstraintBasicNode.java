@@ -4,14 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
+import de.fau.clients.orchestrator.utils.ImagePanel;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerModel;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerModel;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
@@ -31,14 +28,12 @@ import java.util.List;
 import java.util.function.Supplier;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractSpinnerModel;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerModel;
@@ -931,27 +926,6 @@ public class ConstraintBasicNode extends BasicNode {
         } catch (IOException ex) {
             log.warn(ex.getMessage());
             return false;
-        }
-    }
-
-    @SuppressWarnings("serial")
-    static private class ImagePanel extends JPanel {
-
-        private final BufferedImage img;
-
-        public ImagePanel(final BufferedImage img) {
-            this.img = img;
-            final Dimension dim = new Dimension(img.getWidth() + 1, img.getHeight() + 1);
-            this.setMaximumSize(dim);
-            this.setPreferredSize(dim);
-            this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        }
-
-        @Override
-        public void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            final Graphics2D g2d = (Graphics2D) g;
-            g2d.drawImage(img, null, 0, 0);
         }
     }
 }
