@@ -102,6 +102,16 @@ public class ConstraintBasicNode extends BasicNode {
     private final Constraints constraints;
 
     protected ConstraintBasicNode(
+            @NonNull final BasicType type,
+            @NonNull final JComponent component,
+            @NonNull final Supplier<String> valueSupplier,
+            @NonNull final Constraints constraints) {
+        super(type, component, valueSupplier);
+        this.typeDefs = null;
+        this.constraints = constraints;
+    }
+
+    protected ConstraintBasicNode(
             @NonNull final TypeDefLut typeDefs,
             @NonNull final BasicType type,
             @NonNull final JComponent component,
