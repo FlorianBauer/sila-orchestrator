@@ -131,7 +131,6 @@ public class CommandTask extends QueueTask {
         if (commandModel.isValid()) {
             final List<SiLAElement> params = commandModel.getCommand().getParameter();
             if (params.isEmpty()) {
-                log.warn("Parameter list for command is empty.");
                 isNodeBuilt = true;
                 return true;
             }
