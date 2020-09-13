@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
-import de.fau.clients.orchestrator.utils.LocalDateSpinnerModel;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerEditor;
-import de.fau.clients.orchestrator.utils.LocalTimeSpinnerModel;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.ByteArrayInputStream;
@@ -24,7 +22,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Supplier;
-import javax.swing.AbstractSpinnerModel;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -34,7 +31,6 @@ import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerModel;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.text.AbstractDocument;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -61,6 +57,7 @@ import sila_java.library.core.models.SiLAElement;
  *
  * @see BasicNode
  * @see BasicNodeFactory
+ * @see ConstraintBasicNodeFactory
  */
 @Slf4j
 public class ConstraintBasicNode extends BasicNode {
@@ -187,7 +184,8 @@ public class ConstraintBasicNode extends BasicNode {
                         }
                     }
 
-                    final JSpinner dateSpinner = new JSpinner(createRangeConstrainedDateModel(initDate, constraints));
+                    final JSpinner dateSpinner = new JSpinner(
+                            ConstraintSpinnerModelFactory.createRangeConstrainedDateModel(initDate, constraints));
                     dateSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
                     dateSpinner.setEditor(new LocalDateSpinnerEditor(dateSpinner));
                     supp = () -> {
@@ -220,8 +218,8 @@ public class ConstraintBasicNode extends BasicNode {
                     comp = numberComboBox;
                 } else {
                     final SpinnerModel model = (type == BasicType.INTEGER)
-                            ? createRangeConstrainedIntModel(constraints)
-                            : createRangeConstrainedRealModel(constraints);
+                            ? ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(constraints)
+                            : ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(constraints);
                     final JSpinner numericSpinner = new JSpinner(model);
                     numericSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_NUMERIC_SPINNER);
                     if (jsonNode != null) {
@@ -451,7 +449,8 @@ public class ConstraintBasicNode extends BasicNode {
                             // do nothing and use the current time instead
                         }
                     }
-                    timeSpinner.setModel(createRangeConstrainedTimeModel(initTime, constraints));
+                    timeSpinner.setModel(
+                            ConstraintSpinnerModelFactory.createRangeConstrainedTimeModel(initTime, constraints));
                     timeSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
                     timeSpinner.setEditor(new LocalTimeSpinnerEditor(timeSpinner));
 
@@ -662,167 +661,6 @@ public class ConstraintBasicNode extends BasicNode {
             }
         }
         return false;
-    }
-
-    /**
-     * Creates a Integer based, range-limited model for constraining input in
-     * <code>JSpinner</code>-components. This functions does not consider any
-     * <code>Set</code>-constraints. Only the following functions describing the range-limits are
-     * considered:
-     * <ul>
-     * <li><code>getMinimalExclusive()</code></li>
-     * <li><code>getMinimalInclusive()</code></li>
-     * <li><code>getMaximalExclusive()</code></li>
-     * <li><code>getMaximalInclusive()</code></li>
-     * </ul>
-     *
-     * @param constraints The SiLA-Constraints element defining the value limits.
-     * @return The spinner-model for a <code>JSpinner</code>-component.
-     */
-    private static SpinnerModel createRangeConstrainedIntModel(final Constraints constraints) {
-        int initVal = 0;
-        Integer min = null;
-        Integer max = null;
-        String conStr = constraints.getMinimalExclusive();
-        if (conStr != null) {
-            min = Integer.parseInt(conStr) + 1;
-            initVal = Math.max(min, initVal);
-        }
-        conStr = constraints.getMinimalInclusive();
-        if (conStr != null) {
-            min = Integer.parseInt(conStr);
-            initVal = Math.max(min, initVal);
-        }
-
-        conStr = constraints.getMaximalExclusive();
-        if (conStr != null) {
-            max = Integer.parseInt(conStr) - 1;
-        }
-        conStr = constraints.getMaximalInclusive();
-        if (conStr != null) {
-            max = Integer.parseInt(conStr);
-        }
-        initVal = (max != null && max < initVal) ? max : initVal;
-        return new SpinnerNumberModel((Number) initVal, min, max, 1);
-    }
-
-    /**
-     * Creates a Double based, range-limited model to constrain input in
-     * <code>JSpinner</code>-components. This functions does not consider any
-     * <code>Set</code>-constraints. Only the following functions describing the range-limits are
-     * considered:
-     * <ul>
-     * <li><code>getMinimalExclusive()</code></li>
-     * <li><code>getMinimalInclusive()</code></li>
-     * <li><code>getMaximalExclusive()</code></li>
-     * <li><code>getMaximalInclusive()</code></li>
-     * </ul>
-     *
-     * @param constraints The SiLA-Constraints element defining the value limits.
-     * @return The spinner-model for a <code>JSpinner</code>-component.
-     */
-    private static SpinnerModel createRangeConstrainedRealModel(final Constraints constraints) {
-        double initVal = 0.0;
-        Double min = null;
-        Double max = null;
-        if (constraints.getMinimalExclusive() != null) {
-            min = Double.parseDouble(constraints.getMinimalExclusive()) + REAL_EXCLUSIVE_OFFSET;
-            initVal = Math.max(min, initVal);
-        } else if (constraints.getMinimalInclusive() != null) {
-            min = Double.parseDouble(constraints.getMinimalInclusive());
-            initVal = Math.max(min, initVal);
-        }
-
-        if (constraints.getMaximalExclusive() != null) {
-            max = Double.parseDouble(constraints.getMaximalExclusive()) - REAL_EXCLUSIVE_OFFSET;
-        } else if (constraints.getMaximalInclusive() != null) {
-            max = Double.parseDouble(constraints.getMaximalInclusive());
-        }
-        initVal = (max != null && max < initVal) ? max : initVal;
-        return new SpinnerNumberModel((Number) initVal, min, max, REAL_STEP_SIZE);
-    }
-
-    /**
-     * Creates a date based, range-limited model to constrain input in
-     * <code>JSpinner</code>-components. This functions does not consider any
-     * <code>Set</code>-constraints.
-     *
-     * @param initDate The initial date value the model is set to.
-     * @param constraints The SiLA-Constraints element defining the date limits.
-     * @return The spinner-model for a <code>JSpinner</code>-component.
-     */
-    public static AbstractSpinnerModel createRangeConstrainedDateModel(
-            LocalDate initDate,
-            final Constraints constraints) {
-
-        LocalDate start = null;
-        if (constraints.getMinimalExclusive() != null) {
-            start = DateTimeParser.parseIsoDate(constraints.getMinimalExclusive()).plusDays(1);
-        } else if (constraints.getMinimalInclusive() != null) {
-            start = DateTimeParser.parseIsoDate(constraints.getMinimalInclusive());
-        }
-
-        if (start != null && start.isAfter(initDate)) {
-            initDate = start;
-        }
-
-        LocalDate end = null;
-        if (constraints.getMaximalExclusive() != null) {
-            end = DateTimeParser.parseIsoDate(constraints.getMaximalExclusive()).minusDays(1);
-        } else if (constraints.getMaximalInclusive() != null) {
-            end = DateTimeParser.parseIsoDate(constraints.getMaximalInclusive());
-        }
-
-        if (end != null && end.isBefore(initDate)) {
-            initDate = end;
-        }
-        return new LocalDateSpinnerModel(initDate, start, end, ChronoUnit.DAYS);
-    }
-
-    /**
-     * Creates a local time based, range-limited model to constrain input in
-     * <code>JSpinner</code>-components. This functions does not consider any
-     * <code>Set</code>-constraints.
-     *
-     * @param initTime The initial time value the model is set to.
-     * @param constraints The SiLA-Constraints element defining the time limits.
-     * @return The spinner-model for a <code>JSpinner</code>-component.
-     */
-    public static AbstractSpinnerModel createRangeConstrainedTimeModel(
-            LocalTime initTime,
-            final Constraints constraints) {
-        final LocalTime start;
-        if (constraints.getMinimalExclusive() != null) {
-            start = DateTimeParser.parseIsoTime(constraints.getMinimalExclusive())
-                    .toLocalTime()
-                    .plusSeconds(1);
-        } else if (constraints.getMinimalInclusive() != null) {
-            start = DateTimeParser.parseIsoTime(constraints.getMinimalInclusive())
-                    .toLocalTime();
-        } else {
-            start = LocalTime.MIN;
-        }
-
-        final LocalTime end;
-        if (constraints.getMaximalExclusive() != null) {
-            end = DateTimeParser.parseIsoTime(constraints.getMaximalExclusive())
-                    .toLocalTime()
-                    .minusSeconds(1);
-        } else if (constraints.getMaximalInclusive() != null) {
-            end = DateTimeParser.parseIsoTime(constraints.getMaximalInclusive())
-                    .toLocalTime();
-        } else {
-            end = LocalTime.MAX.truncatedTo(ChronoUnit.SECONDS);
-        }
-
-        if (initTime.compareTo(start) < 0) {
-            initTime = start;
-        }
-
-        if (initTime.compareTo(end) > 0) {
-            initTime = end;
-        }
-        return new LocalTimeSpinnerModel(initTime, start, end, ChronoUnit.MINUTES);
     }
 
     /**
