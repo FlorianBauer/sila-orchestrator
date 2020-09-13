@@ -4,14 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
-import de.fau.clients.orchestrator.utils.ImagePanel;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerModel;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerModel;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +24,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Supplier;
-import javax.imageio.ImageIO;
 import javax.swing.AbstractSpinnerModel;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -52,7 +49,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.xml.sax.SAXException;
 import sila_java.library.core.models.BasicType;
 import sila_java.library.core.models.Constraints;
-import sila_java.library.core.models.Constraints.ContentType;
 import sila_java.library.core.models.Feature;
 import sila_java.library.core.models.Feature.Command;
 import sila_java.library.core.models.Feature.DefinedExecutionError;
@@ -136,35 +132,7 @@ public class ConstraintBasicNode extends BasicNode {
                 supp = () -> ("not implemented 03");
                 break;
             case BINARY:
-                final ContentType contentType = constraints.getContentType();
-                if (contentType != null) {
-                    if (contentType.getType().equalsIgnoreCase("image")) {
-                        final String subType = contentType.getSubtype();
-                        if (subType.equalsIgnoreCase("jpeg")
-                                || subType.equalsIgnoreCase("png")
-                                || subType.equalsIgnoreCase("bmp")
-                                || subType.equalsIgnoreCase("tiff")
-                                || subType.equalsIgnoreCase("gif")) {
-                            BufferedImage img = null;
-                            try {
-                                img = ImageIO.read(new ByteArrayInputStream(jsonNode.binaryValue()));
-                            } catch (IOException ex) {
-                                System.err.println(ex.getMessage());
-                            }
-
-                            if (img != null) {
-                                comp = new ImagePanel(img);
-                                supp = () -> ("error in constrained image/* binary type");
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                // TODO: implement more constrained types
-                comp = new JLabel("Unknown constrained binary type");
-                supp = () -> ("not implemented 04");
-                break;
+                return ConstraintBasicNodeFactory.createConstrainedBinaryTypeFromJson(constraints, jsonNode);
             case BOOLEAN:
                 return BasicNodeFactory.createBooleanTypeFromJson(jsonNode, true);
             case DATE:
