@@ -63,13 +63,6 @@ import sila_java.library.core.models.SiLAElement;
 public class ConstraintBasicNode extends BasicNode {
 
     /**
-     * The precision of the offset-limit of an exclusive float range (e.g. the exclusive upper-limit
-     * of the value <code>1.0</code> could be <code>0.9</code>, <code>0.99</code>,
-     * <code>0.999</code>, etc.)
-     */
-    private static final double REAL_EXCLUSIVE_OFFSET = 0.001;
-    private static final double REAL_STEP_SIZE = 0.1;
-    /**
      * The date-format used by the GUI-components.
      */
     private static final String DATE_FORMAT = "yyyy-MM-dd";
