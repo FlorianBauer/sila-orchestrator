@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator.tasks;
 
 import de.fau.clients.orchestrator.Presentable;
+import de.fau.clients.orchestrator.utils.IconProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.time.Duration;
@@ -15,7 +16,7 @@ import javax.swing.ImageIcon;
  */
 public abstract class QueueTask implements Runnable, Presentable {
 
-    public static final ImageIcon EXECUTE_ICON = new ImageIcon(QueueTask.class.getResource("/icons/execute.png"));
+    public static final ImageIcon EXECUTE_ICON = IconProvider.EXECUTE.getIcon();
     /**
      * Identifier for signaling change events on the task state property.
      */

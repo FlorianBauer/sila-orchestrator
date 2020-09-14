@@ -10,6 +10,7 @@ import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.LocalExecTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
+import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -59,9 +59,7 @@ import sila_java.library.manager.models.Server.Status;
 @SuppressWarnings("serial")
 public class OrchestratorGui extends javax.swing.JFrame {
 
-    private static final Image ICON_IMG = new ImageIcon(OrchestratorGui.class.getResource("/icons/sila-orchestrator-16px.png")).getImage();
-    private static final ImageIcon START_QUEUE_EXEC_ICON = new ImageIcon(OrchestratorGui.class.getResource("/icons/queue-exec-start.png"));
-    private static final ImageIcon STOP_QUEUE_EXEC_ICON = new ImageIcon(OrchestratorGui.class.getResource("/icons/queue-exec-stop.png"));
+    private static final Image ICON_IMG = IconProvider.SILA_ORCHESTRATOR_16PX.getIcon().getImage();
     private static final String START_QUEUE_EXEC_LABEL = "Start Execute All";
     private static final String STOP_QUEUE_EXEC_LABEL = "Stop Execute All";
     private static final String COPYRIGHT_NOTICE = "Copyright © 2020 Florian Bauer";
@@ -514,7 +512,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         taskQueuePanel.add(addTaskToQueueBtn, gridBagConstraints);
 
-        executeAllBtn.setIcon(START_QUEUE_EXEC_ICON);
+        executeAllBtn.setIcon(IconProvider.QUEUE_EXEC_START.getIcon());
         executeAllBtn.setText(START_QUEUE_EXEC_LABEL);
         executeAllBtn.setToolTipText("Execute all tasks in queue");
         executeAllBtn.setEnabled(false);
@@ -1063,7 +1061,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             return;
         }
 
-        executeAllBtn.setIcon(STOP_QUEUE_EXEC_ICON);
+        executeAllBtn.setIcon(IconProvider.QUEUE_EXEC_STOP.getIcon());
         executeAllBtn.setText(STOP_QUEUE_EXEC_LABEL);
         executeAllMenuItem.setEnabled(false);
         isOnExecution = true;
@@ -1093,7 +1091,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             currentlyExecutedTaskThread = null;
 
             SwingUtilities.invokeLater(() -> {
-                executeAllBtn.setIcon(START_QUEUE_EXEC_ICON);
+                executeAllBtn.setIcon(IconProvider.QUEUE_EXEC_START.getIcon());
                 executeAllBtn.setText(START_QUEUE_EXEC_LABEL);
                 executeAllMenuItem.setEnabled(true);
                 executeAllBtn.setEnabled(true);

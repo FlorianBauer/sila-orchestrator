@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
+import de.fau.clients.orchestrator.utils.IconProvider;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerEditor;
 import java.awt.event.FocusAdapter;
@@ -23,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Supplier;
 import javax.swing.Box;
-import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
@@ -71,8 +71,6 @@ public class ConstraintBasicNode extends BasicNode {
      */
     private static final String TIME_FORMAT = "HH:mm:ss";
     private static final String DATE_TIME_FORMAT = DATE_FORMAT + " " + TIME_FORMAT;
-    private static final ImageIcon VALIDATON_OK = new ImageIcon(ConstraintBasicNode.class.getResource("/icons/status-ok.png"));
-    private static final ImageIcon VALIDATON_WARN = new ImageIcon(ConstraintBasicNode.class.getResource("/icons/status-warning.png"));
     /**
      * The horizontal gap size between parameter component, condition description and validation
      * icon. Only used for components with constraints.
@@ -354,8 +352,8 @@ public class ConstraintBasicNode extends BasicNode {
                         }
                     }
 
-                    final JLabel validationLabel = new JLabel(VALIDATON_OK);
-                    validationLabel.setDisabledIcon(VALIDATON_WARN);
+                    final JLabel validationLabel = new JLabel(IconProvider.STATUS_OK.getIcon());
+                    validationLabel.setDisabledIcon(IconProvider.STATUS_WARNING.getIcon());
                     validationLabel.setEnabled(false);
 
                     // validate on enter

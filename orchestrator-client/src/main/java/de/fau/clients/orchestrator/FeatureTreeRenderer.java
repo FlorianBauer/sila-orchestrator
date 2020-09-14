@@ -1,20 +1,13 @@
 package de.fau.clients.orchestrator;
 
+import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.Component;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 @SuppressWarnings("serial")
 class FeatureTreeRenderer extends DefaultTreeCellRenderer {
-
-    private static final Icon serverOnlineIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/server-online.png"));
-    private static final Icon serverOfflineIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/server-offline.png"));
-    private static final Icon silaIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/sila-feature.png"));
-    private static final Icon commandIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/command.png"));
-    private static final Icon propertyIcon = new ImageIcon(FeatureTreeRenderer.class.getResource("/icons/property.png"));
 
     public FeatureTreeRenderer() {
         this.openIcon = null;
@@ -50,19 +43,19 @@ class FeatureTreeRenderer extends DefaultTreeCellRenderer {
         final FeatureTreeType nodeInfo = (FeatureTreeType) obj;
         switch (nodeInfo.getNodeRenderSymbol()) {
             case SERVER_ONLINE:
-                this.setIcon(serverOnlineIcon);
+                this.setIcon(IconProvider.SERVER_ONLINE.getIcon());
                 break;
             case SERVER_OFFLINE:
-                this.setIcon(serverOfflineIcon);
+                this.setIcon(IconProvider.SERVER_OFFLINE.getIcon());
                 break;
             case FEATURE:
-                this.setIcon(silaIcon);
+                this.setIcon(IconProvider.SILA_FEATURE.getIcon());
                 break;
             case COMMAND:
-                this.setIcon(commandIcon);
+                this.setIcon(IconProvider.COMMAND.getIcon());
                 break;
             case PROPERTY:
-                this.setIcon(propertyIcon);
+                this.setIcon(IconProvider.PROPERTY.getIcon());
                 break;
             case META:
             default:

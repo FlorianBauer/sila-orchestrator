@@ -5,13 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.nodes.NodeFactory;
 import de.fau.clients.orchestrator.nodes.SilaNode;
 import de.fau.clients.orchestrator.nodes.TypeDefLut;
+import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.UUID;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -28,7 +28,6 @@ import sila_java.library.manager.models.SiLACall;
 @SuppressWarnings("serial")
 public class PropertyTreeNode extends DefaultMutableTreeNode implements Presentable {
 
-    public static final ImageIcon REFRESH_ICON = new ImageIcon(PropertyTreeNode.class.getResource("/icons/refresh.png"));
     /**
      * Index to place and update the contents of the panel.
      */
@@ -73,7 +72,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
             panel.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createTitledBorder(property.getDisplayName()),
                     BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-            refreshBtn = new JButton("Refresh", REFRESH_ICON);
+            refreshBtn = new JButton("Refresh", IconProvider.REFRESH.getIcon());
             refreshBtn.addActionListener((ActionEvent evt) -> {
                 refreshBtnActionPerformed();
             });

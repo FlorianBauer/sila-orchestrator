@@ -2209,7 +2209,7 @@
                     <Component class="javax.swing.JButton" name="executeAllBtn">
                       <Properties>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                          <Connection code="START_QUEUE_EXEC_ICON" type="code"/>
+                          <Connection code="IconProvider.QUEUE_EXEC_START.getIcon()" type="code"/>
                         </Property>
                         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                           <Connection code="START_QUEUE_EXEC_LABEL" type="code"/>

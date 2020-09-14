@@ -1,13 +1,13 @@
 package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -23,9 +23,6 @@ import sila_java.library.core.models.ListType;
  */
 @Slf4j
 final class ListNode implements SilaNode {
-
-    private static final ImageIcon ADD_ICON = new ImageIcon(ListNode.class.getResource("/icons/list-add.png"));
-    private static final ImageIcon REMOVE_ICON = new ImageIcon(ListNode.class.getResource("/icons/list-remove.png"));
 
     /**
      * Look-up table for data-types defined by the corresponding SiLA-Feature.
@@ -178,13 +175,13 @@ final class ListNode implements SilaNode {
             }
 
             if (isAddAndRemoveBtnNeeded) {
-                addBtn = new JButton("Add", ADD_ICON);
+                addBtn = new JButton("Add", IconProvider.LIST_ADD.getIcon());
                 addBtn.setEnabled(isAddBtnEnabled);
                 addBtn.addActionListener((ActionEvent evt) -> {
                     addBtnActionPerformed();
                 });
 
-                removeBtn = new JButton("Remove", REMOVE_ICON);
+                removeBtn = new JButton("Remove", IconProvider.LIST_REMOVE.getIcon());
                 removeBtn.setEnabled(isRemoveBtnEnabled);
                 removeBtn.addActionListener((ActionEvent evt) -> {
                     removeBtnActionPerformed();
