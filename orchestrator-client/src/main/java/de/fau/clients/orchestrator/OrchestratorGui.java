@@ -932,6 +932,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         if (entry == null) {
             return;
         }
+        addTaskToQueueBtn.setEnabled(false);
         commandScrollPane.setViewportView(entry.getPresenter());
     }
 
