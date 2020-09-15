@@ -214,7 +214,8 @@ public class TaskQueueTable extends JTable {
     }
 
     /**
-     * Adds the given command task to the queue table.
+     * Adds the given command task to the queue table and sets the selection focus on the added
+     * item.
      *
      * @param cmdTask The command task to add.
      *
@@ -223,26 +224,30 @@ public class TaskQueueTable extends JTable {
     public void addCommandTask(final CommandTask cmdTask) {
         addUuidToSelectionSet(cmdTask.getServerUuid());
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
+        int rowIdx = tqtModel.getRowCount();
         tqtModel.addCommandTask(generateAndRegisterTaskId(),
                 cmdTask,
                 ExecPolicy.HALT_AFTER_ERROR);
+        selectionModel.setSelectionInterval(rowIdx, rowIdx);
     }
 
     /**
-     * Inserts the given command task into the queue table at the given row index.
+     * Inserts the given command task into the queue table at the given row index and sets the
+     * selection focus on the added item.
      *
-     * @param idx The row index position in the table where to insert the task.
+     * @param rowIdx The row index position in the table where to insert the task.
      * @param cmdTask The command task to add.
      *
      * @see CommandTask
      */
-    public void insertCommandTask(int idx, final CommandTask cmdTask) {
+    public void insertCommandTask(int rowIdx, final CommandTask cmdTask) {
         addUuidToSelectionSet(cmdTask.getServerUuid());
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
-        tqtModel.insertCommandTask(idx,
+        tqtModel.insertCommandTask(rowIdx,
                 generateAndRegisterTaskId(),
                 cmdTask,
                 ExecPolicy.HALT_AFTER_ERROR);
+        selectionModel.setSelectionInterval(rowIdx, rowIdx);
     }
 
     /**
@@ -253,6 +258,7 @@ public class TaskQueueTable extends JTable {
      * @param policy The execution policy.
      *
      * @see CommandTask
+     * @see #addCommandTask
      */
     public void addCommandTaskWithId(
             int taskId,

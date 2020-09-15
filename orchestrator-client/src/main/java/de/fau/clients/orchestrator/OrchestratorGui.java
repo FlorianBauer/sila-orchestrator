@@ -1288,6 +1288,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         final DefaultMutableTreeNode node = (DefaultMutableTreeNode) featureTree.getLastSelectedPathComponent();
         if (node instanceof CommandTreeNode) {
             isAddBtnToEnable = true;
+            viewportView = CommandTreeNode.COMMAND_USAGE_PANEL;
         } else if (node instanceof PropertyTreeNode) {
             final PropertyTreeNode propNode = (PropertyTreeNode) node;
             propNode.requestPropertyData();
