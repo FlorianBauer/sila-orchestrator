@@ -23,6 +23,33 @@ import sila_java.library.core.models.SiLAElement;
 public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentable {
 
     private static final String DOC_WIDTH = "width:550px;";
+    private static final HTMLEditorKit FEAT_INFO_EDITOR_KIT;
+
+    static {
+        final StyleSheet styleSheet = new StyleSheet();
+        styleSheet.addRule("table {"
+                + "  border-collapse:collapse;"
+                + "  border-spacing:none;"
+                + "  text-align:left;"
+                + "}");
+        styleSheet.addRule("th, td {"
+                + "  border:2px solid black;"
+                + "  padding:5px;"
+                + "  border-spacing:none;"
+                + "}");
+        styleSheet.addRule("p {"
+                + "  padding-left:20px;"
+                + "  text-align:left;"
+                + DOC_WIDTH
+                + "}");
+        styleSheet.addRule("pre {"
+                + "  font-family:monospace;"
+                + "  font-size:10pt"
+                + "}");
+        FEAT_INFO_EDITOR_KIT = new HTMLEditorKit();
+        FEAT_INFO_EDITOR_KIT.setStyleSheet(styleSheet);
+    }
+
     private final Feature feature;
     /**
      * Fully Qualified Feature Identifier string
@@ -72,31 +99,9 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
 
             builder.append("</body></html>");
 
-            final HTMLEditorKit kit = new HTMLEditorKit();
-            final StyleSheet styleSheet = kit.getStyleSheet();
-            styleSheet.addRule("table {"
-                    + "  border-collapse:collapse;"
-                    + "  border-spacing:none;"
-                    + "  text-align:left;"
-                    + "}");
-            styleSheet.addRule("th, td {"
-                    + "  border:2px solid black;"
-                    + "  padding:5px;"
-                    + "  border-spacing:none;"
-                    + "}");
-            styleSheet.addRule("p {"
-                    + "  padding-left:20px;"
-                    + "  text-align:left;"
-                    + DOC_WIDTH
-                    + "}");
-            styleSheet.addRule("pre {"
-                    + "  font-family:monospace;"
-                    + "  font-size:10pt"
-                    + "}");
-
             final JEditorPane txtPane = new JEditorPane();
             txtPane.setContentType("text/html");
-            txtPane.setEditorKit(kit);
+            txtPane.setEditorKit(FEAT_INFO_EDITOR_KIT);
             txtPane.setEditable(false);
             txtPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             txtPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
