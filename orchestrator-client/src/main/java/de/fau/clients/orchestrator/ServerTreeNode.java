@@ -1,6 +1,6 @@
 package de.fau.clients.orchestrator;
 
-import static de.fau.clients.orchestrator.nodes.BasicNodeFactory.MAX_HEIGHT;
+import de.fau.clients.orchestrator.nodes.MaxDim;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.UUID;
@@ -26,8 +26,7 @@ import sila_java.library.manager.models.Server.Status;
 public class ServerTreeNode extends DefaultMutableTreeNode implements Presentable {
 
     private static final int MAX_NAME_LEN = 255;
-    private static final int MAX_WIDTH = 1024;
-    private static final Dimension MAX_DIM = new Dimension(MAX_WIDTH, MAX_HEIGHT);
+    private static final Dimension MAX_DIM = MaxDim.TEXT_FIELD.getDim();
     private final Server server;
     private final ServerManager manager;
     private final UUID serverUuid;

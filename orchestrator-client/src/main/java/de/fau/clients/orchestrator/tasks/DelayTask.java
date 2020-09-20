@@ -1,7 +1,6 @@
 package de.fau.clients.orchestrator.tasks;
 
-import static de.fau.clients.orchestrator.nodes.BasicNodeFactory.MAX_HEIGHT;
-import java.awt.Dimension;
+import de.fau.clients.orchestrator.nodes.MaxDim;
 import java.time.OffsetDateTime;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -20,8 +19,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class DelayTask extends QueueTask {
-
-    private static final Dimension MAX_SIZE_TIME_FIELD = new Dimension(84, MAX_HEIGHT);
 
     private final DelayTaskModel delayModel;
     private boolean isPanelBuilt = false;
@@ -88,15 +85,15 @@ public class DelayTask extends QueueTask {
             milliModel = new SpinnerNumberModel(delay[2], 0, 999, 100);
             final JSpinner minSpinner = new JSpinner(minModel);
             minSpinner.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-            minSpinner.setMaximumSize(MAX_SIZE_TIME_FIELD);
+            minSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             final JSpinner secSpinner = new JSpinner(secModel);
             secSpinner.setEditor(new JSpinner.NumberEditor(secSpinner, "00"));
             secSpinner.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-            secSpinner.setMaximumSize(MAX_SIZE_TIME_FIELD);
+            secSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             final JSpinner milliSpinner = new JSpinner(milliModel);
             milliSpinner.setEditor(new JSpinner.NumberEditor(milliSpinner, "000"));
             milliSpinner.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-            milliSpinner.setMaximumSize(MAX_SIZE_TIME_FIELD);
+            milliSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
 
             final Box hBox = Box.createHorizontalBox();
             hBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);

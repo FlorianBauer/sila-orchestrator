@@ -89,7 +89,8 @@ public class ConstraintBasicNode extends BasicNode {
             @NonNull final BasicType type,
             @NonNull final JComponent component,
             @NonNull final Supplier<String> valueSupplier,
-            @NonNull final Constraints constraints) {
+            @NonNull final Constraints constraints
+    ) {
         super(type, component, valueSupplier);
         this.typeDefs = null;
         this.constraints = constraints;
@@ -100,7 +101,8 @@ public class ConstraintBasicNode extends BasicNode {
             @NonNull final BasicType type,
             @NonNull final JComponent component,
             @NonNull final Supplier<String> valueSupplier,
-            @NonNull final Constraints constraints) {
+            @NonNull final Constraints constraints
+    ) {
         super(type, component, valueSupplier);
         this.typeDefs = typeDefs;
         this.constraints = constraints;
@@ -110,7 +112,8 @@ public class ConstraintBasicNode extends BasicNode {
             final TypeDefLut typeDefs,
             final BasicType type,
             final Constraints constraints,
-            final JsonNode jsonNode) {
+            final JsonNode jsonNode
+    ) {
         final JComponent comp;
         final Supplier<String> supp;
         switch (type) {
@@ -131,7 +134,7 @@ public class ConstraintBasicNode extends BasicNode {
                         dates[i] = DateTimeParser.parseIsoDate(dateSet.get(i));
                     }
                     final JComboBox<LocalDate> dateComboBox = new JComboBox<>(dates);
-                    dateComboBox.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
+                    dateComboBox.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
                     supp = () -> {
                         return dateComboBox.getSelectedItem().toString();
                     };
@@ -177,7 +180,7 @@ public class ConstraintBasicNode extends BasicNode {
 
                     final JSpinner dateSpinner = new JSpinner(
                             ConstraintSpinnerModelFactory.createRangeConstrainedDateModel(initDate, constraints));
-                    dateSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
+                    dateSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
                     dateSpinner.setEditor(new LocalDateSpinnerEditor(dateSpinner));
                     supp = () -> {
                         return dateSpinner.getValue().toString();
@@ -195,7 +198,7 @@ public class ConstraintBasicNode extends BasicNode {
                 if (constraints.getSet() != null) {
                     final List<String> numberSet = constraints.getSet().getValue();
                     final JComboBox<String> numberComboBox = new JComboBox<>(numberSet.toArray(new String[0]));
-                    numberComboBox.setMaximumSize(BasicNodeFactory.MAX_SIZE_NUMERIC_SPINNER);
+                    numberComboBox.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
 
                     if (jsonNode != null) {
                         numberComboBox.setSelectedItem(jsonNode.asText());
@@ -212,7 +215,7 @@ public class ConstraintBasicNode extends BasicNode {
                             ? ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(constraints)
                             : ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(constraints);
                     final JSpinner numericSpinner = new JSpinner(model);
-                    numericSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_NUMERIC_SPINNER);
+                    numericSpinner.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
                     if (jsonNode != null) {
                         if (type == BasicType.INTEGER) {
                             numericSpinner.setValue(jsonNode.asInt());
@@ -246,7 +249,7 @@ public class ConstraintBasicNode extends BasicNode {
                         } else if (maxBounds != null) {
                             conditionDesc = maxBounds;
                         } else {
-                            conditionDesc = INVALID_CONSTRAINT;;
+                            conditionDesc = INVALID_CONSTRAINT;
                         }
                     }
 
@@ -254,7 +257,7 @@ public class ConstraintBasicNode extends BasicNode {
                     hbox.add(numericSpinner);
                     hbox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
                     hbox.add(new JLabel(conditionDesc));
-                    hbox.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
+                    hbox.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
                     comp = hbox;
                     supp = () -> (numericSpinner.getValue().toString());
                 }
@@ -263,7 +266,7 @@ public class ConstraintBasicNode extends BasicNode {
                 final Constraints.Set conSet = constraints.getSet();
                 if (conSet != null) {
                     final JComboBox<String> comboBox = new JComboBox<>();
-                    comboBox.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
+                    comboBox.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
                     for (final String item : conSet.getValue()) {
                         comboBox.addItem(item);
                     }
@@ -271,7 +274,7 @@ public class ConstraintBasicNode extends BasicNode {
                     supp = () -> ((String) comboBox.getSelectedItem());
                 } else {
                     final JFormattedTextField strField = new JFormattedTextField();
-                    strField.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
+                    strField.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
                     final Supplier<Boolean> validator;
                     final String conditionDesc;
 
@@ -375,7 +378,7 @@ public class ConstraintBasicNode extends BasicNode {
                     hbox.add(new JLabel(conditionDesc));
                     hbox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
                     hbox.add(validationLabel);
-                    hbox.setMaximumSize(BasicNodeFactory.MAX_SIZE_TEXT_FIELD);
+                    hbox.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
 
                     if (jsonNode != null) {
                         strField.setText(jsonNode.asText());
@@ -394,7 +397,7 @@ public class ConstraintBasicNode extends BasicNode {
                         times[i] = DateTimeParser.parseIsoTime(timeSet.get(i));
                     }
                     final JComboBox<OffsetTime> timeComboBox = new JComboBox<>(times);
-                    timeComboBox.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
+                    timeComboBox.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
                     supp = () -> {
                         return ((OffsetTime) timeComboBox.getSelectedItem())
                                 .withOffsetSameInstant(ZoneOffset.UTC)
@@ -442,7 +445,7 @@ public class ConstraintBasicNode extends BasicNode {
                     }
                     timeSpinner.setModel(
                             ConstraintSpinnerModelFactory.createRangeConstrainedTimeModel(initTime, constraints));
-                    timeSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_DATE_TIME_SPINNER);
+                    timeSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
                     timeSpinner.setEditor(new LocalTimeSpinnerEditor(timeSpinner));
 
                     supp = () -> {
@@ -465,7 +468,7 @@ public class ConstraintBasicNode extends BasicNode {
                         times[i] = DateTimeParser.parseIsoDateTime(timeSet.get(i));
                     }
                     final JComboBox<OffsetDateTime> timestampComboBox = new JComboBox<>(times);
-                    timestampComboBox.setMaximumSize(BasicNodeFactory.MAX_SIZE_TIMESTAMP_SPINNER);
+                    timestampComboBox.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
                     supp = () -> {
                         return timestampComboBox.getSelectedItem().toString();
                     };
@@ -475,7 +478,7 @@ public class ConstraintBasicNode extends BasicNode {
                             // TODO: implement createRangeConstrainedTimestampModel(constraints)
                             new SpinnerDateModel()
                     );
-                    timestampSpinner.setMaximumSize(BasicNodeFactory.MAX_SIZE_TIMESTAMP_SPINNER);
+                    timestampSpinner.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
                     timestampSpinner.setEditor(new JSpinner.DateEditor(timestampSpinner, DATE_TIME_FORMAT));
                     supp = () -> {
                         Date time = (Date) timestampSpinner.getValue();
@@ -522,7 +525,8 @@ public class ConstraintBasicNode extends BasicNode {
     private static boolean vlidateFullyQualifiedIdentifier(
             final String fqiType,
             final String fqiUri,
-            final TypeDefLut typeDefs) {
+            final TypeDefLut typeDefs
+    ) {
         final List<Feature> featList = typeDefs.getServer().getFeatures();
         final String[] sections = fqiUri.split("/");
         if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.FEATURE_IDENTIFIER.toString())) {

@@ -1,8 +1,7 @@
 package de.fau.clients.orchestrator.tasks;
 
-import static de.fau.clients.orchestrator.nodes.BasicNodeFactory.MAX_HEIGHT;
+import de.fau.clients.orchestrator.nodes.MaxDim;
 import static de.fau.clients.orchestrator.tasks.QueueTask.TASK_STATE_PROPERTY;
-import java.awt.Dimension;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.OffsetDateTime;
@@ -113,7 +112,7 @@ public class LocalExecTask extends QueueTask {
             vBox.add(execCmdLabel);
             execTextField = new JTextField(execTaskModel.getExec());
             execTextField.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-            execTextField.setMaximumSize(new Dimension(4096, MAX_HEIGHT));
+            execTextField.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
             vBox.add(execTextField);
             vBox.add(Box.createVerticalStrut(10));
             final JLabel expRetValLabel = new JLabel("Expected Return Value");
@@ -126,7 +125,7 @@ public class LocalExecTask extends QueueTask {
             formatter.setAllowsInvalid(true);
             expRetValTextField = new JFormattedTextField(formatter);
             expRetValTextField.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-            expRetValTextField.setMaximumSize(new Dimension(128, MAX_HEIGHT));
+            expRetValTextField.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
             expRetValTextField.setValue(execTaskModel.getExpRetVal());
             vBox.add(expRetValTextField);
             panel.add(vBox);

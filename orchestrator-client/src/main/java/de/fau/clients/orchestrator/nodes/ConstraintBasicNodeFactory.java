@@ -21,7 +21,7 @@ import sila_java.library.core.models.Constraints;
  *
  * @see ConstraintBasicNode
  */
-public class ConstraintBasicNodeFactory {
+class ConstraintBasicNodeFactory {
 
     private static final URL IMAGE_MISSING = ConstraintBasicNode.class.getResource("/icons/document-missing-64px.png");
 
@@ -31,7 +31,8 @@ public class ConstraintBasicNodeFactory {
 
     protected static BasicNode createConstrainedBinaryTypeFromJson(
             final Constraints constraints,
-            final JsonNode jsonNode) {
+            final JsonNode jsonNode
+    ) {
         final JComponent comp;
         final Supplier<String> supp;
         final Constraints.ContentType contentType = constraints.getContentType();

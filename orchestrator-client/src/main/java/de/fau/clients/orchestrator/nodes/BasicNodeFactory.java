@@ -1,8 +1,7 @@
 package de.fau.clients.orchestrator.nodes;
 
-import de.fau.clients.orchestrator.utils.DateTimeParser;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.awt.Dimension;
+import de.fau.clients.orchestrator.utils.DateTimeParser;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
@@ -23,13 +22,8 @@ import sila_java.library.core.models.BasicType;
  *
  * @see BasicNode
  */
-public final class BasicNodeFactory {
+final class BasicNodeFactory {
 
-    public static final int MAX_HEIGHT = 42;
-    public static final Dimension MAX_SIZE_TEXT_FIELD = new Dimension(4096, MAX_HEIGHT);
-    public static final Dimension MAX_SIZE_NUMERIC_SPINNER = new Dimension(160, MAX_HEIGHT);
-    public static final Dimension MAX_SIZE_DATE_TIME_SPINNER = new Dimension(160, MAX_HEIGHT);
-    public static final Dimension MAX_SIZE_TIMESTAMP_SPINNER = new Dimension(220, MAX_HEIGHT);
     /**
      * The precision of the offset-limit of an exclusive float range (e.g. the exclusive upper-limit
      * of the value <code>1.0</code> could be <code>0.9</code>, <code>0.99</code>,
@@ -79,7 +73,7 @@ public final class BasicNodeFactory {
             final SpinnerDateModel model = new SpinnerDateModel();
             final JSpinner dateSpinner = new JSpinner(model);
             dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
-            dateSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
+            dateSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             final LocalDate localDate;
             if (jsonNode != null) {
                 localDate = DateTimeParser.parseIsoDate(jsonNode.asText());
@@ -94,7 +88,7 @@ public final class BasicNodeFactory {
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
-            strField.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
+            strField.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             strField.setText((jsonNode != null) ? jsonNode.asText() : LocalDate.now().toString());
             return new BasicNode(BasicType.DATE, strField, () -> (strField.getText()));
         }
@@ -112,13 +106,13 @@ public final class BasicNodeFactory {
         if (isEditable) {
             final SpinnerModel model = new SpinnerNumberModel();
             final JSpinner spinner = new JSpinner(model);
-            spinner.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
+            spinner.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
             model.setValue((jsonNode != null) ? jsonNode.asLong() : 0L);
             return new BasicNode(BasicType.INTEGER, spinner, () -> (spinner.getValue().toString()));
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
-            strField.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
+            strField.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
             strField.setText((jsonNode != null) ? jsonNode.asText() : "0");
             return new BasicNode(BasicType.INTEGER, strField, () -> (strField.getText()));
         }
@@ -136,13 +130,13 @@ public final class BasicNodeFactory {
         if (isEditable) {
             final SpinnerModel model = new SpinnerNumberModel(0.0, null, null, REAL_STEP_SIZE);
             final JSpinner spinner = new JSpinner(model);
-            spinner.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
+            spinner.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
             model.setValue((jsonNode != null) ? jsonNode.asDouble() : 0.0);
             return new BasicNode(BasicType.REAL, spinner, () -> (spinner.getValue().toString()));
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
-            strField.setMaximumSize(MAX_SIZE_NUMERIC_SPINNER);
+            strField.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
             strField.setText((jsonNode != null) ? jsonNode.asText() : "0.0");
             return new BasicNode(BasicType.REAL, strField, () -> (strField.getText()));
         }
@@ -159,7 +153,7 @@ public final class BasicNodeFactory {
     protected static BasicNode createStringTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
         final JTextField strField = new JTextField();
         strField.setEditable(isEditable);
-        strField.setMaximumSize(MAX_SIZE_TEXT_FIELD);
+        strField.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
         strField.setText((jsonNode != null) ? jsonNode.asText() : "");
         return new BasicNode(BasicType.STRING, strField, () -> (strField.getText()));
     }
@@ -177,7 +171,7 @@ public final class BasicNodeFactory {
             final SpinnerDateModel model = new SpinnerDateModel();
             final JSpinner timeSpinner = new JSpinner(model);
             timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
-            timeSpinner.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
+            timeSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             final OffsetDateTime dateTime;
             if (jsonNode != null) {
                 dateTime = DateTimeParser.parseIsoTime(jsonNode.asText()).atDate(LocalDate.now());
@@ -195,7 +189,7 @@ public final class BasicNodeFactory {
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
-            strField.setMaximumSize(MAX_SIZE_DATE_TIME_SPINNER);
+            strField.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             final String txt;
             if (jsonNode != null) {
                 txt = jsonNode.asText();
@@ -223,7 +217,7 @@ public final class BasicNodeFactory {
             final SpinnerDateModel model = new SpinnerDateModel();
             final JSpinner timeStampSpinner = new JSpinner(model);
             timeStampSpinner.setEditor(new JSpinner.DateEditor(timeStampSpinner, DATE_TIME_FORMAT));
-            timeStampSpinner.setMaximumSize(MAX_SIZE_TIMESTAMP_SPINNER);
+            timeStampSpinner.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
             final OffsetDateTime dateTime;
             if (jsonNode != null) {
                 dateTime = DateTimeParser.parseIsoDateTime(jsonNode.asText());
@@ -240,7 +234,7 @@ public final class BasicNodeFactory {
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
-            strField.setMaximumSize(MAX_SIZE_TIMESTAMP_SPINNER);
+            strField.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
             final String txt;
             if (jsonNode != null) {
                 txt = jsonNode.asText();
