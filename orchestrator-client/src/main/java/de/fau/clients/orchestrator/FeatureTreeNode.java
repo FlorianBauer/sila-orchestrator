@@ -26,28 +26,23 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
     private static final HTMLEditorKit FEAT_INFO_EDITOR_KIT;
 
     static {
-        final StyleSheet styleSheet = new StyleSheet();
+        FEAT_INFO_EDITOR_KIT = new HTMLEditorKit();
+        final StyleSheet styleSheet = FEAT_INFO_EDITOR_KIT.getStyleSheet();
         styleSheet.addRule("table {"
                 + "  border-collapse:collapse;"
                 + "  border-spacing:none;"
                 + "  text-align:left;"
+                + DOC_WIDTH
                 + "}");
         styleSheet.addRule("th, td {"
                 + "  border:2px solid black;"
                 + "  padding:5px;"
                 + "  border-spacing:none;"
                 + "}");
-        styleSheet.addRule("p {"
-                + "  padding-left:20px;"
-                + "  text-align:left;"
-                + DOC_WIDTH
-                + "}");
         styleSheet.addRule("pre {"
                 + "  font-family:monospace;"
                 + "  font-size:10pt"
                 + "}");
-        FEAT_INFO_EDITOR_KIT = new HTMLEditorKit();
-        FEAT_INFO_EDITOR_KIT.setStyleSheet(styleSheet);
     }
 
     private final Feature feature;
@@ -127,7 +122,7 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
                         .append(prop.getIdentifier())
                         .append("] – ")
                         .append(prop.getDisplayName())
-                        .append("</b><p>")
+                        .append("</b><p>&emsp;")
                         .append(prop.getDescription())
                         .append("</p></td></tr></table><br>");
             }
@@ -146,7 +141,7 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
                         .append(cmd.getIdentifier())
                         .append("] – ")
                         .append(cmd.getDisplayName())
-                        .append("</b><p>")
+                        .append("</b><p>&emsp;")
                         .append(cmd.getDescription())
                         .append("</p></td></tr>");
 
@@ -162,7 +157,7 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
                                 .append(param.getIdentifier())
                                 .append("] – ")
                                 .append(param.getDisplayName())
-                                .append("<p>")
+                                .append("<p>&emsp;")
                                 .append(param.getDescription())
                                 .append("</p>");
                     }
@@ -181,7 +176,7 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
                                 .append(intermResp.getIdentifier())
                                 .append("] – ")
                                 .append(intermResp.getDisplayName())
-                                .append("<p>")
+                                .append("<p>&emsp;")
                                 .append(intermResp.getDescription())
                                 .append("</p>");
                     }
@@ -200,7 +195,7 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
                                 .append(resp.getIdentifier())
                                 .append("] – ")
                                 .append(resp.getDisplayName())
-                                .append("<p>")
+                                .append("<p>&emsp;")
                                 .append(resp.getDescription())
                                 .append("</p>");
                     }
@@ -223,7 +218,7 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
                         .append(meta.getIdentifier())
                         .append("] – ")
                         .append(meta.getDisplayName())
-                        .append("</b><p>")
+                        .append("</b><p>&emsp;")
                         .append(meta.getDescription())
                         .append("</p></td></tr>");
             }
