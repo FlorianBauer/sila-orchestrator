@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.function.Supplier;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
@@ -42,6 +43,64 @@ final class BasicNodeFactory {
 
     private BasicNodeFactory() {
         throw new UnsupportedOperationException("Instantiation not allowed.");
+    }
+
+    protected static BasicNode create(final BasicType type) {
+        switch (type) {
+            case ANY:
+                // TODO: implement
+                return new BasicNode(type, new JLabel("placeholder 01"), () -> ("not implemented 01"));
+            case BINARY:
+                // TODO: implement
+                return new BasicNode(type, new JLabel("placeholder 02"), () -> ("not implemented 02"));
+            case BOOLEAN:
+                return BasicNodeFactory.createBooleanTypeFromJson(null, true);
+            case DATE:
+                return BasicNodeFactory.createDateTypeFromJson(null, true);
+            case INTEGER:
+                return BasicNodeFactory.createIntegerTypeFromJson(null, true);
+            case REAL:
+                return BasicNodeFactory.createRealTypeFromJson(null, true);
+            case STRING:
+                return BasicNodeFactory.createStringTypeFromJson(null, true);
+            case TIME:
+                return BasicNodeFactory.createTimeTypeFromJson(null, true);
+            case TIMESTAMP:
+                return BasicNodeFactory.createTimestampTypeFromJson(null, true);
+            default:
+                throw new IllegalArgumentException("Not a supported BasicType.");
+        }
+    }
+
+    protected static BasicNode createFromJson(
+            final BasicType type,
+            final JsonNode jsonNode,
+            boolean isEditable
+    ) {
+        switch (type) {
+            case ANY:
+                // TODO: implement
+                return new BasicNode(type, new JLabel("placeholder 05"), () -> ("not implemented 05"));
+            case BINARY:
+                // TODO: implement
+                return new BasicNode(type, new JLabel("placeholder 06"), () -> ("not implemented 06"));
+            case BOOLEAN:
+                return BasicNodeFactory.createBooleanTypeFromJson(jsonNode, isEditable);
+            case DATE:
+                return BasicNodeFactory.createDateTypeFromJson(jsonNode, isEditable);
+            case INTEGER:
+                return BasicNodeFactory.createIntegerTypeFromJson(jsonNode, isEditable);
+            case REAL:
+                return BasicNodeFactory.createRealTypeFromJson(jsonNode, isEditable);
+            case STRING:
+                return BasicNodeFactory.createStringTypeFromJson(jsonNode, isEditable);
+            case TIME:
+                return BasicNodeFactory.createTimeTypeFromJson(jsonNode, isEditable);
+            case TIMESTAMP:
+                return BasicNodeFactory.createTimestampTypeFromJson(jsonNode, isEditable);
+            default:
+                throw new IllegalArgumentException("Not a supported BasicType.");
+        }
     }
 
     /**

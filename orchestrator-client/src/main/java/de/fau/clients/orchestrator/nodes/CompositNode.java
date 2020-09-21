@@ -20,14 +20,16 @@ final class CompositNode implements SilaNode {
 
     private CompositNode(
             @NonNull final TypeDefLut typeDefs,
-            @NonNull final List<SiLAElement> elements) {
+            @NonNull final List<SiLAElement> elements
+    ) {
         this.typeDefs = typeDefs;
         this.elements = elements;
     }
 
     protected final static CompositNode create(
             @NonNull final TypeDefLut typeDefs,
-            @NonNull final List<SiLAElement> elements) {
+            @NonNull final List<SiLAElement> elements
+    ) {
         final CompositNode node = new CompositNode(typeDefs, elements);
         for (final SiLAElement elem : node.elements) {
             node.children.add(NodeFactory.createFromDataType(typeDefs, elem.getDataType()));
@@ -39,7 +41,8 @@ final class CompositNode implements SilaNode {
             @NonNull final TypeDefLut typeDefs,
             @NonNull final List<SiLAElement> elements,
             @NonNull JsonNode jsonNode,
-            boolean isEditable) {
+            boolean isEditable
+    ) {
         final CompositNode node = new CompositNode(typeDefs, elements);
         for (final SiLAElement elem : node.elements) {
             node.children.add(NodeFactory.createFromJson(

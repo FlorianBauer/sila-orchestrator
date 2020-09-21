@@ -7,13 +7,33 @@ import javax.swing.JCheckBox;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
 import sila_java.library.core.models.BasicType;
 
 public class BasicNodeFactoryTest {
 
     static final ObjectMapper mapper = new ObjectMapper();
+
+    @Test
+    public void create() {
+        try {
+            BasicNodeFactory.create(null);
+            fail("NullPointerException was expected but not thrown.");
+        } catch (NullPointerException ex) {
+        } catch (Exception ex) {
+            fail("Only a NullPointerException was expected but got:" + ex.getMessage());
+        }
+
+        BasicNode node;
+        for (final BasicType type : BasicType.values()) {
+            node = BasicNodeFactory.create(type);
+            assertNotNull(node);
+            assertTrue(node.toJsonString().matches("^\\{\"value\":\".*\"\\}$"));
+        }
+    }
 
     @Test
     public void createBooleanTypeFromJson() throws JsonProcessingException {

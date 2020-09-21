@@ -26,26 +26,26 @@ public final class NodeFactory {
 
     public final static SilaNode createFromElements(
             @NonNull final TypeDefLut typeDefs,
-            @NonNull final List<SiLAElement> elements) {
-
+            @NonNull final List<SiLAElement> elements
+    ) {
         return CompositNode.create(typeDefs, elements);
     }
 
     public final static SilaNode createFromElementsWithJson(
             @NonNull final TypeDefLut typeDefs,
             @NonNull final List<SiLAElement> elements,
-            @NonNull final JsonNode jsonNode) {
-
+            @NonNull final JsonNode jsonNode
+    ) {
         return CompositNode.createFromJson(typeDefs, elements, jsonNode, true);
     }
 
     public final static SilaNode createFromDataType(
             @NonNull final TypeDefLut typeDefs,
-            @NonNull final DataTypeType type) {
-
+            @NonNull final DataTypeType type
+    ) {
         if (type.getBasic() != null) {
             // basic type
-            return BasicNode.create(type.getBasic());
+            return BasicNodeFactory.create(type.getBasic());
         } else {
             // derived type
             if (type.getConstrained() != null) {
@@ -88,7 +88,7 @@ public final class NodeFactory {
 
         if (type.getBasic() != null) {
             // basic type
-            return BasicNode.createFromJson(type.getBasic(), jsonNode.get("value"), isEditable);
+            return BasicNodeFactory.createFromJson(type.getBasic(), jsonNode.get("value"), isEditable);
         } else {
             // derived type
             if (type.getConstrained() != null) {
