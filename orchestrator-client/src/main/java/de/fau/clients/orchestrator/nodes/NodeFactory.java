@@ -52,7 +52,7 @@ public final class NodeFactory {
                 final DataTypeType conType = type.getConstrained().getDataType();
                 if (conType != null) {
                     if (conType.getBasic() != null) {
-                        return ConstraintBasicNode.create(typeDefs,
+                        return ConstraintBasicNodeFactory.create(typeDefs,
                                 conType.getBasic(),
                                 type.getConstrained().getConstraints(),
                                 null);
@@ -95,7 +95,7 @@ public final class NodeFactory {
                 final DataTypeType conType = type.getConstrained().getDataType();
                 if (conType != null) {
                     if (conType.getBasic() != null) {
-                        return ConstraintBasicNode.create(typeDefs,
+                        return ConstraintBasicNodeFactory.create(typeDefs,
                                 conType.getBasic(),
                                 type.getConstrained().getConstraints(),
                                 jsonNode.get("value"));
