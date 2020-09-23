@@ -2,6 +2,8 @@ package de.fau.clients.orchestrator.nodes;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import javax.swing.AbstractSpinnerModel;
 import javax.swing.SpinnerModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -312,6 +314,31 @@ public class ConstraintSpinnerModelFactoryTest {
             assertEquals(asm.getValue(), LocalTime.of(19, 59, 59));
             assertEquals(asm.getNextValue(), null);
             assertEquals(asm.getPreviousValue(), LocalTime.of(19, 58, 59));
+        }
+    }
+
+    @Test
+    public void createRangeConstrainedDateTimeModel() {
+        {
+            Constraints con = new Constraints();
+            con.setMaximalInclusive("2020-09-23T18:59:59Z");
+            OffsetDateTime initDateTime = OffsetDateTime.of(2020, 9, 23, 18, 59, 59, 0, ZoneOffset.UTC);
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedDateTimeModel(initDateTime, con);
+            assertEquals(asm.getValue(), initDateTime);
+            assertEquals(asm.getNextValue(), null);
+            assertEquals(asm.getPreviousValue(), initDateTime.minusMinutes(1));
+        }
+
+        {
+            Constraints con = new Constraints();
+            con.setMinimalInclusive("2020-09-23T07:00:00Z");
+            OffsetDateTime initDateTime = OffsetDateTime.of(2020, 9, 23, 7, 0, 0, 0, ZoneOffset.UTC);
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedDateTimeModel(initDateTime, con);
+            assertEquals(asm.getValue(), initDateTime);
+            assertEquals(asm.getNextValue(), initDateTime.plusMinutes(1));
+            assertEquals(asm.getPreviousValue(), null);
         }
     }
 }
