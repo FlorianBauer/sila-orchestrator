@@ -3,8 +3,10 @@ package de.fau.clients.orchestrator.nodes;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerModel;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerModel;
+import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerModel;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import javax.swing.AbstractSpinnerModel;
 import javax.swing.SpinnerModel;
@@ -188,5 +190,48 @@ public class ConstraintSpinnerModelFactory {
             initTime = end;
         }
         return new LocalTimeSpinnerModel(initTime, start, end, ChronoUnit.MINUTES);
+    }
+
+    /**
+     * Creates a offset timestamp based, range-limited model to constrain input in
+     * <code>JSpinner</code>-components. This functions does not consider any
+     * <code>Set</code>-constraints.
+     *
+     * @param initDateTime The initial timestamp value the model is set to.
+     * @param constraints The SiLA-Constraints element defining the timestamp limits.
+     * @return The spinner-model for a <code>JSpinner</code>-component.
+     */
+    public static AbstractSpinnerModel createRangeConstrainedDateTimeModel(
+            OffsetDateTime initDateTime,
+            final Constraints constraints
+    ) {
+        final OffsetDateTime start;
+        if (constraints.getMinimalExclusive() != null) {
+            start = DateTimeParser.parseIsoDateTime(constraints.getMinimalExclusive())
+                    .plusSeconds(1);
+        } else if (constraints.getMinimalInclusive() != null) {
+            start = DateTimeParser.parseIsoDateTime(constraints.getMinimalInclusive());
+        } else {
+            start = OffsetDateTime.MIN;
+        }
+
+        final OffsetDateTime end;
+        if (constraints.getMaximalExclusive() != null) {
+            end = DateTimeParser.parseIsoDateTime(constraints.getMaximalExclusive())
+                    .minusSeconds(1);
+        } else if (constraints.getMaximalInclusive() != null) {
+            end = DateTimeParser.parseIsoDateTime(constraints.getMaximalInclusive());
+        } else {
+            end = OffsetDateTime.MAX.truncatedTo(ChronoUnit.SECONDS);
+        }
+
+        if (initDateTime.compareTo(start) < 0) {
+            initDateTime = start;
+        }
+
+        if (initDateTime.compareTo(end) > 0) {
+            initDateTime = end;
+        }
+        return new OffsetDateTimeSpinnerModel(initDateTime, start, end, null);
     }
 }
