@@ -7,6 +7,7 @@ import de.fau.clients.orchestrator.utils.IconProvider;
 import de.fau.clients.orchestrator.utils.ImagePanel;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalTimeSpinnerEditor;
+import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.ValidatorUtils;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -21,10 +22,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
-import java.util.Date;
 import java.util.List;
 import java.util.function.Supplier;
 import javax.imageio.ImageIO;
@@ -34,7 +33,6 @@ import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
-import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerModel;
 import javax.swing.text.AbstractDocument;
 import lombok.NonNull;
@@ -50,15 +48,6 @@ class ConstraintBasicNodeFactory {
 
     private static final URL IMAGE_MISSING = ConstraintBasicNode.class.getResource("/icons/document-missing-64px.png");
 
-    /**
-     * The date-format used by the GUI-components.
-     */
-    private static final String DATE_FORMAT = "yyyy-MM-dd";
-    /**
-     * The time-format used by the GUI-components.
-     */
-    private static final String TIME_FORMAT = "HH:mm:ss";
-    private static final String DATE_TIME_FORMAT = DATE_FORMAT + " " + TIME_FORMAT;
     /**
      * The horizontal gap size between parameter component, condition description and validation
      * icon. Only used for components with constraints.
@@ -596,17 +585,64 @@ class ConstraintBasicNodeFactory {
             };
             comp = timestampComboBox;
         } else {
-            final JSpinner timestampSpinner = new JSpinner(
-                    // TODO: implement createRangeConstrainedTimestampModel(constraints)
-                    new SpinnerDateModel()
-            );
+            String minBounds = null;
+            if (constraints.getMinimalExclusive() != null) {
+                minBounds = GREATER_THAN + DateTimeParser.parseIsoDateTime(
+                        constraints.getMinimalExclusive())
+                        .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET).toString();
+            } else if (constraints.getMinimalInclusive() != null) {
+                minBounds = GREATER_OR_EQUAL + DateTimeParser.parseIsoDateTime(
+                        constraints.getMinimalInclusive())
+                        .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET).toString();
+            }
+
+            String maxBounds = null;
+            if (constraints.getMaximalExclusive() != null) {
+                maxBounds = LESS_THAN + DateTimeParser.parseIsoDateTime(
+                        constraints.getMaximalExclusive())
+                        .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET).toString();
+            } else if (constraints.getMaximalInclusive() != null) {
+                maxBounds = LESS_OR_EQUAL + DateTimeParser.parseIsoDateTime(
+                        constraints.getMaximalInclusive())
+                        .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET).toString();
+            }
+
+            final String conditionDescr;
+            if (minBounds != null && maxBounds != null) {
+                conditionDescr = minBounds + AND_SIGN + maxBounds;
+            } else if (minBounds != null) {
+                conditionDescr = minBounds;
+            } else if (maxBounds != null) {
+                conditionDescr = maxBounds;
+            } else {
+                conditionDescr = INVALID_CONSTRAINT;
+            }
+
+            final JSpinner timestampSpinner = new JSpinner();
+            OffsetDateTime initDateTime = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
+            if (jsonNode != null) {
+                try {
+                    initDateTime = DateTimeParser.parseIsoDateTime(jsonNode.asText());
+                } catch (Exception ex) {
+                    // do nothing and use the current time instead
+                }
+            }
+            timestampSpinner.setModel(ConstraintSpinnerModelFactory
+                    .createRangeConstrainedDateTimeModel(
+                            initDateTime,
+                            constraints));
             timestampSpinner.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
-            timestampSpinner.setEditor(new JSpinner.DateEditor(timestampSpinner, DATE_TIME_FORMAT));
+            timestampSpinner.setEditor(new OffsetDateTimeSpinnerEditor(timestampSpinner));
             supp = () -> {
-                Date time = (Date) timestampSpinner.getValue();
-                return OffsetDateTime.ofInstant(time.toInstant(), ZoneOffset.UTC).toString();
+                return timestampSpinner.getValue().toString();
             };
-            comp = timestampSpinner;
+
+            final Box hBox = Box.createHorizontalBox();
+            hBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            hBox.add(timestampSpinner);
+            hBox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
+            hBox.add(new JLabel(conditionDescr));
+            comp = hBox;
         }
         return new ConstraintBasicNode(BasicType.TIMESTAMP, comp, supp, constraints);
     }
