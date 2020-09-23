@@ -515,9 +515,7 @@ class ConstraintBasicNodeFactory {
             final JComboBox<OffsetTime> timeComboBox = new JComboBox<>(times);
             timeComboBox.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             supp = () -> {
-                return ((OffsetTime) timeComboBox.getSelectedItem())
-                        .withOffsetSameInstant(ZoneOffset.UTC)
-                        .toString();
+                return ((OffsetTime) timeComboBox.getSelectedItem()).toString();
             };
             comp = timeComboBox;
         } else {
@@ -551,7 +549,7 @@ class ConstraintBasicNodeFactory {
             }
 
             final JSpinner timeSpinner = new JSpinner();
-            LocalTime initTime = LocalTime.now().truncatedTo(ChronoUnit.MINUTES);
+            LocalTime initTime = LocalTime.now().truncatedTo(ChronoUnit.SECONDS);
             if (jsonNode != null) {
                 try {
                     initTime = LocalTime.parse(jsonNode.asText());
