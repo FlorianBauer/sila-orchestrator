@@ -3,6 +3,7 @@ package de.fau.clients.orchestrator.utils;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import javax.swing.AbstractSpinnerModel;
+import lombok.NonNull;
 
 /**
  * A custom Spinner model based on the <code>LocalDate</code> type introduced in Java 8. This is
@@ -23,21 +24,22 @@ public class LocalDateSpinnerModel extends AbstractSpinnerModel {
      * @param initValue The date to initialize the spinner with (must not be <code>null</code>).
      * @param start The min. date of the constraint or <code>null</code> for no min. limit.
      * @param end The max. date of the constraint or <code>null</code> for no max. limit.
-     * @param step The unit of the spinner step (e.g. <code>ChronoUnit.DAYS</code>,
-     * <code>ChronoUnit.MONTHS</code>).
+     * @param step The unit of the spinner step or <code>null</code> for
+     * <code>ChronoUnit.DAYS</code> as default.
      *
      * @see LocalDate
      * @see ChronoUnit
      */
     public LocalDateSpinnerModel(
-            final LocalDate initValue,
+            @NonNull final LocalDate initValue,
             final LocalDate start,
             final LocalDate end,
-            final ChronoUnit step) {
+            final ChronoUnit step
+    ) {
         this.currentValue = initValue;
         this.start = start;
         this.end = end;
-        this.step = step;
+        this.step = (step != null) ? step : ChronoUnit.DAYS;
     }
 
     @Override

@@ -3,6 +3,7 @@ package de.fau.clients.orchestrator.utils;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import javax.swing.AbstractSpinnerModel;
+import lombok.NonNull;
 
 /**
  * A custom Spinner model based on the <code>LocalTime</code> type introduced in Java 8. This is
@@ -23,21 +24,22 @@ public class LocalTimeSpinnerModel extends AbstractSpinnerModel {
      * @param initValue The time to initialize the spinner with (must not be <code>null</code>).
      * @param start The min. time limit or <code>null</code> for the start of the day.
      * @param end The max. time limit or <code>null</code> for the end of the day.
-     * @param step The step size (e.g. <code>ChronoUnit.MINUTES</code>,
-     * <code>ChronoUnit.SECONDS</code>).
+     * @param step The step size or <code>null</code> for <code>ChronoUnit.MINUTES</code> as
+     * default.
      *
      * @see LocalTime
      * @see ChronoUnit
      */
     public LocalTimeSpinnerModel(
-            final LocalTime initValue,
+            @NonNull final LocalTime initValue,
             final LocalTime start,
             final LocalTime end,
-            final ChronoUnit step) {
+            final ChronoUnit step
+    ) {
         this.currentValue = initValue;
         this.start = start;
         this.end = end;
-        this.step = step;
+        this.step = (step != null) ? step : ChronoUnit.MINUTES;
     }
 
     @Override
