@@ -64,24 +64,27 @@ class ConstraintBasicNodeFactory {
         throw new UnsupportedOperationException("Instantiation not allowed.");
     }
 
-    protected static BasicNode create(
+    protected static ConstraintBasicNode create(
             final TypeDefLut typeDefs,
             @NonNull final BasicType type,
             @NonNull final Constraints constraints,
             final JsonNode jsonNode
     ) {
-        final JComponent comp;
-        final Supplier<String> supp;
         switch (type) {
             case ANY:
                 // TODO: implement
-                comp = new JLabel("placeholder 03");
-                supp = () -> ("not implemented 03");
-                break;
+                return new ConstraintBasicNode(typeDefs,
+                        type,
+                        new JLabel("placeholder 03"),
+                        () -> ("not implemented 03"),
+                        constraints);
             case BINARY:
                 return createConstrainedBinaryTypeFromJson(constraints, jsonNode);
             case BOOLEAN:
-                return BasicNodeFactory.createBooleanTypeFromJson(jsonNode, true);
+                // Whoever is trying to constrain a boolean even more deserves a special exception message.
+                throw new IllegalArgumentException("Booleans can not be constrained. Try using "
+                        + "'BasicNodeFactory.createBooleanTypeFromJson(null, false);' for a "
+                        + "non-editable bool node.");
             case DATE:
                 return createConstrainedDateTypeFromJson(constraints, jsonNode);
             case INTEGER:
@@ -97,10 +100,9 @@ class ConstraintBasicNodeFactory {
             default:
                 throw new IllegalArgumentException("Not a valid BasicType.");
         }
-        return new ConstraintBasicNode(typeDefs, type, comp, supp, constraints);
     }
 
-    protected static BasicNode createConstrainedBinaryTypeFromJson(
+    protected static ConstraintBasicNode createConstrainedBinaryTypeFromJson(
             @NonNull final Constraints constraints,
             final JsonNode jsonNode
     ) {
@@ -155,7 +157,7 @@ class ConstraintBasicNodeFactory {
         return new ConstraintBasicNode(BasicType.BINARY, comp, supp, constraints);
     }
 
-    protected static BasicNode createConstrainedDateTypeFromJson(
+    protected static ConstraintBasicNode createConstrainedDateTypeFromJson(
             @NonNull final Constraints constraints,
             final JsonNode jsonNode
     ) {
@@ -230,7 +232,7 @@ class ConstraintBasicNodeFactory {
         return new ConstraintBasicNode(BasicType.DATE, comp, supp, constraints);
     }
 
-    protected static BasicNode createConstrainedIntegerTypeFromJson(
+    protected static ConstraintBasicNode createConstrainedIntegerTypeFromJson(
             @NonNull final Constraints constraints,
             final JsonNode jsonNode
     ) {
@@ -292,7 +294,7 @@ class ConstraintBasicNodeFactory {
         return new ConstraintBasicNode(BasicType.INTEGER, comp, supp, constraints);
     }
 
-    protected static BasicNode createConstrainedRealTypeFromJson(
+    protected static ConstraintBasicNode createConstrainedRealTypeFromJson(
             @NonNull final Constraints constraints,
             final JsonNode jsonNode
     ) {
@@ -354,7 +356,7 @@ class ConstraintBasicNodeFactory {
         return new ConstraintBasicNode(BasicType.REAL, comp, supp, constraints);
     }
 
-    protected static BasicNode createConstrainedStringTypeFromJson(
+    protected static ConstraintBasicNode createConstrainedStringTypeFromJson(
             @NonNull final Constraints constraints,
             final JsonNode jsonNode,
             final TypeDefLut typeDefs
@@ -489,7 +491,7 @@ class ConstraintBasicNodeFactory {
         return new ConstraintBasicNode(BasicType.STRING, comp, supp, constraints);
     }
 
-    protected static BasicNode createConstrainedTimeTypeFromJson(
+    protected static ConstraintBasicNode createConstrainedTimeTypeFromJson(
             @NonNull final Constraints constraints,
             final JsonNode jsonNode
     ) {
@@ -566,7 +568,7 @@ class ConstraintBasicNodeFactory {
         return new ConstraintBasicNode(BasicType.TIME, comp, supp, constraints);
     }
 
-    protected static BasicNode createConstrainedTimestampeTypeFromJson(
+    protected static ConstraintBasicNode createConstrainedTimestampeTypeFromJson(
             @NonNull final Constraints constraints,
             final JsonNode jsonNode
     ) {

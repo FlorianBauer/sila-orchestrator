@@ -44,7 +44,7 @@ public class ConstraintBasicNode extends BasicNode {
     }
 
     @Override
-    public BasicNode cloneNode() {
+    public ConstraintBasicNode cloneNode() {
         return ConstraintBasicNodeFactory.create(this.typeDefs, this.type, this.constraints, null);
     }
 
