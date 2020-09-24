@@ -2,22 +2,22 @@ package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
-import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
-import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerModel;
+import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
+import de.fau.clients.orchestrator.utils.LocalDateSpinnerModel;
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerModel;
+import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
+import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerModel;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.function.Supplier;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import sila_java.library.core.models.BasicType;
@@ -35,15 +35,6 @@ final class BasicNodeFactory {
      * <code>0.999</code>, etc.)
      */
     private static final double REAL_STEP_SIZE = 0.1;
-    /**
-     * The date-format used by the GUI-components.
-     */
-    private static final String DATE_FORMAT = "yyyy-MM-dd";
-    /**
-     * The time-format used by the GUI-components.
-     */
-    private static final String TIME_FORMAT = "HH:mm:ss";
-    private static final String DATE_TIME_FORMAT = DATE_FORMAT + " " + TIME_FORMAT;
 
     private BasicNodeFactory() {
         throw new UnsupportedOperationException("Instantiation not allowed.");
@@ -112,7 +103,7 @@ final class BasicNodeFactory {
      * jsonNode is <code>null</code>, the node is initialize with <code>false</code>.
      *
      * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
-     * @param isEditable Determines wether the user can edit the represented value or not.
+     * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a boolean value.
      */
     protected static BasicNode createBooleanTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
@@ -128,31 +119,34 @@ final class BasicNodeFactory {
      * jsonNode is <code>null</code>, the node is initialize with the current date.
      *
      * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
-     * @param isEditable Determines wether the user can edit the represented value or not.
+     * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a date value.
      */
     protected static BasicNode createDateTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
-        if (isEditable) {
-            final SpinnerDateModel model = new SpinnerDateModel();
-            final JSpinner dateSpinner = new JSpinner(model);
-            dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, DATE_FORMAT));
-            dateSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
-            final LocalDate localDate;
-            if (jsonNode != null) {
-                localDate = DateTimeParser.parseIsoDate(jsonNode.asText());
-            } else {
-                localDate = LocalDate.now();
+        LocalDate parsedDate = null;
+        if (jsonNode != null) {
+            try {
+                parsedDate = DateTimeParser.parseIsoDate(jsonNode.asText());
+            } catch (Exception ex) {
+                // do nothing and use the current date instead
             }
-            model.setValue(Date.from(localDate.atStartOfDay().atOffset(DateTimeParser.LOCAL_OFFSET).toInstant()));
+        }
+
+        final LocalDate initDate = (parsedDate != null) ? parsedDate : LocalDate.now();
+        if (isEditable) {
+            final JSpinner dateSpinner = new JSpinner();
+            dateSpinner.setModel(new LocalDateSpinnerModel(initDate, null, null, null));
+            dateSpinner.setEditor(new LocalDateSpinnerEditor(dateSpinner));
+            dateSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             final Supplier<String> supp = () -> {
-                return LocalDate.ofInstant(model.getDate().toInstant(), DateTimeParser.LOCAL_OFFSET).toString();
+                return initDate.toString();
             };
             return new BasicNode(BasicType.DATE, dateSpinner, supp);
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
-            strField.setText((jsonNode != null) ? jsonNode.asText() : LocalDate.now().toString());
+            strField.setText(initDate.toString());
             return new BasicNode(BasicType.DATE, strField, () -> (strField.getText()));
         }
     }
@@ -162,7 +156,7 @@ final class BasicNodeFactory {
      * jsonNode is <code>null</code>, the node is initialize with <code>0</code>.
      *
      * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
-     * @param isEditable Determines wether the user can edit the represented value or not.
+     * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a integer value.
      */
     protected static BasicNode createIntegerTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
@@ -186,7 +180,7 @@ final class BasicNodeFactory {
      * jsonNode is <code>null</code>, the node is initialize with <code>0.0</code>.
      *
      * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
-     * @param isEditable Determines wether the user can edit the represented value or not.
+     * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a double value.
      */
     protected static BasicNode createRealTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
@@ -210,7 +204,7 @@ final class BasicNodeFactory {
      * jsonNode is <code>null</code>, the node is initialize with an empty String.
      *
      * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
-     * @param isEditable Determines wether the user can edit the represented value or not.
+     * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a String.
      */
     protected static BasicNode createStringTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
