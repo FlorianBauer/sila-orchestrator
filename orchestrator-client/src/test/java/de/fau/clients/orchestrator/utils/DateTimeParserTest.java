@@ -297,7 +297,6 @@ public class DateTimeParserTest {
         assertEquals(exp, DateTimeParser.parseIsoDateTime("2020-02-30T10:20:30Z")); // leap year
         exp = OffsetDateTime.of(0, 8, 17, 10, 20, 30, 0, ZoneOffset.UTC);
         assertEquals(exp, DateTimeParser.parseIsoDateTime("0000-08-17T10:20:30Z"));
-        assertEquals(exp, DateTimeParser.parseIsoDateTime("0000-08-17T10:20:30Z"));
         exp = OffsetDateTime.of(9999, 8, 17, 10, 20, 30, 0, ZoneOffset.UTC);
         assertEquals(exp, DateTimeParser.parseIsoDateTime("9999-08-17T10:20:30Z"));
         exp = OffsetDateTime.of(90000, 8, 17, 10, 20, 30, 0, ZoneOffset.UTC);
