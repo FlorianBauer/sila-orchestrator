@@ -2,6 +2,8 @@ package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
+import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
+import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerModel;
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerModel;
 import java.time.LocalDate;
@@ -224,26 +226,32 @@ final class BasicNodeFactory {
      * jsonNode is <code>null</code>, the node is initialize with the current time.
      *
      * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
-     * @param isEditable Determines wether the user can edit the represented value or not.
+     * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a time value.
      */
     protected static BasicNode createTimeTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
-        if (isEditable) {
-            final SpinnerDateModel model = new SpinnerDateModel();
-            final JSpinner timeSpinner = new JSpinner(model);
-            timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, TIME_FORMAT));
-            timeSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
-            final OffsetDateTime dateTime;
-            if (jsonNode != null) {
-                dateTime = DateTimeParser.parseIsoTime(jsonNode.asText()).atDate(LocalDate.now());
-            } else {
-                dateTime = OffsetDateTime.now();
+        OffsetTime parsedTime = null;
+        if (jsonNode != null) {
+            try {
+                parsedTime = DateTimeParser.parseIsoTime(jsonNode.asText())
+                        .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+            } catch (Exception ex) {
+                // do nothing and use the current time instead
             }
-            model.setValue(Date.from(dateTime.toInstant()));
+        }
+
+        final OffsetTime initTime = (parsedTime != null)
+                ? parsedTime
+                : OffsetTime.now().truncatedTo(ChronoUnit.MILLIS);
+
+        if (isEditable) {
+            final JSpinner timeSpinner = new JSpinner();
+            timeSpinner.setModel(new OffsetTimeSpinnerModel(initTime, null, null, null));
+            timeSpinner.setEditor(new OffsetTimeSpinnerEditor(timeSpinner));
+            timeSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             final Supplier<String> supp = () -> {
-                return OffsetTime.ofInstant(model.getDate().toInstant(), DateTimeParser.LOCAL_OFFSET)
+                return ((OffsetTime) timeSpinner.getValue())
                         .withOffsetSameInstant(ZoneOffset.UTC)
-                        .truncatedTo(ChronoUnit.MILLIS)
                         .toString();
             };
             return new BasicNode(BasicType.TIME, timeSpinner, supp);
@@ -251,17 +259,11 @@ final class BasicNodeFactory {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
-            final String txt;
-            if (jsonNode != null) {
-                txt = jsonNode.asText();
-            } else {
-                txt = OffsetTime.now()
-                        .withOffsetSameInstant(ZoneOffset.UTC)
-                        .truncatedTo(ChronoUnit.MILLIS)
-                        .toString();
-            }
-            strField.setText(txt);
-            return new BasicNode(BasicType.TIME, strField, () -> (strField.getText()));
+            strField.setText(initTime.toLocalTime().toString());
+            final Supplier<String> supp = () -> {
+                return initTime.withOffsetSameInstant(ZoneOffset.UTC).toString();
+            };
+            return new BasicNode(BasicType.TIME, strField, supp);
         }
     }
 

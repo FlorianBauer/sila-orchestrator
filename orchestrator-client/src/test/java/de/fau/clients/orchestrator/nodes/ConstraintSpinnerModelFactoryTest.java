@@ -1,8 +1,9 @@
 package de.fau.clients.orchestrator.nodes;
 
+import de.fau.clients.orchestrator.utils.DateTimeParser;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import javax.swing.AbstractSpinnerModel;
 import javax.swing.SpinnerModel;
@@ -247,73 +248,100 @@ public class ConstraintSpinnerModelFactoryTest {
     public void createRangeConstrainedTimeModel() {
         {
             Constraints con = new Constraints();
-            con.setMaximalInclusive("185959");
-            LocalTime initTime = LocalTime.of(18, 59, 59);
-            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory.createRangeConstrainedTimeModel(initTime, con);
+            con.setMaximalInclusive("185959Z");
+            OffsetTime initTime = OffsetTime.of(18, 59, 59, 0, ZoneOffset.UTC);
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedTimeModel(initTime, con);
             assertEquals(asm.getValue(), initTime);
             assertEquals(asm.getNextValue(), null);
-            assertEquals(asm.getPreviousValue(), LocalTime.of(18, 58, 59));
+            assertEquals(asm.getPreviousValue(), OffsetTime.of(18, 58, 59, 0, ZoneOffset.UTC));
+        }
+
+        {
+            Constraints con = new Constraints();
+            con.setMinimalInclusive("07:00:00Z");
+            OffsetTime initTime = OffsetTime.of(7, 0, 0, 0, ZoneOffset.UTC);
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedTimeModel(initTime, con);
+            assertEquals(asm.getValue(), initTime);
+            assertEquals(asm.getNextValue(), OffsetTime.of(7, 1, 0, 0, ZoneOffset.UTC));
+            assertEquals(asm.getPreviousValue(), null);
+        }
+
+        {
+            Constraints con = new Constraints();
+            con.setMaximalInclusive("185959");
+            OffsetTime initTime = OffsetTime.of(18, 59, 59, 0, DateTimeParser.LOCAL_OFFSET);
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedTimeModel(initTime, con);
+            assertEquals(asm.getValue(), initTime);
+            assertEquals(asm.getNextValue(), null);
+            assertEquals(asm.getPreviousValue(), OffsetTime.of(18, 58, 59, 0, DateTimeParser.LOCAL_OFFSET));
         }
 
         {
             Constraints con = new Constraints();
             con.setMinimalInclusive("07:00:00");
-            LocalTime initTime = LocalTime.of(7, 0, 0);
-            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory.createRangeConstrainedTimeModel(initTime, con);
+            OffsetTime initTime = OffsetTime.of(7, 0, 0, 0, DateTimeParser.LOCAL_OFFSET);
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedTimeModel(initTime, con);
             assertEquals(asm.getValue(), initTime);
-            assertEquals(asm.getNextValue(), LocalTime.of(7, 1, 0));
+            assertEquals(asm.getNextValue(), OffsetTime.of(7, 1, 0, 0, DateTimeParser.LOCAL_OFFSET));
             assertEquals(asm.getPreviousValue(), null);
         }
 
         {
             Constraints con = new Constraints();
-            con.setMinimalInclusive("08:00:00");
-            con.setMaximalInclusive("20:00:00");
-            LocalTime initTime = LocalTime.of(7, 0, 0);
-            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory.createRangeConstrainedTimeModel(initTime, con);
-            assertEquals(asm.getValue(), LocalTime.of(8, 0, 0));
-            assertEquals(asm.getNextValue(), LocalTime.of(8, 1, 0));
+            con.setMinimalInclusive("08:00:00Z");
+            con.setMaximalInclusive("20:00:00Z");
+            OffsetTime initTime = OffsetTime.of(7, 0, 0, 0, ZoneOffset.UTC);
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedTimeModel(initTime, con);
+            assertEquals(asm.getValue(), OffsetTime.of(8, 0, 0, 0, ZoneOffset.UTC));
+            assertEquals(asm.getNextValue(), OffsetTime.of(8, 1, 0, 0, ZoneOffset.UTC));
             assertEquals(asm.getPreviousValue(), null);
-            initTime = LocalTime.of(21, 0, 0);
+            initTime = OffsetTime.of(21, 0, 0, 0, ZoneOffset.UTC);
             asm = ConstraintSpinnerModelFactory.createRangeConstrainedTimeModel(initTime, con);
-            assertEquals(asm.getValue(), LocalTime.of(20, 0, 0));
+            assertEquals(asm.getValue(), OffsetTime.of(20, 0, 0, 0, ZoneOffset.UTC));
             assertEquals(asm.getNextValue(), null);
-            assertEquals(asm.getPreviousValue(), LocalTime.of(19, 59, 0));
+            assertEquals(asm.getPreviousValue(), OffsetTime.of(19, 59, 0, 0, ZoneOffset.UTC));
         }
 
         {
             Constraints con = new Constraints();
-            con.setMinimalExclusive("08:00:00");
-            con.setMaximalExclusive("20:00:00");
-            LocalTime initTime = LocalTime.of(7, 0, 0);
-            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory.createRangeConstrainedTimeModel(initTime, con);
-            assertEquals(asm.getValue(), LocalTime.of(8, 0, 1));
-            assertEquals(asm.getNextValue(), LocalTime.of(8, 1, 1));
+            con.setMinimalExclusive("08:00:00Z");
+            con.setMaximalExclusive("20:00:00Z");
+            OffsetTime initTime = OffsetTime.of(7, 0, 0, 0, ZoneOffset.UTC);
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedTimeModel(initTime, con);
+            assertEquals(asm.getValue(), OffsetTime.of(8, 0, 1, 0, ZoneOffset.UTC));
+            assertEquals(asm.getNextValue(), OffsetTime.of(8, 1, 1, 0, ZoneOffset.UTC));
             assertEquals(asm.getPreviousValue(), null);
-            initTime = LocalTime.of(21, 0, 0);
+            initTime = OffsetTime.of(21, 0, 0, 0, ZoneOffset.UTC);
             asm = ConstraintSpinnerModelFactory.createRangeConstrainedTimeModel(initTime, con);
-            assertEquals(asm.getValue(), LocalTime.of(19, 59, 59));
+            assertEquals(asm.getValue(), OffsetTime.of(19, 59, 59, 0, ZoneOffset.UTC));
             assertEquals(asm.getNextValue(), null);
-            assertEquals(asm.getPreviousValue(), LocalTime.of(19, 58, 59));
+            assertEquals(asm.getPreviousValue(), OffsetTime.of(19, 58, 59, 0, ZoneOffset.UTC));
         }
 
         {
             // Exlusive binds more then inclusive.
             Constraints con = new Constraints();
-            con.setMinimalExclusive("08:00:00");
-            con.setMinimalInclusive("08:00:00");
-            con.setMaximalExclusive("20:00:00");
-            con.setMaximalInclusive("20:00:00");
-            LocalTime initTime = LocalTime.of(7, 0, 0);
-            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory.createRangeConstrainedTimeModel(initTime, con);
-            assertEquals(asm.getValue(), LocalTime.of(8, 0, 1));
-            assertEquals(asm.getNextValue(), LocalTime.of(8, 1, 1));
+            con.setMinimalExclusive("08:00:00Z");
+            con.setMinimalInclusive("08:00:00Z");
+            con.setMaximalExclusive("20:00:00Z");
+            con.setMaximalInclusive("20:00:00Z");
+            OffsetTime initTime = OffsetTime.of(7, 0, 0, 0, ZoneOffset.UTC);
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedTimeModel(initTime, con);
+            assertEquals(asm.getValue(), OffsetTime.of(8, 0, 1, 0, ZoneOffset.UTC));
+            assertEquals(asm.getNextValue(), OffsetTime.of(8, 1, 1, 0, ZoneOffset.UTC));
             assertEquals(asm.getPreviousValue(), null);
-            initTime = LocalTime.of(21, 0, 0);
+            initTime = OffsetTime.of(21, 0, 0, 0, ZoneOffset.UTC);
             asm = ConstraintSpinnerModelFactory.createRangeConstrainedTimeModel(initTime, con);
-            assertEquals(asm.getValue(), LocalTime.of(19, 59, 59));
+            assertEquals(asm.getValue(), OffsetTime.of(19, 59, 59, 0, ZoneOffset.UTC));
             assertEquals(asm.getNextValue(), null);
-            assertEquals(asm.getPreviousValue(), LocalTime.of(19, 58, 59));
+            assertEquals(asm.getPreviousValue(), OffsetTime.of(19, 58, 59, 0, ZoneOffset.UTC));
         }
     }
 

@@ -6,8 +6,8 @@ import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
 import de.fau.clients.orchestrator.utils.IconProvider;
 import de.fau.clients.orchestrator.utils.ImagePanel;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
-import de.fau.clients.orchestrator.utils.LocalTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor;
+import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.ValidatorUtils;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -19,7 +19,6 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
@@ -504,12 +503,19 @@ class ConstraintBasicNodeFactory {
             final List<String> timeSet = constraints.getSet().getValue();
             final OffsetTime[] times = new OffsetTime[timeSet.size()];
             for (int i = 0; i < timeSet.size(); i++) {
-                times[i] = DateTimeParser.parseIsoTime(timeSet.get(i));
+                try {
+                    times[i] = DateTimeParser.parseIsoTime(timeSet.get(i))
+                            .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+                } catch (Exception ex) {
+                    // skip invalid entries
+                }
             }
             final JComboBox<OffsetTime> timeComboBox = new JComboBox<>(times);
             timeComboBox.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             supp = () -> {
-                return timeComboBox.getSelectedItem().toString();
+                return ((OffsetTime) timeComboBox.getSelectedItem())
+                        .withOffsetSameInstant(ZoneOffset.UTC)
+                        .toString();
             };
             comp = timeComboBox;
         } else {
@@ -542,23 +548,24 @@ class ConstraintBasicNodeFactory {
                 conditionDescr = INVALID_CONSTRAINT;
             }
 
-            LocalTime initTime = LocalTime.now().truncatedTo(ChronoUnit.SECONDS);
+            OffsetTime initTime = OffsetTime.now().truncatedTo(ChronoUnit.SECONDS);
             if (jsonNode != null) {
                 try {
-                    initTime = LocalTime.parse(jsonNode.asText());
+                    initTime = DateTimeParser.parseIsoTime(jsonNode.asText())
+                            .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
                 } catch (Exception ex) {
                     // do nothing and use the current time instead
                 }
             }
             final JSpinner timeSpinner = new JSpinner();
-            timeSpinner.setModel(ConstraintSpinnerModelFactory.createRangeConstrainedTimeModel(
-                    initTime,
-                    constraints));
+            timeSpinner.setModel(ConstraintSpinnerModelFactory
+                    .createRangeConstrainedTimeModel(initTime, constraints));
             timeSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
-            timeSpinner.setEditor(new LocalTimeSpinnerEditor(timeSpinner));
-
+            timeSpinner.setEditor(new OffsetTimeSpinnerEditor(timeSpinner));
             supp = () -> {
-                return timeSpinner.getValue().toString();
+                return ((OffsetTime) timeSpinner.getValue())
+                        .withOffsetSameInstant(ZoneOffset.UTC)
+                        .toString();
             };
 
             final Box hBox = Box.createHorizontalBox();

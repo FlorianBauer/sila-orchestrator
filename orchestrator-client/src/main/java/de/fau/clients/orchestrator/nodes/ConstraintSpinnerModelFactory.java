@@ -2,11 +2,11 @@ package de.fau.clients.orchestrator.nodes;
 
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerModel;
-import de.fau.clients.orchestrator.utils.LocalTimeSpinnerModel;
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerModel;
+import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerModel;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.temporal.ChronoUnit;
 import javax.swing.AbstractSpinnerModel;
 import javax.swing.SpinnerModel;
@@ -156,40 +156,27 @@ public class ConstraintSpinnerModelFactory {
      * @return The spinner-model for a <code>JSpinner</code>-component.
      */
     public static AbstractSpinnerModel createRangeConstrainedTimeModel(
-            LocalTime initTime,
+            OffsetTime initTime,
             final Constraints constraints) {
-        final LocalTime start;
+        final OffsetTime start;
         if (constraints.getMinimalExclusive() != null) {
-            start = DateTimeParser.parseIsoTime(constraints.getMinimalExclusive())
-                    .toLocalTime()
-                    .plusSeconds(1);
+            start = DateTimeParser.parseIsoTime(constraints.getMinimalExclusive()).plusSeconds(1);
         } else if (constraints.getMinimalInclusive() != null) {
-            start = DateTimeParser.parseIsoTime(constraints.getMinimalInclusive())
-                    .toLocalTime();
+            start = DateTimeParser.parseIsoTime(constraints.getMinimalInclusive());
         } else {
-            start = LocalTime.MIN;
+            start = null;
         }
 
-        final LocalTime end;
+        final OffsetTime end;
         if (constraints.getMaximalExclusive() != null) {
-            end = DateTimeParser.parseIsoTime(constraints.getMaximalExclusive())
-                    .toLocalTime()
-                    .minusSeconds(1);
+            end = DateTimeParser.parseIsoTime(constraints.getMaximalExclusive()).minusSeconds(1);
         } else if (constraints.getMaximalInclusive() != null) {
-            end = DateTimeParser.parseIsoTime(constraints.getMaximalInclusive())
-                    .toLocalTime();
+            end = DateTimeParser.parseIsoTime(constraints.getMaximalInclusive());
         } else {
-            end = LocalTime.MAX.truncatedTo(ChronoUnit.SECONDS);
+            end = null;
         }
 
-        if (initTime.compareTo(start) < 0) {
-            initTime = start;
-        }
-
-        if (initTime.compareTo(end) > 0) {
-            initTime = end;
-        }
-        return new LocalTimeSpinnerModel(initTime, start, end, ChronoUnit.MINUTES);
+        return new OffsetTimeSpinnerModel(initTime, start, end, null);
     }
 
     /**
