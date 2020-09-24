@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
@@ -580,12 +581,19 @@ class ConstraintBasicNodeFactory {
             final List<String> timeSet = constraints.getSet().getValue();
             final OffsetDateTime[] times = new OffsetDateTime[timeSet.size()];
             for (int i = 0; i < timeSet.size(); i++) {
-                times[i] = DateTimeParser.parseIsoDateTime(timeSet.get(i));
+                try {
+                    times[i] = DateTimeParser.parseIsoDateTime(timeSet.get(i))
+                            .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+                } catch (Exception ex) {
+                    // skip invalid entries
+                }
             }
             final JComboBox<OffsetDateTime> timestampComboBox = new JComboBox<>(times);
             timestampComboBox.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
             supp = () -> {
-                return timestampComboBox.getSelectedItem().toString();
+                return ((OffsetDateTime) timestampComboBox.getSelectedItem())
+                        .withOffsetSameInstant(ZoneOffset.UTC)
+                        .toString();
             };
             comp = timestampComboBox;
         } else {

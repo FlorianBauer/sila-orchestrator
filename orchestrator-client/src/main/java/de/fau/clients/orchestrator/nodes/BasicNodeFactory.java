@@ -2,6 +2,8 @@ package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
+import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor;
+import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerModel;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
@@ -265,46 +267,50 @@ final class BasicNodeFactory {
 
     /**
      * Creates a <code>BasicNode</code> of the type <code>BasicType.TIMESTAMP</code>. If the given
-     * jsonNode is <code>null</code>, the node is initialize with the current date and time.
+     * jsonNode is <code>null</code>, the node is initialized with the current date and time.
      *
      * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
-     * @param isEditable Determines wether the user can edit the represented value or not.
-     * @return The initialize BasicNode representing a timestamp value.
+     * @param isEditable Determines whether the User can edit the represented value or not.
+     * @return The initialized BasicNode representing a timestamp value.
      */
-    protected static BasicNode createTimestampTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
-        if (isEditable) {
-            final SpinnerDateModel model = new SpinnerDateModel();
-            final JSpinner timeStampSpinner = new JSpinner(model);
-            timeStampSpinner.setEditor(new JSpinner.DateEditor(timeStampSpinner, DATE_TIME_FORMAT));
-            timeStampSpinner.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
-            final OffsetDateTime dateTime;
-            if (jsonNode != null) {
-                dateTime = DateTimeParser.parseIsoDateTime(jsonNode.asText());
-            } else {
-                dateTime = OffsetDateTime.now();
+    protected static BasicNode createTimestampTypeFromJson(
+            final JsonNode jsonNode,
+            boolean isEditable
+    ) {
+        OffsetDateTime parsedDateTime = null;
+        if (jsonNode != null) {
+            try {
+                parsedDateTime = DateTimeParser.parseIsoDateTime(jsonNode.asText())
+                        .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+            } catch (Exception ex) {
+                // do nothing and use the current time instead
             }
-            model.setValue(Date.from(dateTime.toInstant()));
+        }
+
+        final OffsetDateTime initDateTime = (parsedDateTime != null)
+                ? parsedDateTime
+                : OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
+
+        if (isEditable) {
+            final JSpinner timestampSpinner = new JSpinner();
+            timestampSpinner.setModel(new OffsetDateTimeSpinnerModel(initDateTime, null, null, null));
+            timestampSpinner.setEditor(new OffsetDateTimeSpinnerEditor(timestampSpinner));
+            timestampSpinner.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
             final Supplier<String> supp = () -> {
-                return OffsetDateTime.ofInstant(model.getDate().toInstant(), ZoneOffset.UTC)
-                        .truncatedTo(ChronoUnit.MILLIS)
+                return ((OffsetDateTime) timestampSpinner.getValue())
+                        .withOffsetSameInstant(ZoneOffset.UTC)
                         .toString();
             };
-            return new BasicNode(BasicType.TIMESTAMP, timeStampSpinner, supp);
+            return new BasicNode(BasicType.TIMESTAMP, timestampSpinner, supp);
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
-            final String txt;
-            if (jsonNode != null) {
-                txt = jsonNode.asText();
-            } else {
-                txt = OffsetDateTime.now()
-                        .withOffsetSameInstant(ZoneOffset.UTC)
-                        .truncatedTo(ChronoUnit.MILLIS)
-                        .toString();
-            }
-            strField.setText(txt);
-            return new BasicNode(BasicType.TIMESTAMP, strField, () -> (strField.getText()));
+            strField.setText(initDateTime.toString());
+            final Supplier<String> supp = () -> {
+                return initDateTime.withOffsetSameInstant(ZoneOffset.UTC).toString();
+            };
+            return new BasicNode(BasicType.TIMESTAMP, strField, supp);
         }
     }
 }

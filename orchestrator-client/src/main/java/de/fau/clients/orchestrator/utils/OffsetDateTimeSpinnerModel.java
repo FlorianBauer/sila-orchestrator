@@ -24,9 +24,9 @@ public class OffsetDateTimeSpinnerModel extends AbstractSpinnerModel {
      * Constructor.
      *
      * @param initValue The time to initialize the spinner with (must not be <code>null</code>).
-     * Also determines the zone offset used in the string representation.
-     * @param start The min. time limit or <code>null</code> for the start of the day.
-     * @param end The max. time limit or <code>null</code> for the end of the day.
+     * Also determines the used zone offset.
+     * @param start The min. time limit or <code>null</code> for no limit.
+     * @param end The max. time limit or <code>null</code> for no limit.
      * @param step The step size or <code>null</code> for <code>ChronoUnit.MINUTES</code> as
      * default.
      *
@@ -41,9 +41,17 @@ public class OffsetDateTimeSpinnerModel extends AbstractSpinnerModel {
     ) {
         this.currentValue = initValue;
         this.offset = initValue.getOffset();
-        this.start = start;
-        this.end = end;
+        this.start = (start != null) ? start : OffsetDateTime.MIN;
+        this.end = (end != null) ? end : OffsetDateTime.MAX;
         this.step = (step != null) ? step : ChronoUnit.MINUTES;
+
+        if (initValue.compareTo(this.start) < 0) {
+            this.currentValue = this.start.withOffsetSameInstant(offset);
+        }
+
+        if (initValue.compareTo(this.end) > 0) {
+            this.currentValue = this.end.withOffsetSameInstant(offset);
+        }
     }
 
     @Override
@@ -60,7 +68,7 @@ public class OffsetDateTimeSpinnerModel extends AbstractSpinnerModel {
 
     @Override
     public Object getValue() {
-        return currentValue;
+        return currentValue.withOffsetSameInstant(offset);
     }
 
     @Override

@@ -212,7 +212,7 @@ public class ConstraintSpinnerModelFactory {
         } else if (constraints.getMinimalInclusive() != null) {
             start = DateTimeParser.parseIsoDateTime(constraints.getMinimalInclusive());
         } else {
-            start = OffsetDateTime.MIN;
+            start = null;
         }
 
         final OffsetDateTime end;
@@ -222,16 +222,9 @@ public class ConstraintSpinnerModelFactory {
         } else if (constraints.getMaximalInclusive() != null) {
             end = DateTimeParser.parseIsoDateTime(constraints.getMaximalInclusive());
         } else {
-            end = OffsetDateTime.MAX.truncatedTo(ChronoUnit.SECONDS);
+            end = null;
         }
 
-        if (initDateTime.compareTo(start) < 0) {
-            initDateTime = start;
-        }
-
-        if (initDateTime.compareTo(end) > 0) {
-            initDateTime = end;
-        }
         return new OffsetDateTimeSpinnerModel(initDateTime, start, end, null);
     }
 }

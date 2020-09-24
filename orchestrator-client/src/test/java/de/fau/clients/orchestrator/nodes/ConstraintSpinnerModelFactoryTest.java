@@ -322,23 +322,75 @@ public class ConstraintSpinnerModelFactoryTest {
         {
             Constraints con = new Constraints();
             con.setMaximalInclusive("2020-09-23T18:59:59Z");
-            OffsetDateTime initDateTime = OffsetDateTime.of(2020, 9, 23, 18, 59, 59, 0, ZoneOffset.UTC);
+            OffsetDateTime initDateTime = OffsetDateTime
+                    .of(2020, 9, 23, 18, 59, 59, 0, ZoneOffset.UTC);
             AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
                     .createRangeConstrainedDateTimeModel(initDateTime, con);
-            assertEquals(asm.getValue(), initDateTime);
-            assertEquals(asm.getNextValue(), null);
-            assertEquals(asm.getPreviousValue(), initDateTime.minusMinutes(1));
+            assertEquals(initDateTime, asm.getValue());
+            assertEquals(null, asm.getNextValue());
+            assertEquals(initDateTime.minusMinutes(1), asm.getPreviousValue());
         }
 
         {
             Constraints con = new Constraints();
             con.setMinimalInclusive("2020-09-23T07:00:00Z");
-            OffsetDateTime initDateTime = OffsetDateTime.of(2020, 9, 23, 7, 0, 0, 0, ZoneOffset.UTC);
+            OffsetDateTime initDateTime = OffsetDateTime
+                    .of(2020, 9, 23, 7, 0, 0, 0, ZoneOffset.UTC);
             AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
                     .createRangeConstrainedDateTimeModel(initDateTime, con);
-            assertEquals(asm.getValue(), initDateTime);
-            assertEquals(asm.getNextValue(), initDateTime.plusMinutes(1));
-            assertEquals(asm.getPreviousValue(), null);
+            assertEquals(initDateTime, asm.getValue());
+            assertEquals(initDateTime.plusMinutes(1), asm.getNextValue());
+            assertEquals(null, asm.getPreviousValue());
+        }
+
+        {
+            Constraints con = new Constraints();
+            con.setMaximalInclusive("2020-09-23T18:59:59Z");
+            OffsetDateTime initDateTime = OffsetDateTime
+                    .of(2020, 9, 24, 20, 59, 59, 0, ZoneOffset.UTC);
+            OffsetDateTime exp = OffsetDateTime.of(2020, 9, 23, 18, 59, 59, 0, ZoneOffset.UTC);
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedDateTimeModel(initDateTime, con);
+            assertEquals(exp, asm.getValue());
+            assertEquals(null, asm.getNextValue());
+            assertEquals(exp.minusMinutes(1), asm.getPreviousValue());
+        }
+
+        {
+            Constraints con = new Constraints();
+            con.setMinimalInclusive("2020-09-23T07:00:00Z");
+            OffsetDateTime initDateTime = OffsetDateTime
+                    .of(2020, 9, 20, 5, 0, 0, 0, ZoneOffset.UTC);
+            OffsetDateTime exp = OffsetDateTime.of(2020, 9, 23, 7, 0, 0, 0, ZoneOffset.UTC);
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedDateTimeModel(initDateTime, con);
+            assertEquals(exp, asm.getValue());
+            assertEquals(exp.plusMinutes(1), asm.getNextValue());
+            assertEquals(null, asm.getPreviousValue());
+        }
+
+        {
+            Constraints con = new Constraints();
+            con.setMaximalInclusive("2020-09-23T18:59:59Z");
+            OffsetDateTime initDateTime = OffsetDateTime
+                    .of(2020, 9, 23, 21, 59, 59, 0, ZoneOffset.ofHours(3));
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedDateTimeModel(initDateTime, con);
+            assertEquals(initDateTime, asm.getValue());
+            assertEquals(null, asm.getNextValue());
+            assertEquals(initDateTime.minusMinutes(1), asm.getPreviousValue());
+        }
+
+        {
+            Constraints con = new Constraints();
+            con.setMinimalInclusive("2020-09-23T07:00:00Z");
+            OffsetDateTime initDateTime = OffsetDateTime
+                    .of(2020, 9, 23, 4, 0, 0, 0, ZoneOffset.ofHours(-3));
+            AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedDateTimeModel(initDateTime, con);
+            assertEquals(initDateTime, asm.getValue());
+            assertEquals(initDateTime.plusMinutes(1), asm.getNextValue());
+            assertEquals(null, asm.getPreviousValue());
         }
     }
 }
