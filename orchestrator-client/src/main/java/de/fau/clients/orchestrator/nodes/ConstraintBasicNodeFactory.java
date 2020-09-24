@@ -214,8 +214,8 @@ class ConstraintBasicNodeFactory {
                 }
             }
 
-            final JSpinner dateSpinner = new JSpinner(
-                    ConstraintSpinnerModelFactory.createRangeConstrainedDateModel(initDate, constraints));
+            final JSpinner dateSpinner = new JSpinner(ConstraintSpinnerModelFactory
+                    .createRangeConstrainedDateModel(initDate, constraints));
             dateSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             dateSpinner.setEditor(new LocalDateSpinnerEditor(dateSpinner));
             supp = () -> {
@@ -248,7 +248,8 @@ class ConstraintBasicNodeFactory {
             supp = () -> (Integer.valueOf(numberComboBox.getSelectedItem().toString()).toString());
             comp = numberComboBox;
         } else {
-            final SpinnerModel model = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(constraints);
+            final SpinnerModel model = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedIntModel(constraints);
             final JSpinner numericSpinner = new JSpinner(model);
             numericSpinner.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
             if (jsonNode != null) {
@@ -310,7 +311,8 @@ class ConstraintBasicNodeFactory {
             supp = () -> (Double.valueOf(numberComboBox.getSelectedItem().toString()).toString());
             comp = numberComboBox;
         } else {
-            final SpinnerModel model = ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(constraints);
+            final SpinnerModel model = ConstraintSpinnerModelFactory
+                    .createRangeConstrainedRealModel(constraints);
             final JSpinner numericSpinner = new JSpinner(model);
             numericSpinner.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
             if (jsonNode != null) {
@@ -506,7 +508,7 @@ class ConstraintBasicNodeFactory {
             final JComboBox<OffsetTime> timeComboBox = new JComboBox<>(times);
             timeComboBox.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             supp = () -> {
-                return ((OffsetTime) timeComboBox.getSelectedItem()).toString();
+                return timeComboBox.getSelectedItem().toString();
             };
             comp = timeComboBox;
         } else {
@@ -539,7 +541,6 @@ class ConstraintBasicNodeFactory {
                 conditionDescr = INVALID_CONSTRAINT;
             }
 
-            final JSpinner timeSpinner = new JSpinner();
             LocalTime initTime = LocalTime.now().truncatedTo(ChronoUnit.SECONDS);
             if (jsonNode != null) {
                 try {
@@ -548,6 +549,7 @@ class ConstraintBasicNodeFactory {
                     // do nothing and use the current time instead
                 }
             }
+            final JSpinner timeSpinner = new JSpinner();
             timeSpinner.setModel(ConstraintSpinnerModelFactory.createRangeConstrainedTimeModel(
                     initTime,
                     constraints));
@@ -589,24 +591,24 @@ class ConstraintBasicNodeFactory {
         } else {
             String minBounds = null;
             if (constraints.getMinimalExclusive() != null) {
-                minBounds = GREATER_THAN + DateTimeParser.parseIsoDateTime(
-                        constraints.getMinimalExclusive())
-                        .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET).toString();
+                minBounds = GREATER_THAN + DateTimeParser.parseIsoDateTime(constraints
+                        .getMinimalExclusive()).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET)
+                        .toString();
             } else if (constraints.getMinimalInclusive() != null) {
-                minBounds = GREATER_OR_EQUAL + DateTimeParser.parseIsoDateTime(
-                        constraints.getMinimalInclusive())
-                        .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET).toString();
+                minBounds = GREATER_OR_EQUAL + DateTimeParser.parseIsoDateTime(constraints
+                        .getMinimalInclusive()).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET)
+                        .toString();
             }
 
             String maxBounds = null;
             if (constraints.getMaximalExclusive() != null) {
-                maxBounds = LESS_THAN + DateTimeParser.parseIsoDateTime(
-                        constraints.getMaximalExclusive())
-                        .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET).toString();
+                maxBounds = LESS_THAN + DateTimeParser.parseIsoDateTime(constraints
+                        .getMaximalExclusive()).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET)
+                        .toString();
             } else if (constraints.getMaximalInclusive() != null) {
-                maxBounds = LESS_OR_EQUAL + DateTimeParser.parseIsoDateTime(
-                        constraints.getMaximalInclusive())
-                        .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET).toString();
+                maxBounds = LESS_OR_EQUAL + DateTimeParser.parseIsoDateTime(constraints
+                        .getMaximalInclusive()).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET)
+                        .toString();
             }
 
             final String conditionDescr;
@@ -620,7 +622,6 @@ class ConstraintBasicNodeFactory {
                 conditionDescr = INVALID_CONSTRAINT;
             }
 
-            final JSpinner timestampSpinner = new JSpinner();
             OffsetDateTime initDateTime = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
             if (jsonNode != null) {
                 try {
@@ -629,10 +630,9 @@ class ConstraintBasicNodeFactory {
                     // do nothing and use the current time instead
                 }
             }
+            final JSpinner timestampSpinner = new JSpinner();
             timestampSpinner.setModel(ConstraintSpinnerModelFactory
-                    .createRangeConstrainedDateTimeModel(
-                            initDateTime,
-                            constraints));
+                    .createRangeConstrainedDateTimeModel(initDateTime, constraints));
             timestampSpinner.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
             timestampSpinner.setEditor(new OffsetDateTimeSpinnerEditor(timestampSpinner));
             supp = () -> {
