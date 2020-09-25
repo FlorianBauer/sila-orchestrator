@@ -27,8 +27,7 @@ public class OffsetDateTimeSpinnerModel extends AbstractSpinnerModel {
      * Also determines the used zone offset.
      * @param start The min. time limit or <code>null</code> for no limit.
      * @param end The max. time limit or <code>null</code> for no limit.
-     * @param step The step size or <code>null</code> for <code>ChronoUnit.MINUTES</code> as
-     * default.
+     * @param step The step size or <code>null</code> for <code>ChronoUnit.DAYS</code> as default.
      *
      * @see OffsetDateTime
      * @see ChronoUnit
@@ -43,7 +42,7 @@ public class OffsetDateTimeSpinnerModel extends AbstractSpinnerModel {
         this.offset = initValue.getOffset();
         this.start = (start != null) ? start : OffsetDateTime.MIN;
         this.end = (end != null) ? end : OffsetDateTime.MAX;
-        this.step = (step != null) ? step : ChronoUnit.MINUTES;
+        this.step = (step != null) ? step : ChronoUnit.DAYS;
 
         if (initValue.compareTo(this.start) < 0) {
             this.currentValue = this.start.withOffsetSameInstant(offset);

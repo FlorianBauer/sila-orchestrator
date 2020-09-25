@@ -356,7 +356,7 @@ public class ConstraintSpinnerModelFactoryTest {
                     .createRangeConstrainedDateTimeModel(initDateTime, con);
             assertEquals(initDateTime, asm.getValue());
             assertEquals(null, asm.getNextValue());
-            assertEquals(initDateTime.minusMinutes(1), asm.getPreviousValue());
+            assertEquals(initDateTime.minusDays(1), asm.getPreviousValue());
         }
 
         {
@@ -367,7 +367,7 @@ public class ConstraintSpinnerModelFactoryTest {
             AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
                     .createRangeConstrainedDateTimeModel(initDateTime, con);
             assertEquals(initDateTime, asm.getValue());
-            assertEquals(initDateTime.plusMinutes(1), asm.getNextValue());
+            assertEquals(initDateTime.plusDays(1), asm.getNextValue());
             assertEquals(null, asm.getPreviousValue());
         }
 
@@ -381,7 +381,7 @@ public class ConstraintSpinnerModelFactoryTest {
                     .createRangeConstrainedDateTimeModel(initDateTime, con);
             assertEquals(exp, asm.getValue());
             assertEquals(null, asm.getNextValue());
-            assertEquals(exp.minusMinutes(1), asm.getPreviousValue());
+            assertEquals(exp.minusDays(1), asm.getPreviousValue());
         }
 
         {
@@ -393,7 +393,7 @@ public class ConstraintSpinnerModelFactoryTest {
             AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
                     .createRangeConstrainedDateTimeModel(initDateTime, con);
             assertEquals(exp, asm.getValue());
-            assertEquals(exp.plusMinutes(1), asm.getNextValue());
+            assertEquals(exp.plusDays(1), asm.getNextValue());
             assertEquals(null, asm.getPreviousValue());
         }
 
@@ -406,7 +406,7 @@ public class ConstraintSpinnerModelFactoryTest {
                     .createRangeConstrainedDateTimeModel(initDateTime, con);
             assertEquals(initDateTime, asm.getValue());
             assertEquals(null, asm.getNextValue());
-            assertEquals(initDateTime.minusMinutes(1), asm.getPreviousValue());
+            assertEquals(initDateTime.minusDays(1), asm.getPreviousValue());
         }
 
         {
@@ -417,7 +417,7 @@ public class ConstraintSpinnerModelFactoryTest {
             AbstractSpinnerModel asm = ConstraintSpinnerModelFactory
                     .createRangeConstrainedDateTimeModel(initDateTime, con);
             assertEquals(initDateTime, asm.getValue());
-            assertEquals(initDateTime.plusMinutes(1), asm.getNextValue());
+            assertEquals(initDateTime.plusDays(1), asm.getNextValue());
             assertEquals(null, asm.getPreviousValue());
         }
     }
