@@ -5,6 +5,7 @@ import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerModel;
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor;
+import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor.FormatterType;
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerModel;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerModel;
@@ -289,8 +290,11 @@ final class BasicNodeFactory {
 
         if (isEditable) {
             final JSpinner timestampSpinner = new JSpinner();
-            timestampSpinner.setModel(new OffsetDateTimeSpinnerModel(initDateTime, null, null, null));
-            timestampSpinner.setEditor(new OffsetDateTimeSpinnerEditor(timestampSpinner));
+            timestampSpinner.setModel(
+                    new OffsetDateTimeSpinnerModel(initDateTime, null, null, ChronoUnit.HOURS));
+            timestampSpinner.setEditor(new OffsetDateTimeSpinnerEditor(
+                    timestampSpinner,
+                    FormatterType.OFFSET_TIMESTAMP));
             timestampSpinner.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
             final Supplier<String> supp = () -> {
                 return ((OffsetDateTime) timestampSpinner.getValue())

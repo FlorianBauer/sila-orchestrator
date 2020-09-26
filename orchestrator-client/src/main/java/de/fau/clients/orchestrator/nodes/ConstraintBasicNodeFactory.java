@@ -7,6 +7,7 @@ import de.fau.clients.orchestrator.utils.IconProvider;
 import de.fau.clients.orchestrator.utils.ImagePanel;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor;
+import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor.FormatterType;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.ValidatorUtils;
 import java.awt.event.FocusAdapter;
@@ -649,7 +650,9 @@ class ConstraintBasicNodeFactory {
             timestampSpinner.setModel(ConstraintSpinnerModelFactory
                     .createRangeConstrainedDateTimeModel(initDateTime, constraints));
             timestampSpinner.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
-            timestampSpinner.setEditor(new OffsetDateTimeSpinnerEditor(timestampSpinner));
+            timestampSpinner.setEditor(new OffsetDateTimeSpinnerEditor(
+                    timestampSpinner,
+                    FormatterType.OFFSET_TIMESTAMP));
             supp = () -> {
                 return timestampSpinner.getValue().toString();
             };
