@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator.utils;
 
+import java.text.ParseException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import javax.swing.JSpinner;
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class OffsetDateTimeSpinnerEditorTest {
 
     @Test
-    public void offsetTimestampSpinnerEditor() {
+    public void offsetTimestampSpinnerEditor() throws ParseException {
         final JSpinner spinner = new JSpinner();
         final OffsetDateTime init = OffsetDateTime.now();
         spinner.setModel(new OffsetDateTimeSpinnerModel(
@@ -36,10 +37,17 @@ public class OffsetDateTimeSpinnerEditorTest {
         assertEquals(tmp.withOffsetSameInstant(ZoneOffset.ofHours(2)),
                 spinnerEditor.getTextField().getValue());
         assertEquals("2020-09-25T11:34:56+02:00", spinnerEditor.getTextField().getText());
+
+        spinnerEditor.getTextField().setText("2020-10-11T12:13:14");
+        assertEquals("2020-10-11T12:13:14", spinnerEditor.getTextField().getText());
+        final OffsetDateTime exp = OffsetDateTime.of(2020, 10, 11, 12, 13, 14, 0,
+                DateTimeParser.LOCAL_OFFSET);
+        spinnerEditor.commitEdit();
+        assertEquals(exp, spinnerEditor.getTextField().getValue());
     }
 
     @Test
-    public void localTimestampSpinnerEditor() {
+    public void localTimestampSpinnerEditor() throws ParseException {
         final JSpinner spinner = new JSpinner();
         final OffsetDateTime init = OffsetDateTime.now();
         spinner.setModel(new OffsetDateTimeSpinnerModel(
@@ -66,5 +74,12 @@ public class OffsetDateTimeSpinnerEditorTest {
         assertEquals(tmp.withOffsetSameInstant(ZoneOffset.ofHours(2)),
                 spinnerEditor.getTextField().getValue());
         assertEquals("2020-09-25T11:34:56", spinnerEditor.getTextField().getText());
+
+        spinnerEditor.getTextField().setText("2020-10-11T12:13:14");
+        assertEquals("2020-10-11T12:13:14", spinnerEditor.getTextField().getText());
+        final OffsetDateTime exp = OffsetDateTime.of(2020, 10, 11, 12, 13, 14, 0,
+                DateTimeParser.LOCAL_OFFSET);
+        spinnerEditor.commitEdit();
+        assertEquals(exp, spinnerEditor.getTextField().getValue());
     }
 }
