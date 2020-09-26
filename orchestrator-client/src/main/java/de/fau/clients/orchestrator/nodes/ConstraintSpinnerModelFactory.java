@@ -15,7 +15,8 @@ import sila_java.library.core.models.Constraints;
 
 /**
  * A Factory to create constrained <code>SpinnerModel</code>s for <code>Integer</code>,
- * <code>Double</code>, <code>LocalDate</code> and <code>LocalTime</code> types.
+ * <code>Double</code>, <code>LocalDate</code>, <code>OffsetDateTime</code> and
+ * <code>OffsetTime</code> types.
  */
 public class ConstraintSpinnerModelFactory {
 
