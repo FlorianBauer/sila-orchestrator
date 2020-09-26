@@ -37,8 +37,8 @@ public class LocalDateSpinnerModel extends AbstractSpinnerModel {
             final ChronoUnit step
     ) {
         this.currentValue = initValue;
-        this.start = start;
-        this.end = end;
+        this.start = (start != null) ? start : LocalDate.MIN;
+        this.end = (end != null) ? end : LocalDate.MAX;
         this.step = (step != null) ? step : ChronoUnit.DAYS;
     }
 
