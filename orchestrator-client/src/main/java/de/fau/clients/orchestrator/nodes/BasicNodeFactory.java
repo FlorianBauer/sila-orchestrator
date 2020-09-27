@@ -9,14 +9,19 @@ import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor.FormatterTy
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerModel;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerModel;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
 import java.util.function.Supplier;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
@@ -47,8 +52,7 @@ final class BasicNodeFactory {
                 // TODO: implement
                 return new BasicNode(type, new JLabel("placeholder 01"), () -> ("not implemented 01"));
             case BINARY:
-                // TODO: implement
-                return new BasicNode(type, new JLabel("placeholder 02"), () -> ("not implemented 02"));
+                return BasicNodeFactory.createBinaryTypeFromJson(null, true);
             case BOOLEAN:
                 return BasicNodeFactory.createBooleanTypeFromJson(null, true);
             case DATE:
@@ -78,8 +82,7 @@ final class BasicNodeFactory {
                 // TODO: implement
                 return new BasicNode(type, new JLabel("placeholder 05"), () -> ("not implemented 05"));
             case BINARY:
-                // TODO: implement
-                return new BasicNode(type, new JLabel("placeholder 06"), () -> ("not implemented 06"));
+                return BasicNodeFactory.createBinaryTypeFromJson(jsonNode, isEditable);
             case BOOLEAN:
                 return BasicNodeFactory.createBooleanTypeFromJson(jsonNode, isEditable);
             case DATE:
@@ -97,6 +100,40 @@ final class BasicNodeFactory {
             default:
                 throw new IllegalArgumentException("Not a supported BasicType.");
         }
+    }
+
+    /**
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.Binary</code>. If the given
+     * jsonNode is <code>null</code>, the node is initialize with an empty String.
+     *
+     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param isEditable Determines whether the user can edit the represented value or not.
+     * @return The initialize BasicNode representing a binary value.
+     */
+    protected static BasicNode createBinaryTypeFromJson(
+            final JsonNode jsonNode,
+            boolean isEditable
+    ) {
+        final JEditorPane editorPane = new JEditorPane();
+        editorPane.setEnabled(isEditable);
+        editorPane.setContentType("text/plain");
+        String plainTxt = "";
+        if (jsonNode != null) {
+            plainTxt = new String(Base64.getDecoder().decode(jsonNode.asText()),
+                    StandardCharsets.UTF_8);
+        }
+        editorPane.setText(plainTxt);
+        final Supplier<String> supp = () -> {
+            return Base64.getEncoder().encodeToString(editorPane
+                    .getText()
+                    .getBytes(StandardCharsets.UTF_8));
+        };
+
+        final JScrollPane scrollPane = new JScrollPane(editorPane);
+        scrollPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.setMaximumSize(MaxDim.TEXT_FIELD_MULTI_LINE.getDim());
+        return new BasicNode(BasicType.BINARY, scrollPane, supp);
     }
 
     /**

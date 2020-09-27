@@ -13,7 +13,7 @@ public class BasicNodeTest {
         String actual = BasicNodeFactory.create(BasicType.ANY).toJsonString();
         assertEquals("{\"value\":\"not implemented 01\"}", actual);
         actual = BasicNodeFactory.create(BasicType.BINARY).toJsonString();
-        assertEquals("{\"value\":\"not implemented 02\"}", actual);
+        assertEquals("{\"value\":\"\"}", actual);
         actual = BasicNodeFactory.create(BasicType.BOOLEAN).toJsonString();
         assertEquals("{\"value\":\"false\"}", actual);
         actual = BasicNodeFactory.create(BasicType.DATE).toJsonString();
