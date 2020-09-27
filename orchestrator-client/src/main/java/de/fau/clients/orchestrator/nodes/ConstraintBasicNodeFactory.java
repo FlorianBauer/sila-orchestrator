@@ -31,10 +31,14 @@ import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import lombok.NonNull;
 import sila_java.library.core.models.BasicType;
@@ -376,8 +380,10 @@ class ConstraintBasicNodeFactory {
             comp = comboBox;
             supp = () -> ((String) comboBox.getSelectedItem());
         } else {
+            if (constraints.getSchema() != null) {
+                return createSchemaConstrainedStringTypeFromJson(constraints, jsonNode);
+            }
             final JFormattedTextField strField = new JFormattedTextField();
-            strField.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
             final Supplier<Boolean> validator;
             final String conditionDesc;
             if (constraints.getPattern() != null) {
@@ -390,41 +396,6 @@ class ConstraintBasicNodeFactory {
                         new DocumentLengthFilter(len));
                 validator = () -> (strField.getText().length() == len);
                 conditionDesc = "= " + len;
-            } else if (constraints.getSchema() != null) {
-                final Constraints.Schema schema = constraints.getSchema();
-                final String schemaType = schema.getType();
-                if (schemaType.equalsIgnoreCase("Xml")) {
-                    if (schema.getUrl() != null) {
-                        validator = () -> (ValidatorUtils.isXmlWellFormed(new ByteArrayInputStream(
-                                strField.getText().getBytes(StandardCharsets.UTF_8))) // 
-                                // FIXME: A proper validation against the schema is not done
-                                //        yet due to the poor support and the optional 
-                                //        character of this feature. To enable validation,
-                                //        simply uncomment the code blocks below. 
-                                //        (2020-09-06, florian.bauer.dev@gmail.com)
-                                /* && ValidatorUtils.isXmlValid(new ByteArrayInputStream(
-                                                   strField.getText().getBytes(StandardCharsets.UTF_8)),
-                                                   new StreamSource(schema.getUrl())) */);
-                    } else if (schema.getInline() != null) {
-                        validator = () -> (ValidatorUtils.isXmlWellFormed(new ByteArrayInputStream(
-                                strField.getText().getBytes(StandardCharsets.UTF_8))) /*
-                                        && ValidatorUtils.isXmlValid(new ByteArrayInputStream(
-                                                strField.getText().getBytes(StandardCharsets.UTF_8)),
-                                                new StreamSource(new ByteArrayInputStream(schema
-                                                        .getInline()
-                                                        .getBytes(StandardCharsets.UTF_8))))*/);
-                    } else {
-                        validator = () -> (false);
-                    }
-                    conditionDesc = "Xml";
-                } else if (schemaType.equalsIgnoreCase("Json")) {
-                    // TODO: Implement proper JSON schema handling by URL and Inline.
-                    validator = () -> (ValidatorUtils.isJsonValid(strField.getText()));
-                    conditionDesc = "Json";
-                } else {
-                    validator = () -> (false);
-                    conditionDesc = INVALID_CONSTRAINT;
-                }
             } else if (constraints.getFullyQualifiedIdentifier() != null) {
                 final String fqiType = constraints.getFullyQualifiedIdentifier();
                 validator = () -> (ValidatorUtils.isFullyQualifiedIdentifierValid(
@@ -492,6 +463,89 @@ class ConstraintBasicNodeFactory {
             supp = () -> (strField.getText());
         }
         return new ConstraintBasicNode(BasicType.STRING, comp, supp, constraints);
+    }
+
+    protected static ConstraintBasicNode createSchemaConstrainedStringTypeFromJson(
+            @NonNull final Constraints constraints,
+            final JsonNode jsonNode
+    ) {
+        final Supplier<Boolean> validator;
+        final String conditionDesc;
+        final JEditorPane editorPane = new JEditorPane();
+        final JScrollPane scrollPane = new JScrollPane(editorPane);
+        scrollPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        final Constraints.Schema schema = constraints.getSchema();
+        final String schemaType = schema.getType();
+        if (schemaType.equalsIgnoreCase("Xml")) {
+            if (schema.getUrl() != null) {
+                validator = () -> (ValidatorUtils.isXmlWellFormed(new ByteArrayInputStream(
+                        editorPane.getText().getBytes(StandardCharsets.UTF_8))) // 
+                        // FIXME: A proper validation against the schema is not done
+                        //        yet due to the poor support and the optional 
+                        //        character of this feature. To enable validation,
+                        //        simply uncomment the code blocks below. 
+                        //        (2020-09-06, florian.bauer.dev@gmail.com)
+                        /* && ValidatorUtils.isXmlValid(new ByteArrayInputStream(
+                                                   editorPane.getText().getBytes(StandardCharsets.UTF_8)),
+                                                   new StreamSource(schema.getUrl())) */);
+            } else if (schema.getInline() != null) {
+                validator = () -> (ValidatorUtils.isXmlWellFormed(new ByteArrayInputStream(
+                        editorPane.getText().getBytes(StandardCharsets.UTF_8))) /*
+                                        && ValidatorUtils.isXmlValid(new ByteArrayInputStream(
+                                                editorPane.getText().getBytes(StandardCharsets.UTF_8)),
+                                                new StreamSource(new ByteArrayInputStream(schema
+                                                        .getInline()
+                                                        .getBytes(StandardCharsets.UTF_8))))*/);
+            } else {
+                validator = () -> (false);
+            }
+            conditionDesc = "Xml";
+        } else if (schemaType.equalsIgnoreCase("Json")) {
+            // TODO: Implement proper JSON schema handling by URL and Inline.
+            validator = () -> (ValidatorUtils.isJsonValid(editorPane.getText()));
+            conditionDesc = "Json";
+        } else {
+            validator = () -> (false);
+            conditionDesc = INVALID_CONSTRAINT;
+        }
+
+        final JLabel validationLabel = new JLabel(IconProvider.STATUS_OK.getIcon());
+        validationLabel.setDisabledIcon(IconProvider.STATUS_WARNING.getIcon());
+        validationLabel.setEnabled(false);
+
+        // validate on edit
+        editorPane.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent de) {
+                validationLabel.setEnabled(validator.get());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent de) {
+                validationLabel.setEnabled(validator.get());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent de) {
+                // not used in plain text components
+            }
+        });
+
+        final Box hBox = Box.createHorizontalBox();
+        hBox.add(scrollPane);
+        hBox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
+        hBox.add(new JLabel(conditionDesc));
+        hBox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
+        hBox.add(validationLabel);
+        hBox.setMaximumSize(MaxDim.TEXT_FIELD_MULTI_LINE.getDim());
+
+        if (jsonNode != null) {
+            editorPane.setText(jsonNode.asText());
+            // validate after import
+            validationLabel.setEnabled(validator.get());
+        }
+        return new ConstraintBasicNode(BasicType.STRING, hBox, () -> (editorPane.getText()), constraints);
     }
 
     protected static ConstraintBasicNode createConstrainedTimeTypeFromJson(
