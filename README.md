@@ -11,7 +11,7 @@ create a automated, continuous workflow between distinct devices.
 ### Build the Project
 
 To build this project, JDK 11 or higher and a moderately current Maven installation is required.
-Enter the project directory and use the following command to to start the build process:
+Enter the project directory and use the following command to start the build process:
 
 ```bash
 mvn clean install -DskipTests
@@ -23,7 +23,7 @@ After that, the resulting `*.jar`-file is located in the `orchestrator-client/ta
 
 ### Usage
 
-Starting the silo-orchestrator GUI client: `java -jar orchestrator-client-exec.jar`.
+Starting the sila-orchestrator GUI client: `java -jar orchestrator-client-exec.jar`.
 
 Using the client within the command line:
 ```
