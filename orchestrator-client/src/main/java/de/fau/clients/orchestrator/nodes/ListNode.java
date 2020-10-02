@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ import sila_java.library.core.models.ListType;
  * @see SilaNode
  */
 @Slf4j
-final class ListNode implements SilaNode {
+final class ListNode extends SilaNode {
 
     /**
      * Look-up table for data-types defined by the corresponding SiLA-Feature.
@@ -143,21 +144,16 @@ final class ListNode implements SilaNode {
     }
 
     @Override
-    public String toJsonString() {
-        String jsonElem = "";
-        String child;
+    public JsonNode toJson() {
+        final ArrayNode arrayNode = jsonMapper.createObjectNode().arrayNode(nodeList.size());
         for (int i = 0; i < nodeList.size(); i++) {
-            child = nodeList.get(i).toJsonString();
+            final JsonNode child = nodeList.get(i).toJson();
             if (child.isEmpty()) {
                 continue;
             }
-            jsonElem += nodeList.get(i).toJsonString() + ", ";
+            arrayNode.add(child);
         }
-
-        if (jsonElem.isEmpty()) {
-            return "";
-        }
-        return "[" + jsonElem.substring(0, jsonElem.length() - 2) + "]";
+        return arrayNode;
     }
 
     @Override

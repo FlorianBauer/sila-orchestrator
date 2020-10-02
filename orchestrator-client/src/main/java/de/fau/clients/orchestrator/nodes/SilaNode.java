@@ -1,25 +1,32 @@
 package de.fau.clients.orchestrator.nodes;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.swing.JComponent;
 
 /**
- * Interface for SiLA-DataType elements.
+ * Abstract base class for SiLA-DataType elements.
  */
-public interface SilaNode {
+public abstract class SilaNode {
+
+    /**
+     * The mapper used to create <code>JsonNode</code>s.
+     */
+    protected static final ObjectMapper jsonMapper = new ObjectMapper();
 
     /**
      * Creates a deep-copy of the current node.
      *
      * @return A clone of the node.
      */
-    SilaNode cloneNode();
+    protected abstract SilaNode cloneNode();
 
     /**
-     * Generates a JSON representation of the current node data.
+     * Generates a JSON Node out of the current SiLA node data.
      *
-     * @return A JSON formatted string.
+     * @return A JsonNode.
      */
-    String toJsonString();
+    public abstract JsonNode toJson();
 
     /**
      * Gets the GUI controls for interaction with the data-model of the node. More complex node
@@ -27,5 +34,14 @@ public interface SilaNode {
      *
      * @return The GUI component(s) representing the node.
      */
-    JComponent getComponent();
+    public abstract JComponent getComponent();
+
+    /**
+     * Generates a JSON String out of the current SiLA node data.
+     *
+     * @return A JSON formatted string.
+     */
+    public String toJsonString() {
+        return toJson().toString();
+    }
 }

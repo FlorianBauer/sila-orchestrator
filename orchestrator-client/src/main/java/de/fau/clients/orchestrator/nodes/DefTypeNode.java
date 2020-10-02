@@ -7,7 +7,7 @@ import lombok.NonNull;
 /**
  * Node referencing to a custom defined SiLA-DataType.
  */
-final class DefTypeNode implements SilaNode {
+final class DefTypeNode extends SilaNode {
 
     private final String typeId;
     private final TypeDefLut typeDefs;
@@ -48,12 +48,8 @@ final class DefTypeNode implements SilaNode {
     }
 
     @Override
-    public String toJsonString() {
-        String jsonChild = defNode.toJsonString();
-        if (jsonChild.isEmpty()) {
-            return "";
-        }
-        return "{\"" + typeId + "\":" + jsonChild + "}";
+    public JsonNode toJson() {
+        return defNode.toJson();
     }
 
     @Override

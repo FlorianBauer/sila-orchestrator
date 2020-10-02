@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator.nodes;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.function.Supplier;
 import javax.swing.JComponent;
 import lombok.NonNull;
@@ -12,7 +13,7 @@ import sila_java.library.core.models.BasicType;
  * @see BasciNodeFactory
  * @see ConstraintBasicNode
  */
-class BasicNode implements SilaNode {
+class BasicNode extends SilaNode {
 
     protected final BasicType type;
     protected final JComponent component;
@@ -41,8 +42,8 @@ class BasicNode implements SilaNode {
     }
 
     @Override
-    public String toJsonString() {
-        return "{\"value\":\"" + valueSupplier.get() + "\"}";
+    public JsonNode toJson() {
+        return jsonMapper.createObjectNode().put("value", valueSupplier.get());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -12,11 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.SiLAElement;
 
 @Slf4j
-final class CompositNode implements SilaNode {
+final class CompositNode extends SilaNode {
 
     private final TypeDefLut typeDefs;
     private final List<SiLAElement> elements;
-    private final List<SilaNode> children = new ArrayList<>();
+    private final List<SilaNode> children;
 
     private CompositNode(
             @NonNull final TypeDefLut typeDefs,
@@ -24,6 +25,7 @@ final class CompositNode implements SilaNode {
     ) {
         this.typeDefs = typeDefs;
         this.elements = elements;
+        this.children = new ArrayList<>(elements.size());
     }
 
     protected final static CompositNode create(
@@ -60,22 +62,16 @@ final class CompositNode implements SilaNode {
     }
 
     @Override
-    public String toJsonString() {
-        String jsonElem = "";
-        String child;
-
+    public JsonNode toJson() {
+        final ArrayNode arrayNode = jsonMapper.createObjectNode().arrayNode(elements.size());
         for (int i = 0; i < elements.size(); i++) {
-            child = children.get(i).toJsonString();
+            final JsonNode child = children.get(i).toJson();
             if (child.isEmpty()) {
                 continue;
             }
-            jsonElem += "\"" + elements.get(i).getIdentifier() + "\":" + child + ", ";
+            arrayNode.add(child);
         }
-
-        if (jsonElem.isEmpty()) {
-            return "";
-        }
-        return "{" + jsonElem.substring(0, jsonElem.length() - 2) + "}";
+        return arrayNode;
     }
 
     @Override
