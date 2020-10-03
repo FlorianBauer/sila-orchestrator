@@ -19,8 +19,12 @@ class FeatureTreeType {
         displayName = serverNode.getServerLabel();
     }
 
-    public FeatureTreeType(final Feature feat) {
-        this.symbol = NodeRenderSymbol.FEATURE;
+    public FeatureTreeType(final Feature feat, boolean isCoreFeat) {
+        if (isCoreFeat) {
+            this.symbol = NodeRenderSymbol.FEATURE_CORE;
+        } else {
+            this.symbol = NodeRenderSymbol.FEATURE;
+        }
         description = feat.getDescription();
         displayName = "<html><b>" + feat.getDisplayName() + "</b></html>";
     }

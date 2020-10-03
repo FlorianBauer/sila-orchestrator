@@ -55,6 +55,10 @@ import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 import sila_java.library.manager.models.Server.Status;
 
+/**
+ * The main GUI window and execution entry point of the client. It is advised to use the NetBeans
+ * GUI designer to make changes on its layout.
+ */
 @Slf4j
 @SuppressWarnings("serial")
 public class OrchestratorGui extends javax.swing.JFrame {
@@ -115,13 +119,13 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
 
         serverAddErrorEditorPane.setText(NO_ERROR_STR);
-        featureTree.setRootVisible(false);
+        serverFeatureTree.setRootVisible(false);
         addServerDialog.setVisible(false);
         addServerDialog.dispose();
     }
 
     private void addFeaturesToTree(final Collection<Server> serverList) {
-        final DefaultTreeModel model = (DefaultTreeModel) featureTree.getModel();
+        final DefaultTreeModel model = (DefaultTreeModel) serverFeatureTree.getModel();
         final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
 
         for (final Server server : serverList) {
@@ -131,9 +135,20 @@ public class OrchestratorGui extends javax.swing.JFrame {
             serverNode.setUserObject(new FeatureTreeType(serverNode));
             rootNode.add(serverNode);
 
+            // Sort the feature list and put core freatures at the end.
+            server.getFeatures().sort((Feature t, Feature t1) -> {
+                if (t.getCategory().startsWith("core")) {
+                    return 1;
+                } else if (t1.getCategory().startsWith("core")) {
+                    return -1;
+                }
+                return 0;
+            });
+
             for (final Feature feature : server.getFeatures()) {
+                final boolean isCoreFeat = feature.getCategory().startsWith("core");
                 final FeatureTreeNode featureNode = new FeatureTreeNode(feature);
-                featureNode.setUserObject(new FeatureTreeType(feature));
+                featureNode.setUserObject(new FeatureTreeType(feature, isCoreFeat));
                 serverNode.add(featureNode);
 
                 final TypeDefLut typeDefs = new TypeDefLut(server, feature);
@@ -164,11 +179,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     }
                 }
             }
+
         }
         model.reload();
-        // expand all nodes in the tree
-        for (int i = 0; i < featureTree.getRowCount(); i++) {
-            featureTree.expandRow(i);
+        // Expand all nodes in the tree.
+        for (int i = 0; i < serverFeatureTree.getRowCount(); i++) {
+            serverFeatureTree.expandRow(i);
         }
     }
 
@@ -417,27 +433,27 @@ public class OrchestratorGui extends javax.swing.JFrame {
         jPanel1Layout.rowHeights = new int[] {2};
         serverPanel.setLayout(jPanel1Layout);
 
-        ToolTipManager.sharedInstance().registerComponent(featureTree);
+        ToolTipManager.sharedInstance().registerComponent(serverFeatureTree);
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("No Server Available");
-        featureTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
-        featureTree.setCellRenderer(new FeatureTreeRenderer());
-        featureTree.setDragEnabled(true);
-        featureTree.setRowHeight(-1);
-        featureTree.setVisibleRowCount(10);
-        featureTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        featureTree.setTransferHandler(new CommandNodeTransferHandler());
-        featureTree.setDropTarget(null);
-        featureTree.addFocusListener(new java.awt.event.FocusAdapter() {
+        serverFeatureTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+        serverFeatureTree.setCellRenderer(new FeatureTreeRenderer());
+        serverFeatureTree.setDragEnabled(true);
+        serverFeatureTree.setRowHeight(-1);
+        serverFeatureTree.setVisibleRowCount(10);
+        serverFeatureTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        serverFeatureTree.setTransferHandler(new CommandNodeTransferHandler());
+        serverFeatureTree.setDropTarget(null);
+        serverFeatureTree.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
-                featureTreeFocusGained(evt);
+                serverFeatureTreeFocusGained(evt);
             }
         });
-        featureTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+        serverFeatureTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
-                featureTreeValueChanged(evt);
+                serverFeatureTreeValueChanged(evt);
             }
         });
-        featureScrollPane.setViewportView(featureTree);
+        featureScrollPane.setViewportView(serverFeatureTree);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -896,7 +912,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                         ftt.setNodeRenderSymbol(NodeRenderSymbol.SERVER_ONLINE);
                     }
                     ftt.setDescription(serverNode.getDescription());
-                    featureTree.repaint();
+                    serverFeatureTree.repaint();
                 }
             }
         });
@@ -913,8 +929,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
         if (selectedRowIdx < 0) {
             return;
         }
-        if (!featureTree.isSelectionEmpty()) {
-            featureTree.getSelectionModel().clearSelection();
+        if (!serverFeatureTree.isSelectionEmpty()) {
+            serverFeatureTree.getSelectionModel().clearSelection();
         }
         int rowCount = taskQueueTable.getRowCount();
         if (rowCount > 1) {
@@ -968,7 +984,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
      */
     private void scanNetworkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanNetworkActionPerformed
         scanServerBtn.setEnabled(false);
-        final DefaultTreeModel model = (DefaultTreeModel) featureTree.getModel();
+        final DefaultTreeModel model = (DefaultTreeModel) serverFeatureTree.getModel();
         final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
         rootNode.removeAllChildren();
         serverManager.clear();
@@ -992,7 +1008,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
             // update components in the GUI thread
             SwingUtilities.invokeLater(() -> {
-                featureTree.setRootVisible(isTreeRootVisible);
+                serverFeatureTree.setRootVisible(isTreeRootVisible);
                 scanServerBtn.setEnabled(true);
             });
         };
@@ -1013,7 +1029,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_formWindowClosing
 
     private void addTaskToQueueBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTaskToQueueBtnActionPerformed
-        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) featureTree.getLastSelectedPathComponent();
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) serverFeatureTree.getLastSelectedPathComponent();
         if (node == null) {
             return;
         }
@@ -1247,7 +1263,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         handler.exportAsDrag(comp, evt, TransferHandler.COPY);
     }//GEN-LAST:event_addTaskBtnMouseDragged
 
-    private void featureTreeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_featureTreeFocusGained
+    private void serverFeatureTreeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_serverFeatureTreeFocusGained
         if (evt.isTemporary()) {
             return;
         }
@@ -1255,11 +1271,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
             // only refresh view when the taskQueuTable lost the focus
             viewSelectedTreeNode();
         }
-    }//GEN-LAST:event_featureTreeFocusGained
+    }//GEN-LAST:event_serverFeatureTreeFocusGained
 
-    private void featureTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_featureTreeValueChanged
+    private void serverFeatureTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_serverFeatureTreeValueChanged
         viewSelectedTreeNode();
-    }//GEN-LAST:event_featureTreeValueChanged
+    }//GEN-LAST:event_serverFeatureTreeValueChanged
 
     private void showOrHideTableColumnBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showOrHideTableColumnBtnActionPerformed
         final JPopupMenu columnPopupMenu = taskQueueTable.getColumnHeaderPopupMenu();
@@ -1277,7 +1293,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
      * @see #viewSelectedTask
      */
     private void viewSelectedTreeNode() {
-        if (featureTree.isSelectionEmpty()) {
+        if (serverFeatureTree.isSelectionEmpty()) {
             return;
         }
         final ListSelectionModel taskQueueLsm = taskQueueTable.getSelectionModel();
@@ -1286,7 +1302,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
         boolean isAddBtnToEnable = false;
         JComponent viewportView = null;
-        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) featureTree.getLastSelectedPathComponent();
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) serverFeatureTree.getLastSelectedPathComponent();
         if (node instanceof CommandTreeNode) {
             isAddBtnToEnable = true;
             viewportView = CommandTreeNode.COMMAND_USAGE_PANEL;
@@ -1476,7 +1492,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JMenuItem executeAllMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JScrollPane featureScrollPane = new javax.swing.JScrollPane();
-    private final javax.swing.JTree featureTree = new javax.swing.JTree();
     private final javax.swing.JMenu fileMenu = new javax.swing.JMenu();
     private final javax.swing.JFileChooser fileOpenChooser = new javax.swing.JFileChooser();
     private final javax.swing.JFileChooser fileSaveAsChooser = new javax.swing.JFileChooser();
@@ -1501,6 +1516,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JTextField serverAddressTextField = new javax.swing.JTextField();
     private final javax.swing.JButton serverDialogCancelBtn = new javax.swing.JButton();
     private final javax.swing.JButton serverDialogOkBtn = new javax.swing.JButton();
+    private final javax.swing.JTree serverFeatureTree = new javax.swing.JTree();
     private final javax.swing.JMenu serverMenu = new javax.swing.JMenu();
     private final javax.swing.JPanel serverPanel = new javax.swing.JPanel();
     private final javax.swing.JFormattedTextField serverPortFormattedTextField = new javax.swing.JFormattedTextField();

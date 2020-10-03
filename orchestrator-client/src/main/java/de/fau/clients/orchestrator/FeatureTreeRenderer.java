@@ -23,8 +23,8 @@ class FeatureTreeRenderer extends DefaultTreeCellRenderer {
             boolean isExpanded,
             boolean isLeaf,
             int rowIdx,
-            boolean hasFocus) {
-
+            boolean hasFocus
+    ) {
         super.getTreeCellRendererComponent(
                 tree,
                 value,
@@ -50,6 +50,9 @@ class FeatureTreeRenderer extends DefaultTreeCellRenderer {
                 break;
             case FEATURE:
                 this.setIcon(IconProvider.SILA_FEATURE.getIcon());
+                break;
+            case FEATURE_CORE:
+                this.setIcon(IconProvider.SILA_FEATURE_CORE.getIcon());
                 break;
             case COMMAND:
                 this.setIcon(IconProvider.COMMAND.getIcon());

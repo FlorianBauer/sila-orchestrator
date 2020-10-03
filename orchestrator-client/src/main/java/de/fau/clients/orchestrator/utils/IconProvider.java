@@ -38,6 +38,7 @@ public enum IconProvider {
     SERVER_OFFLINE(new ImageIcon(IconProvider.class.getResource("/icons/server-offline.png"))),
     SERVER_ONLINE(new ImageIcon(IconProvider.class.getResource("/icons/server-online.png"))),
     SILA_FEATURE(new ImageIcon(IconProvider.class.getResource("/icons/sila-feature.png"))),
+    SILA_FEATURE_CORE(new ImageIcon(IconProvider.class.getResource("/icons/sila-feature-core.png"))),
     SILA_ORCHESTRATOR_128PX(new ImageIcon(IconProvider.class.getResource("/icons/sila-orchestrator-128px.png"))),
     SILA_ORCHESTRATOR_16PX(new ImageIcon(IconProvider.class.getResource("/icons/sila-orchestrator-16px.png"))),
     STATUS_OK(new ImageIcon(IconProvider.class.getResource("/icons/status-ok.png"))),
