@@ -16,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.tree.DefaultMutableTreeNode;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Feature.Property;
 import sila_java.library.manager.ServerManager;
@@ -32,6 +33,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
      * Index to place and update the contents of the panel.
      */
     private static final int CONTENT_COMPONENT_IDX = 0;
+    private static final ObjectMapper jsonMapper = new ObjectMapper();
     private final UUID serverUuid;
     private final String featureId;
     private final TypeDefLut typeDefs;
@@ -50,10 +52,11 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
      * @param property The actual SiLA Property.
      */
     public PropertyTreeNode(
-            final UUID serverUuid,
-            final String featureId,
+            @NonNull final UUID serverUuid,
+            @NonNull final String featureId,
             final TypeDefLut typeDefs,
-            final Property property) {
+            @NonNull final Property property
+    ) {
         this.serverUuid = serverUuid;
         this.featureId = featureId;
         this.typeDefs = typeDefs;
@@ -65,6 +68,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
      *
      * @return A <code>JPanel</code> representing the SiLA Property.
      */
+    @Override
     public JPanel getPresenter() {
         if (panel == null) {
             panel = new JPanel();
@@ -123,10 +127,9 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
             return;
         }
 
-        final ObjectMapper mapper = new ObjectMapper();
         final JsonNode rootNode;
         try {
-            rootNode = mapper.readTree(lastResult);
+            rootNode = jsonMapper.readTree(lastResult);
         } catch (IOException ex) {
             log.error(ex.getMessage());
             return;
