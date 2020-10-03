@@ -12,6 +12,10 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.SiLAElement;
 
+/**
+ * A <code>CompositNode</code> is a <code>SilaNode</code> which holds one or more child nodes. In
+ * contrast to a <code>ListNode</code>, the child nodes can consist of different types.
+ */
 @Slf4j
 final class CompositNode extends SilaNode {
 
@@ -42,7 +46,7 @@ final class CompositNode extends SilaNode {
     protected final static CompositNode createFromJson(
             @NonNull final TypeDefLut typeDefs,
             @NonNull final List<SiLAElement> elements,
-            @NonNull JsonNode jsonNode,
+            @NonNull final JsonNode jsonNode,
             boolean isEditable
     ) {
         final CompositNode node = new CompositNode(typeDefs, elements);
@@ -88,10 +92,10 @@ final class CompositNode extends SilaNode {
         }
 
         for (int i = 0; i < elemCount; i++) {
-            final Box vbox = Box.createVerticalBox();
-            vbox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-            vbox.setAlignmentY(JComponent.TOP_ALIGNMENT);
-            vbox.add(new JLabel(elements.get(i).getDisplayName()));
+            final Box vBox = Box.createVerticalBox();
+            vBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            vBox.setAlignmentY(JComponent.TOP_ALIGNMENT);
+            vBox.add(new JLabel(elements.get(i).getDisplayName()));
             SilaNode node = children.get(i);
             if (node == null) {
                 continue;
@@ -99,8 +103,8 @@ final class CompositNode extends SilaNode {
             final JComponent comp = node.getComponent();
             comp.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             comp.setAlignmentY(JComponent.TOP_ALIGNMENT);
-            vbox.add(comp);
-            structBox.add(vbox);
+            vBox.add(comp);
+            structBox.add(vBox);
             structBox.add(Box.createVerticalStrut(10));
         }
         return structBox;
