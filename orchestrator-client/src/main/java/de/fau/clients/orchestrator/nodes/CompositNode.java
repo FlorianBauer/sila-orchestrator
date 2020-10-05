@@ -1,7 +1,8 @@
 package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import static de.fau.clients.orchestrator.nodes.SilaNode.jsonMapper;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -67,15 +68,15 @@ final class CompositNode extends SilaNode {
 
     @Override
     public JsonNode toJson() {
-        final ArrayNode arrayNode = jsonMapper.createObjectNode().arrayNode(elements.size());
+        final ObjectNode objNode = jsonMapper.createObjectNode();
         for (int i = 0; i < elements.size(); i++) {
             final JsonNode child = children.get(i).toJson();
             if (child.isEmpty()) {
                 continue;
             }
-            arrayNode.add(child);
+            objNode.set(elements.get(i).getIdentifier(), child);
         }
-        return arrayNode;
+        return objNode;
     }
 
     @Override
