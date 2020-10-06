@@ -20,7 +20,7 @@ import sila_java.library.core.models.SiLAElement;
  * Views information and details about the corresponding SiLA feature.
  */
 @SuppressWarnings("serial")
-public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentable {
+public class FeatureInfoTreeNode extends DefaultMutableTreeNode implements Presentable {
 
     private static final String DOC_WIDTH = "width:550px;";
     private static final HTMLEditorKit FEAT_INFO_EDITOR_KIT;
@@ -52,7 +52,7 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
     private final String fqfi;
     private JPanel panel = null;
 
-    public FeatureTreeNode(final Feature feature) {
+    public FeatureInfoTreeNode(final Feature feature) {
         this.feature = feature;
         final VersionNumber featVer = VersionNumber.parseVersionString(this.feature.getFeatureVersion());
         this.fqfi = this.feature.getOriginator()

@@ -147,7 +147,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
             for (final Feature feature : server.getFeatures()) {
                 final boolean isCoreFeat = feature.getCategory().startsWith("core");
-                final FeatureTreeNode featureNode = new FeatureTreeNode(feature);
+                final FeatureInfoTreeNode featureNode = new FeatureInfoTreeNode(feature);
                 featureNode.setUserObject(new FeatureTreeType(feature, isCoreFeat));
                 serverNode.add(featureNode);
 
@@ -1310,8 +1310,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
             final PropertyTreeNode propNode = (PropertyTreeNode) node;
             propNode.requestPropertyData();
             viewportView = propNode.getPresenter();
-        } else if (node instanceof FeatureTreeNode) {
-            final FeatureTreeNode featNode = (FeatureTreeNode) node;
+        } else if (node instanceof FeatureInfoTreeNode) {
+            final FeatureInfoTreeNode featNode = (FeatureInfoTreeNode) node;
             viewportView = featNode.getPresenter();
         } else if (node instanceof ServerTreeNode) {
             final ServerTreeNode serverNode = (ServerTreeNode) node;
