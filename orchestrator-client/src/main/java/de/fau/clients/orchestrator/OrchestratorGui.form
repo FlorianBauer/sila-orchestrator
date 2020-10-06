@@ -1713,7 +1713,7 @@
                       <TreeModel code="No Server Available"/>
                     </Property>
                     <Property name="cellRenderer" type="javax.swing.tree.TreeCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="new FeatureTreeRenderer()" type="code"/>
+                      <Connection code="new de.fau.clients.orchestrator.TreeNodeRenderer()" type="code"/>
                     </Property>
                     <Property name="dragEnabled" type="boolean" value="true"/>
                     <Property name="rowHeight" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">

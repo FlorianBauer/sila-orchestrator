@@ -6,10 +6,13 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
+/**
+ * Renderer to set and draw the corresponding icon for every node type in the tree view.
+ */
 @SuppressWarnings("serial")
-class FeatureTreeRenderer extends DefaultTreeCellRenderer {
+class TreeNodeRenderer extends DefaultTreeCellRenderer {
 
-    public FeatureTreeRenderer() {
+    public TreeNodeRenderer() {
         this.openIcon = null;
         this.closedIcon = null;
         this.leafIcon = null;
@@ -36,12 +39,12 @@ class FeatureTreeRenderer extends DefaultTreeCellRenderer {
 
         final DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
         final Object obj = node.getUserObject();
-        if (!(obj instanceof FeatureTreeType)) {
+        if (!(obj instanceof TreeNodeType)) {
             return this;
         }
 
-        final FeatureTreeType nodeInfo = (FeatureTreeType) obj;
-        switch (nodeInfo.getNodeRenderSymbol()) {
+        final TreeNodeType nodeInfo = (TreeNodeType) obj;
+        switch (nodeInfo.getTreeRenderSymbol()) {
             case SERVER_ONLINE:
                 this.setIcon(IconProvider.SERVER_ONLINE.getIcon());
                 break;

@@ -7,45 +7,45 @@ import sila_java.library.core.models.Feature.Property;
 /**
  * Class only for representing various node widgets in the <code>JTree</code> (featureTree).
  */
-class FeatureTreeType {
+class TreeNodeType {
 
-    private NodeRenderSymbol symbol;
+    private TreeRenderSymbol symbol;
     private String description = null;
     private String displayName = "";
 
-    public FeatureTreeType(final ServerTreeNode serverNode) {
-        this.symbol = NodeRenderSymbol.SERVER_ONLINE;
+    public TreeNodeType(final ServerTreeNode serverNode) {
+        this.symbol = TreeRenderSymbol.SERVER_ONLINE;
         description = serverNode.getDescription();
         displayName = serverNode.getServerLabel();
     }
 
-    public FeatureTreeType(final Feature feat, boolean isCoreFeat) {
+    public TreeNodeType(final Feature feat, boolean isCoreFeat) {
         if (isCoreFeat) {
-            this.symbol = NodeRenderSymbol.FEATURE_CORE;
+            this.symbol = TreeRenderSymbol.FEATURE_CORE;
         } else {
-            this.symbol = NodeRenderSymbol.FEATURE;
+            this.symbol = TreeRenderSymbol.FEATURE;
         }
         description = feat.getDescription();
         displayName = "<html><b>" + feat.getDisplayName() + "</b></html>";
     }
 
-    public FeatureTreeType(final Command cmd) {
-        this.symbol = NodeRenderSymbol.COMMAND;
+    public TreeNodeType(final Command cmd) {
+        this.symbol = TreeRenderSymbol.COMMAND;
         description = cmd.getDescription();
         displayName = cmd.getDisplayName();
     }
 
-    public FeatureTreeType(final Property prop) {
-        this.symbol = NodeRenderSymbol.PROPERTY;
+    public TreeNodeType(final Property prop) {
+        this.symbol = TreeRenderSymbol.PROPERTY;
         description = prop.getDescription();
         displayName = prop.getDisplayName();
     }
 
-    public NodeRenderSymbol getNodeRenderSymbol() {
+    public TreeRenderSymbol getTreeRenderSymbol() {
         return symbol;
     }
 
-    public void setNodeRenderSymbol(NodeRenderSymbol symbol) {
+    public void setTreeRenderSymbol(TreeRenderSymbol symbol) {
         this.symbol = symbol;
     }
 

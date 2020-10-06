@@ -132,7 +132,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             final UUID serverUuid = server.getConfiguration().getUuid();
             final ServerTreeNode serverNode = new ServerTreeNode(serverManager, serverUuid);
             treeServerMap.put(serverUuid, serverNode);
-            serverNode.setUserObject(new FeatureTreeType(serverNode));
+            serverNode.setUserObject(new TreeNodeType(serverNode));
             rootNode.add(serverNode);
 
             // Sort the feature list and put core freatures at the end.
@@ -148,7 +148,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             for (final Feature feature : server.getFeatures()) {
                 final boolean isCoreFeat = feature.getCategory().startsWith("core");
                 final FeatureInfoTreeNode featureNode = new FeatureInfoTreeNode(feature);
-                featureNode.setUserObject(new FeatureTreeType(feature, isCoreFeat));
+                featureNode.setUserObject(new TreeNodeType(feature, isCoreFeat));
                 serverNode.add(featureNode);
 
                 final TypeDefLut typeDefs = new TypeDefLut(server, feature);
@@ -161,7 +161,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                                 feature.getIdentifier(),
                                 typeDefs,
                                 prop);
-                        ptn.setUserObject(new FeatureTreeType(prop));
+                        ptn.setUserObject(new TreeNodeType(prop));
                         propertyNode.add(ptn);
                     }
                 }
@@ -174,7 +174,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                                 server.getConfiguration().getUuid(),
                                 typeDefs,
                                 command);
-                        ctn.setUserObject(new FeatureTreeType(command));
+                        ctn.setUserObject(new TreeNodeType(command));
                         commandNode.add(ctn);
                     }
                 }
@@ -436,7 +436,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         ToolTipManager.sharedInstance().registerComponent(serverFeatureTree);
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("No Server Available");
         serverFeatureTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
-        serverFeatureTree.setCellRenderer(new FeatureTreeRenderer());
+        serverFeatureTree.setCellRenderer(new TreeNodeRenderer());
         serverFeatureTree.setDragEnabled(true);
         serverFeatureTree.setRowHeight(-1);
         serverFeatureTree.setVisibleRowCount(10);
@@ -902,14 +902,14 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 final ServerTreeNode serverNode = treeServerMap.get(uuid);
                 if (serverNode != null) {
                     final Object obj = serverNode.getUserObject();
-                    if (!(obj instanceof FeatureTreeType)) {
+                    if (!(obj instanceof TreeNodeType)) {
                         return;
                     }
-                    final FeatureTreeType ftt = (FeatureTreeType) obj;
+                    final TreeNodeType ftt = (TreeNodeType) obj;
                     if (server.getStatus() == Status.OFFLINE) {
-                        ftt.setNodeRenderSymbol(NodeRenderSymbol.SERVER_OFFLINE);
+                        ftt.setTreeRenderSymbol(TreeRenderSymbol.SERVER_OFFLINE);
                     } else {
-                        ftt.setNodeRenderSymbol(NodeRenderSymbol.SERVER_ONLINE);
+                        ftt.setTreeRenderSymbol(TreeRenderSymbol.SERVER_ONLINE);
                     }
                     ftt.setDescription(serverNode.getDescription());
                     serverFeatureTree.repaint();
