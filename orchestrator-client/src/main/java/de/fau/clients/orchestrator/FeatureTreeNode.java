@@ -74,7 +74,7 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
                     .append(feature.getDescription())
                     .append("<br><br><pre>")
                     .append(fqfi)
-                    .append("</pre>Category: ")
+                    .append("<br>Category: ")
                     .append(feature.getCategory())
                     .append("<br>Feature Version: ")
                     .append(feature.getFeatureVersion())
@@ -86,7 +86,7 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
                     .append(feature.getOriginator())
                     .append("<br>SiLA2Version: ")
                     .append(feature.getSiLA2Version())
-                    .append("<br><br></div>");
+                    .append("</pre><br></div>");
 
             printProperties(builder, feature.getProperty());
             printCommands(builder, feature.getCommand());
@@ -114,17 +114,19 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
         if (!propList.isEmpty()) {
             builder.append("<h3>Properties</h3>");
             for (final Property prop : propList) {
-                builder.append("<table><tr><td><pre>")
-                        .append(fqfi)
-                        .append("/Property/")
-                        .append(prop.getIdentifier())
-                        .append("</pre><b>[")
+                builder.append("<table><tr><td><b>[")
                         .append(prop.getIdentifier())
                         .append("] – ")
                         .append(prop.getDisplayName())
-                        .append("</b><p>&emsp;")
+                        .append("</b><p><br>")
                         .append(prop.getDescription())
-                        .append("</p></td></tr></table><br>");
+                        .append("</p><pre>")
+                        .append(fqfi)
+                        .append("/Property/")
+                        .append(prop.getIdentifier())
+                        .append("<br>Observable: ")
+                        .append(prop.getObservable())
+                        .append("</pre></td></tr></table><br>");
             }
             builder.append("<br>");
         }
@@ -135,69 +137,71 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
             builder.append("<h3>Commands</h3>");
             for (final Command cmd : cmdList) {
                 final String fqci = fqfi + "/Command/" + cmd.getIdentifier();
-                builder.append("<table><tr><td><pre>")
-                        .append(fqci)
-                        .append("</pre><b>[")
+                builder.append("<table><tr><td><b>[")
                         .append(cmd.getIdentifier())
                         .append("] – ")
                         .append(cmd.getDisplayName())
-                        .append("</b><p>&emsp;")
+                        .append("</b><p><br>")
                         .append(cmd.getDescription())
-                        .append("</p></td></tr>");
+                        .append("</p><pre>")
+                        .append(fqci)
+                        .append("<br>Observable: ")
+                        .append(cmd.getObservable())
+                        .append("</pre></td></tr>");
 
                 final List<SiLAElement> paramList = cmd.getParameter();
                 if (!paramList.isEmpty()) {
-                    builder.append("<tr><td><i>Parameter:</i>");
+                    builder.append("<tr><td><i>Parameter:</i><br>");
                     for (final SiLAElement param : paramList) {
-                        builder.append("<br><pre>")
-                                .append(fqci)
-                                .append("/Parameter/")
-                                .append(param.getIdentifier())
-                                .append("</pre>[")
+                        builder.append("<br>[")
                                 .append(param.getIdentifier())
                                 .append("] – ")
                                 .append(param.getDisplayName())
-                                .append("<p>&emsp;")
+                                .append("<p>")
                                 .append(param.getDescription())
-                                .append("</p>");
+                                .append("</p><pre>")
+                                .append(fqci)
+                                .append("/Parameter/")
+                                .append(param.getIdentifier())
+                                .append("</pre>");
                     }
                     builder.append("</td></tr>");
                 }
 
                 final List<SiLAElement> intermRespList = cmd.getIntermediateResponse();
                 if (!intermRespList.isEmpty()) {
-                    builder.append("<tr><td><i>Intermediate Response:</i>");
+                    builder.append("<tr><td><i>Intermediate Response:</i><br>");
                     for (final SiLAElement intermResp : intermRespList) {
-                        builder.append("<br><pre>")
-                                .append(fqci)
-                                .append("/IntermediateResponse/")
-                                .append(intermResp.getIdentifier())
-                                .append("</pre>[")
+                        builder.append("<br>[")
                                 .append(intermResp.getIdentifier())
                                 .append("] – ")
                                 .append(intermResp.getDisplayName())
-                                .append("<p>&emsp;")
+                                .append("<p>")
                                 .append(intermResp.getDescription())
-                                .append("</p>");
+                                .append("</p><pre>")
+                                .append(fqci)
+                                .append("/IntermediateResponse/")
+                                .append(intermResp.getIdentifier())
+                                .append("</pre>");
                     }
                     builder.append("</td></tr>");
                 }
 
                 final List<SiLAElement> respList = cmd.getResponse();
                 if (!respList.isEmpty()) {
-                    builder.append("<tr><td><i>Response:</i>");
+                    builder.append("<tr><td><i>Response:</i><br>");
                     for (final SiLAElement resp : respList) {
-                        builder.append("<br><pre>")
-                                .append(fqci)
-                                .append("/Response/")
-                                .append(resp.getIdentifier())
-                                .append("</pre>[")
+                        builder.append("<br>[")
                                 .append(resp.getIdentifier())
                                 .append("] – ")
                                 .append(resp.getDisplayName())
-                                .append("<p>&emsp;")
+                                .append("<p>")
                                 .append(resp.getDescription())
-                                .append("</p>");
+                                .append("</p><pre>")
+                                .append(fqci)
+                                .append("/Response/")
+                                .append(resp.getIdentifier())
+                                .append("</pre>");
                     }
                     builder.append("</td></tr>");
                 }
@@ -210,17 +214,17 @@ public class FeatureTreeNode extends DefaultMutableTreeNode implements Presentab
         if (!metaList.isEmpty()) {
             builder.append("<h3>Metadata</h3>");
             for (final Metadata meta : metaList) {
-                builder.append("<tr><td><pre>")
-                        .append(fqfi)
-                        .append("/Metadata/")
-                        .append(meta.getIdentifier())
-                        .append("</pre><b>[")
+                builder.append("<tr><td><b>[")
                         .append(meta.getIdentifier())
                         .append("] – ")
                         .append(meta.getDisplayName())
-                        .append("</b><p>&emsp;")
+                        .append("</b><p>")
                         .append(meta.getDescription())
-                        .append("</p></td></tr>");
+                        .append("</p><pre>")
+                        .append(fqfi)
+                        .append("/Metadata/")
+                        .append(meta.getIdentifier())
+                        .append("</pre></td></tr>");
             }
         }
     }
