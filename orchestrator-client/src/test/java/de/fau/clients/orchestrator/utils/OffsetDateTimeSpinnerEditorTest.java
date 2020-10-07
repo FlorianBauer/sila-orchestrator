@@ -38,6 +38,8 @@ public class OffsetDateTimeSpinnerEditorTest {
                 spinnerEditor.getTextField().getValue());
         assertEquals("2020-09-25T11:34:56+02:00", spinnerEditor.getTextField().getText());
 
+        spinner.setModel(new OffsetDateTimeSpinnerModel(
+                init.withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET), null, null, null));
         spinnerEditor.getTextField().setText("2020-10-11T12:13:14");
         assertEquals("2020-10-11T12:13:14", spinnerEditor.getTextField().getText());
         final OffsetDateTime exp = OffsetDateTime.of(2020, 10, 11, 12, 13, 14, 0,
@@ -75,6 +77,8 @@ public class OffsetDateTimeSpinnerEditorTest {
                 spinnerEditor.getTextField().getValue());
         assertEquals("2020-09-25T11:34:56", spinnerEditor.getTextField().getText());
 
+        spinner.setModel(new OffsetDateTimeSpinnerModel(
+                init.withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET), null, null, null));
         spinnerEditor.getTextField().setText("2020-10-11T12:13:14");
         assertEquals("2020-10-11T12:13:14", spinnerEditor.getTextField().getText());
         final OffsetDateTime exp = OffsetDateTime.of(2020, 10, 11, 12, 13, 14, 0,
