@@ -11,6 +11,7 @@ import de.fau.clients.orchestrator.tasks.LocalExecTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
 import de.fau.clients.orchestrator.utils.IconProvider;
+import de.fau.clients.orchestrator.utils.SiloFileFilter;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
