@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator;
+package de.fau.clients.orchestrator.tree;
 
 import de.fau.clients.orchestrator.nodes.TypeDefLut;
 import de.fau.clients.orchestrator.tasks.CommandTask;
@@ -45,7 +45,8 @@ public class CommandTreeNode extends DefaultMutableTreeNode {
     public CommandTreeNode(
             final UUID serverUuid,
             final TypeDefLut typeDefs,
-            final Command command) {
+            final Command command
+    ) {
         this(new CommandTaskModel(serverUuid, typeDefs, command));
     }
 

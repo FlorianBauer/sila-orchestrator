@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator;
+package de.fau.clients.orchestrator.tree;
 
 import sila_java.library.core.models.Feature;
 import sila_java.library.core.models.Feature.Command;

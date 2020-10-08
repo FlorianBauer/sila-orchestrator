@@ -1,8 +1,6 @@
 package de.fau.clients.orchestrator;
 
-import de.fau.clients.orchestrator.dnd.CommandNodeTransferHandler;
 import de.fau.clients.orchestrator.dnd.TaskExportTransferHandler;
-import de.fau.clients.orchestrator.nodes.TypeDefLut;
 import de.fau.clients.orchestrator.queue.TaskQueueData;
 import de.fau.clients.orchestrator.queue.TaskQueueTable;
 import de.fau.clients.orchestrator.tasks.DelayTask;
@@ -10,6 +8,8 @@ import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.LocalExecTask;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
+import de.fau.clients.orchestrator.tree.CommandTreeNode;
+import de.fau.clients.orchestrator.tree.ServerFeatureTree;
 import de.fau.clients.orchestrator.utils.IconProvider;
 import de.fau.clients.orchestrator.utils.SiloFileFilter;
 import java.awt.Image;
@@ -22,39 +22,30 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableModelEvent;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.TableModel;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeSelectionModel;
 import lombok.extern.slf4j.Slf4j;
-import sila_java.library.core.models.Feature;
-import sila_java.library.core.models.Feature.Command;
-import sila_java.library.core.models.Feature.Property;
 import sila_java.library.manager.ServerFinder;
-import sila_java.library.manager.ServerListener;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
-import sila_java.library.manager.models.Server.Status;
 
 /**
  * The main GUI window and execution entry point of the client. It is advised to use the NetBeans
@@ -83,8 +74,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
             + "E-Mail: florian.bauer.dev@gmail.com<br>"
             + "License: Apache-2.0<br>"
             + "</p></html>";
-    private final HashMap<UUID, ServerTreeNode> treeServerMap = new HashMap<>();
     private final TaskQueueTable taskQueueTable = new TaskQueueTable();
+    private final ServerFeatureTree serverFeatureTree = new ServerFeatureTree();
     private boolean isOnExecution = false;
     private boolean wasSaved = false;
     private Path outFilePath = null;
@@ -113,7 +104,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         for (final Server server : serverManager.getServers().values()) {
             if (server.getHost().equals(addr) && server.getPort() == port) {
-                addFeaturesToTree(List.of(server));
+                serverFeatureTree.addServersToTree(serverManager, List.of(server));
                 taskQueueTable.addUuidToSelectionSet(server.getConfiguration().getUuid());
                 break;
             }
@@ -125,77 +116,13 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addServerDialog.dispose();
     }
 
-    private void addFeaturesToTree(final Collection<Server> serverList) {
-        final DefaultTreeModel model = (DefaultTreeModel) serverFeatureTree.getModel();
-        final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
-
-        for (final Server server : serverList) {
-            final UUID serverUuid = server.getConfiguration().getUuid();
-            final ServerTreeNode serverNode = new ServerTreeNode(serverManager, serverUuid);
-            treeServerMap.put(serverUuid, serverNode);
-            serverNode.setUserObject(new TreeNodeType(serverNode));
-            rootNode.add(serverNode);
-
-            // Sort the feature list and put core freatures at the end.
-            server.getFeatures().sort((Feature t, Feature t1) -> {
-                if (t.getCategory().startsWith("core")) {
-                    return 1;
-                } else if (t1.getCategory().startsWith("core")) {
-                    return -1;
-                }
-                return 0;
-            });
-
-            for (final Feature feature : server.getFeatures()) {
-                final boolean isCoreFeat = feature.getCategory().startsWith("core");
-                final FeatureInfoTreeNode featureNode = new FeatureInfoTreeNode(feature);
-                featureNode.setUserObject(new TreeNodeType(feature, isCoreFeat));
-                serverNode.add(featureNode);
-
-                final TypeDefLut typeDefs = new TypeDefLut(server, feature);
-                if (feature.getProperty() != null && !feature.getProperty().isEmpty()) {
-                    final DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode("Properties");
-                    featureNode.add(propertyNode);
-                    for (final Property prop : feature.getProperty()) {
-                        final PropertyTreeNode ptn = new PropertyTreeNode(
-                                server.getConfiguration().getUuid(),
-                                feature.getIdentifier(),
-                                typeDefs,
-                                prop);
-                        ptn.setUserObject(new TreeNodeType(prop));
-                        propertyNode.add(ptn);
-                    }
-                }
-
-                if (feature.getCommand() != null && !feature.getCommand().isEmpty()) {
-                    final DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
-                    featureNode.add(commandNode);
-                    for (final Command command : feature.getCommand()) {
-                        final CommandTreeNode ctn = new CommandTreeNode(
-                                server.getConfiguration().getUuid(),
-                                typeDefs,
-                                command);
-                        ctn.setUserObject(new TreeNodeType(command));
-                        commandNode.add(ctn);
-                    }
-                }
-            }
-
-        }
-        model.reload();
-        // Expand all nodes in the tree.
-        for (int i = 0; i < serverFeatureTree.getRowCount(); i++) {
-            serverFeatureTree.expandRow(i);
-        }
-    }
-
     /**
      * Creates new form OrchestratorGui
      */
     public OrchestratorGui() {
         initComponents();
         initTaskQueueTable();
-        initServerListeners();
+        initServerTree();
     }
 
     /**
@@ -211,7 +138,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addServerDialog.setTitle("Add Server");
         addServerDialog.setAlwaysOnTop(true);
         addServerDialog.setIconImage(ICON_IMG);
-        addServerDialog.setName("addServerDialog"); // NOI18N
         addServerDialog.setPreferredSize(new java.awt.Dimension(400, 280));
         addServerDialog.setResizable(false);
         addServerDialog.setLocationRelativeTo(null);
@@ -338,7 +264,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         aboutDialog.setIconImage(ICON_IMG);
         aboutDialog.setMinimumSize(new java.awt.Dimension(300, 256));
         aboutDialog.setModal(true);
-        aboutDialog.setName("aboutDialog"); // NOI18N
         aboutDialog.setResizable(false);
         aboutDialog.setLocationRelativeTo(null);
         java.awt.GridBagLayout aboutDialogLayout = new java.awt.GridBagLayout();
@@ -430,40 +355,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         serverPanel.setPreferredSize(new java.awt.Dimension(384, 220));
         java.awt.GridBagLayout jPanel1Layout = new java.awt.GridBagLayout();
-        jPanel1Layout.columnWidths = new int[] {3};
+        jPanel1Layout.columnWidths = new int[] {2};
         jPanel1Layout.rowHeights = new int[] {2};
         serverPanel.setLayout(jPanel1Layout);
 
-        ToolTipManager.sharedInstance().registerComponent(serverFeatureTree);
-        javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("No Server Available");
-        serverFeatureTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
-        serverFeatureTree.setCellRenderer(new TreeNodeRenderer());
-        serverFeatureTree.setDragEnabled(true);
-        serverFeatureTree.setRowHeight(-1);
-        serverFeatureTree.setVisibleRowCount(10);
-        serverFeatureTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        serverFeatureTree.setTransferHandler(new CommandNodeTransferHandler());
-        serverFeatureTree.setDropTarget(null);
-        serverFeatureTree.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                serverFeatureTreeFocusGained(evt);
-            }
-        });
-        serverFeatureTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
-            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
-                serverFeatureTreeValueChanged(evt);
-            }
-        });
-        featureScrollPane.setViewportView(serverFeatureTree);
-
+        serverTreeScrollPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 0));
+        serverTreeScrollPane.setViewportView(serverFeatureTree);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
-        serverPanel.add(featureScrollPane, gridBagConstraints);
+        serverPanel.add(serverTreeScrollPane, gridBagConstraints);
 
         addServerBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/server-add.png"))); // NOI18N
         addServerBtn.setMnemonic('a');
@@ -479,7 +383,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 0.2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         serverPanel.add(addServerBtn, gridBagConstraints);
 
         scanServerBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/network-scan.png"))); // NOI18N
@@ -492,11 +396,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 0.8;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
         serverPanel.add(scanServerBtn, gridBagConstraints);
 
         serverSplitPane.setLeftComponent(serverPanel);
@@ -621,7 +524,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         taskQueuePanel.add(removeTaskFromQueueBtn, gridBagConstraints);
 
         mainPanelSplitPane.setLeftComponent(taskQueuePanel);
-        mainPanelSplitPane.setRightComponent(commandScrollPane);
+        mainPanelSplitPane.setRightComponent(presenterScrollPane);
 
         mainPanel.add(mainPanelSplitPane);
 
@@ -863,7 +766,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
     private void initTaskQueueTable() {
         taskQueueTable.setServerManager(serverManager);
-        taskQueueTable.setParamsPane(commandScrollPane);
+        taskQueueTable.setParamsPane(presenterScrollPane);
         taskQueueTable.setComponentPopupMenu(taskQueuePopupMenu);
         taskQueueScrollPane.setViewportView(taskQueueTable);
         taskQueueTable.getModel().addTableModelListener((TableModelEvent evt) -> {
@@ -877,7 +780,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 final TableModel model = (TableModel) evt.getSource();
                 if (model.getRowCount() <= 0) {
                     disableTaskQueueOperations();
-                    commandScrollPane.setViewportView(null);
+                    presenterScrollPane.setViewportView(null);
                 }
             }
         });
@@ -896,25 +799,30 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
     }
 
-    private void initServerListeners() {
-        serverManager.addServerListener(new ServerListener() {
+    private void initServerTree() {
+        serverManager.addServerListener(serverFeatureTree.getServerChangeListener());
+        serverFeatureTree.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
-            public void onServerChange(UUID uuid, Server server) {
-                final ServerTreeNode serverNode = treeServerMap.get(uuid);
-                if (serverNode != null) {
-                    final Object obj = serverNode.getUserObject();
-                    if (!(obj instanceof TreeNodeType)) {
-                        return;
-                    }
-                    final TreeNodeType ftt = (TreeNodeType) obj;
-                    if (server.getStatus() == Status.OFFLINE) {
-                        ftt.setTreeRenderSymbol(TreeRenderSymbol.SERVER_OFFLINE);
-                    } else {
-                        ftt.setTreeRenderSymbol(TreeRenderSymbol.SERVER_ONLINE);
-                    }
-                    ftt.setDescription(serverNode.getDescription());
-                    serverFeatureTree.repaint();
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (evt.isTemporary()) {
+                    return;
                 }
+                // only refresh view when the taskQueuTable lost the focus
+                if (evt.getOppositeComponent() == taskQueueTable) {
+                    taskQueueTable.getSelectionModel().clearSelection();
+                    presenterScrollPane.setViewportView(serverFeatureTree.getPresenter());
+                }
+            }
+        });
+        serverFeatureTree.addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent evt) {
+                boolean isAddTaskBtnToEnable = false;
+                if (evt.getPath().getLastPathComponent() instanceof CommandTreeNode) {
+                    isAddTaskBtnToEnable = true;
+                }
+                addTaskToQueueBtn.setEnabled(isAddTaskBtnToEnable);
+                presenterScrollPane.setViewportView(serverFeatureTree.getPresenter());
             }
         });
     }
@@ -922,8 +830,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     /**
      * Loads the presenter of the selected task-queue entry into the context sensitive view panel
      * and sets the state of the affected GUI controls accordingly.
-     *
-     * @see viewSelectedTreeNode
      */
     private void viewSelectedTask() {
         int selectedRowIdx = taskQueueTable.getSelectedRow();
@@ -950,7 +856,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             return;
         }
         addTaskToQueueBtn.setEnabled(false);
-        commandScrollPane.setViewportView(entry.getPresenter());
+        presenterScrollPane.setViewportView(entry.getPresenter());
     }
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
@@ -997,7 +903,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             if (!serverList.isEmpty()) {
                 // hide the "No Server Available" string.
                 isTreeRootVisible = false;
-                addFeaturesToTree(serverList);
+                serverFeatureTree.addServersToTree(serverManager, serverList);
                 for (final Server server : serverList) {
                     taskQueueTable.addUuidToSelectionSet(server.getConfiguration().getUuid());
                 }
@@ -1010,6 +916,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             // update components in the GUI thread
             SwingUtilities.invokeLater(() -> {
                 serverFeatureTree.setRootVisible(isTreeRootVisible);
+                serverFeatureTree.setEnabled(!isTreeRootVisible);
                 scanServerBtn.setEnabled(true);
             });
         };
@@ -1264,20 +1171,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         handler.exportAsDrag(comp, evt, TransferHandler.COPY);
     }//GEN-LAST:event_addTaskBtnMouseDragged
 
-    private void serverFeatureTreeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_serverFeatureTreeFocusGained
-        if (evt.isTemporary()) {
-            return;
-        }
-        if (evt.getOppositeComponent() == taskQueueTable) {
-            // only refresh view when the taskQueuTable lost the focus
-            viewSelectedTreeNode();
-        }
-    }//GEN-LAST:event_serverFeatureTreeFocusGained
-
-    private void serverFeatureTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_serverFeatureTreeValueChanged
-        viewSelectedTreeNode();
-    }//GEN-LAST:event_serverFeatureTreeValueChanged
-
     private void showOrHideTableColumnBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showOrHideTableColumnBtnActionPerformed
         final JPopupMenu columnPopupMenu = taskQueueTable.getColumnHeaderPopupMenu();
         if (!columnPopupMenu.isVisible()) {
@@ -1286,41 +1179,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
             columnPopupMenu.setVisible(false);
         }
     }//GEN-LAST:event_showOrHideTableColumnBtnActionPerformed
-
-    /**
-     * Loads the presenter of the selected tree node into the context sensitive view panel and sets
-     * the state of the affected GUI controls accordingly.
-     *
-     * @see #viewSelectedTask
-     */
-    private void viewSelectedTreeNode() {
-        if (serverFeatureTree.isSelectionEmpty()) {
-            return;
-        }
-        final ListSelectionModel taskQueueLsm = taskQueueTable.getSelectionModel();
-        if (!taskQueueLsm.isSelectionEmpty()) {
-            taskQueueLsm.clearSelection();
-        }
-        boolean isAddBtnToEnable = false;
-        JComponent viewportView = null;
-        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) serverFeatureTree.getLastSelectedPathComponent();
-        if (node instanceof CommandTreeNode) {
-            isAddBtnToEnable = true;
-            viewportView = CommandTreeNode.COMMAND_USAGE_PANEL;
-        } else if (node instanceof PropertyTreeNode) {
-            final PropertyTreeNode propNode = (PropertyTreeNode) node;
-            propNode.requestPropertyData();
-            viewportView = propNode.getPresenter();
-        } else if (node instanceof FeatureInfoTreeNode) {
-            final FeatureInfoTreeNode featNode = (FeatureInfoTreeNode) node;
-            viewportView = featNode.getPresenter();
-        } else if (node instanceof ServerTreeNode) {
-            final ServerTreeNode serverNode = (ServerTreeNode) node;
-            viewportView = serverNode.getPresenter();
-        }
-        addTaskToQueueBtn.setEnabled(isAddBtnToEnable);
-        commandScrollPane.setViewportView(viewportView);
-    }
 
     /**
      * Enables all the GUI controls which actions can be applied on entries in the task queue. This
@@ -1487,12 +1345,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JButton addTaskToQueueBtn = new javax.swing.JButton();
     private final javax.swing.JButton clearQueueBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem clearQueueMenuItem = new javax.swing.JMenuItem();
-    private final javax.swing.JScrollPane commandScrollPane = new javax.swing.JScrollPane();
     private final javax.swing.JMenuItem execRowEntryMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton executeAllBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem executeAllMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
-    private final javax.swing.JScrollPane featureScrollPane = new javax.swing.JScrollPane();
     private final javax.swing.JMenu fileMenu = new javax.swing.JMenu();
     private final javax.swing.JFileChooser fileOpenChooser = new javax.swing.JFileChooser();
     private final javax.swing.JFileChooser fileSaveAsChooser = new javax.swing.JFileChooser();
@@ -1504,6 +1360,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JButton moveTaskUpBtn = new javax.swing.JButton();
     private final javax.swing.JButton openFileBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem openMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JScrollPane presenterScrollPane = new javax.swing.JScrollPane();
     private final javax.swing.JButton removeTaskFromQueueBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem removeTaskFromQueueMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem saveAsMenuItem = new javax.swing.JMenuItem();
@@ -1517,12 +1374,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JTextField serverAddressTextField = new javax.swing.JTextField();
     private final javax.swing.JButton serverDialogCancelBtn = new javax.swing.JButton();
     private final javax.swing.JButton serverDialogOkBtn = new javax.swing.JButton();
-    private final javax.swing.JTree serverFeatureTree = new javax.swing.JTree();
     private final javax.swing.JMenu serverMenu = new javax.swing.JMenu();
     private final javax.swing.JPanel serverPanel = new javax.swing.JPanel();
     private final javax.swing.JFormattedTextField serverPortFormattedTextField = new javax.swing.JFormattedTextField();
     private final javax.swing.JLabel serverPortLabel = new javax.swing.JLabel();
     private final javax.swing.JSplitPane serverSplitPane = new javax.swing.JSplitPane();
+    private final javax.swing.JScrollPane serverTreeScrollPane = new javax.swing.JScrollPane();
     private final javax.swing.JButton showOrHideTableColumnBtn = new javax.swing.JButton();
     private final javax.swing.JPanel taskQueuePanel = new javax.swing.JPanel();
     private final javax.swing.JPopupMenu taskQueuePopupMenu = new javax.swing.JPopupMenu();

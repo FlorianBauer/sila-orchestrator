@@ -44,7 +44,8 @@ public class CommandTaskModel extends TaskModel {
     public CommandTaskModel(
             final UUID serverUuid,
             final TypeDefLut typeDefs,
-            final Feature.Command command) {
+            final Feature.Command command
+    ) {
         this.serverUuid = serverUuid;
         this.typeDefs = typeDefs;
         this.command = command;
@@ -57,7 +58,8 @@ public class CommandTaskModel extends TaskModel {
     public CommandTaskModel(
             @JsonProperty("serverUuid") final UUID serverUuid,
             @JsonProperty("featureId") final String featureId,
-            @JsonProperty("commandId") final String commandId) {
+            @JsonProperty("commandId") final String commandId
+    ) {
         this.serverUuid = serverUuid;
         this.featureId = featureId;
         this.commandId = commandId;

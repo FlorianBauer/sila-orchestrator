@@ -48,7 +48,8 @@ public class CommandTask extends QueueTask {
     public CommandTask(
             final UUID serverUuid,
             final TypeDefLut typeDefs,
-            final Feature.Command command) {
+            final Feature.Command command
+    ) {
         this(new CommandTaskModel(serverUuid, typeDefs, command));
     }
 
@@ -79,9 +80,9 @@ public class CommandTask extends QueueTask {
     }
 
     /**
-     * Build all GUI components in the Panel to allow user-interaction with the commands parameter.
+     * Build all GUI components in the Panel to allow user-interaction with the command parameters.
      *
-     * @return A populated JPanel.
+     * @return A populated <code>JPanel</code>.
      */
     @Override
     public JPanel getPresenter() {

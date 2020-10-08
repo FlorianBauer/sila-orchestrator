@@ -1,5 +1,6 @@
-package de.fau.clients.orchestrator;
+package de.fau.clients.orchestrator.tree;
 
+import de.fau.clients.orchestrator.Presentable;
 import de.fau.clients.orchestrator.nodes.MaxDim;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;

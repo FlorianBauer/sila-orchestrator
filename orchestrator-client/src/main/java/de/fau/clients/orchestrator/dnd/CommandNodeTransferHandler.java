@@ -1,6 +1,6 @@
 package de.fau.clients.orchestrator.dnd;
 
-import de.fau.clients.orchestrator.CommandTreeNode;
+import de.fau.clients.orchestrator.tree.CommandTreeNode;
 import java.awt.datatransfer.Transferable;
 import javax.swing.JComponent;
 import javax.swing.JTree;

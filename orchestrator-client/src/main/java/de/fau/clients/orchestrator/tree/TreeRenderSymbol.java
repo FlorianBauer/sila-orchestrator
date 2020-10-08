@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator;
+package de.fau.clients.orchestrator.tree;
 
 /**
  * Enum to distinguish between various rendering symbols for the tree renderer.

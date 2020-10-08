@@ -1,4 +1,4 @@
-package de.fau.clients.orchestrator;
+package de.fau.clients.orchestrator.tree;
 
 import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.Component;
