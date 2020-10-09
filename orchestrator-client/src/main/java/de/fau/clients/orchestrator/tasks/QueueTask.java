@@ -29,7 +29,8 @@ public abstract class QueueTask implements Runnable, Presentable {
     protected OffsetDateTime startTimeStamp = null;
     protected OffsetDateTime endTimeStamp = null;
     protected String lastExecResult = "";
-    protected TaskState state = TaskState.READY;
+    protected IconProvider conStatus = IconProvider.TASK_NEUTRAL;
+    protected TaskState taskState = TaskState.READY;
 
     /**
      * Gets the current <code>TaskModel</code> by collecting the set parameters form the view and
@@ -98,6 +99,16 @@ public abstract class QueueTask implements Runnable, Presentable {
     }
 
     /**
+     * Gets the current connection status to the corresponding server. If the task has no server
+     * requirement, the default NEUTRAL state is returned.
+     *
+     * @return The connection status.
+     */
+    public IconProvider getConnectionStatus() {
+        return conStatus;
+    }
+
+    /**
      * Gets the current state of this task.
      *
      * The implementing <code>run()</code> method should thereby set the state accordingly like e.g. <code>
@@ -112,7 +123,7 @@ public abstract class QueueTask implements Runnable, Presentable {
      * @see #addStatusChangeListener(java.beans.PropertyChangeListener)
      */
     public TaskState getState() {
-        return state;
+        return taskState;
     }
 
     /**

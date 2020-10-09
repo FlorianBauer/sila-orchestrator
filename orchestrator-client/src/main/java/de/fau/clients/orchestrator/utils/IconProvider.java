@@ -43,6 +43,9 @@ public enum IconProvider {
     SILA_ORCHESTRATOR_16PX(new ImageIcon(IconProvider.class.getResource("/icons/sila-orchestrator-16px.png"))),
     STATUS_OK(new ImageIcon(IconProvider.class.getResource("/icons/status-ok.png"))),
     STATUS_WARNING(new ImageIcon(IconProvider.class.getResource("/icons/status-warning.png"))),
+    TASK_NEUTRAL(new ImageIcon(IconProvider.class.getResource("/icons/task-neutral.png"))),
+    TASK_OFFLINE(new ImageIcon(IconProvider.class.getResource("/icons/task-offline.png"))),
+    TASK_ONLINE(new ImageIcon(IconProvider.class.getResource("/icons/task-online.png"))),
     TASK_REMOVE(new ImageIcon(IconProvider.class.getResource("/icons/task-remove.png"))),
     TASK_REMOVE_16PX(new ImageIcon(IconProvider.class.getResource("/icons/task-remove-16px.png")));
 

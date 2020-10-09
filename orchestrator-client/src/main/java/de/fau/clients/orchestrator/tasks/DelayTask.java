@@ -142,10 +142,10 @@ public class DelayTask extends QueueTask {
         }
 
         startTimeStamp = OffsetDateTime.now();
-        TaskState oldState = state;
-        state = TaskState.RUNNING;
-        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
-        oldState = state;
+        TaskState oldState = taskState;
+        taskState = TaskState.RUNNING;
+        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, taskState);
+        oldState = taskState;
 
         boolean wasCanceled = false;
         try {
@@ -154,9 +154,9 @@ public class DelayTask extends QueueTask {
             wasCanceled = true;
         }
 
-        state = (wasCanceled) ? TaskState.FINISHED_ERROR : TaskState.FINISHED_SUCCESS;
+        taskState = (wasCanceled) ? TaskState.FINISHED_ERROR : TaskState.FINISHED_SUCCESS;
         endTimeStamp = OffsetDateTime.now();
-        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
+        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, taskState);
         if (isPanelBuilt) {
             execBtn.setEnabled(true);
         }

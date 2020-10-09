@@ -5,6 +5,7 @@ import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
 import java.beans.PropertyChangeEvent;
+import javax.swing.Icon;
 import javax.swing.table.DefaultTableModel;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,8 +35,9 @@ class TaskQueueTableModel extends DefaultTableModel {
         addRow(new Object[]{
             taskId,
             cmdTask,
-            cmdTask.getState(),
+            cmdTask.getConnectionStatus().getIcon(),
             cmdTask.getServerUuid(),
+            cmdTask.getState(),
             cmdTask.getStartTimeStamp(),
             cmdTask.getEndTimeStamp(),
             cmdTask.getDuration(),
@@ -68,8 +70,9 @@ class TaskQueueTableModel extends DefaultTableModel {
                 new Object[]{
                     taskId,
                     cmdTask,
-                    cmdTask.getState(),
+                    cmdTask.getConnectionStatus().getIcon(),
                     cmdTask.getServerUuid(),
+                    cmdTask.getState(),
                     cmdTask.getStartTimeStamp(),
                     cmdTask.getEndTimeStamp(),
                     cmdTask.getDuration(),
@@ -86,8 +89,9 @@ class TaskQueueTableModel extends DefaultTableModel {
         addRow(new Object[]{
             taskId,
             task,
-            task.getState(),
+            task.getConnectionStatus().getIcon(),
             "",
+            task.getState(),
             task.getStartTimeStamp(),
             task.getEndTimeStamp(),
             task.getDuration(),
@@ -106,8 +110,9 @@ class TaskQueueTableModel extends DefaultTableModel {
                 new Object[]{
                     taskId,
                     task,
-                    task.getState(),
+                    task.getConnectionStatus().getIcon(),
                     "",
+                    task.getState(),
                     task.getStartTimeStamp(),
                     task.getEndTimeStamp(),
                     task.getDuration(),
@@ -146,7 +151,6 @@ class TaskQueueTableModel extends DefaultTableModel {
                         setValueAt(taskEntry.getDuration(), rowIdx, TaskQueueTable.COLUMN_DURATION_IDX);
                         break;
                     case SKIPPED:
-                    case OFFLINE:
                         break;
                     default:
                         log.warn("Unhandled state change");
@@ -172,6 +176,8 @@ class TaskQueueTableModel extends DefaultTableModel {
                 return Integer.class;
             case TaskQueueTable.COLUMN_TASK_INSTANCE_IDX:
                 return CommandTask.class;
+            case TaskQueueTable.COLUMN_CONNECTION_STATUS_IDX:
+                return Icon.class;
             default:
                 return String.class;
         }

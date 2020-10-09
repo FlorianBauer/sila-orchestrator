@@ -4,11 +4,11 @@ import de.fau.clients.orchestrator.dnd.TaskImportTransferHandler;
 import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.QueueTask;
+import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.UUID;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DropMode;
@@ -26,6 +26,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import lombok.extern.slf4j.Slf4j;
+import sila_java.library.manager.ServerListener;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 
@@ -38,19 +39,21 @@ public class TaskQueueTable extends JTable {
 
     public static final int COLUMN_TASK_ID_IDX = 0;
     public static final int COLUMN_TASK_INSTANCE_IDX = 1;
-    public static final int COLUMN_STATE_IDX = 2;
+    public static final int COLUMN_CONNECTION_STATUS_IDX = 2;
     public static final int COLUMN_SERVER_UUID_IDX = 3;
-    public static final int COLUMN_START_TIME_IDX = 4;
-    public static final int COLUMN_END_TIME_IDX = 5;
-    public static final int COLUMN_DURATION_IDX = 6;
-    public static final int COLUMN_RESULT_IDX = 7;
-    public static final int COLUMN_EXEC_POLICY_IDX = 8;
+    public static final int COLUMN_STATE_IDX = 4;
+    public static final int COLUMN_START_TIME_IDX = 5;
+    public static final int COLUMN_END_TIME_IDX = 6;
+    public static final int COLUMN_DURATION_IDX = 7;
+    public static final int COLUMN_RESULT_IDX = 8;
+    public static final int COLUMN_EXEC_POLICY_IDX = 9;
 
     public static final String[] COLUMN_TITLES = {
         "ID",
         "Task",
-        "State",
+        "Connection",
         "Server UUID",
+        "State",
         "Start Time",
         "End Time",
         "Duration",
@@ -96,6 +99,7 @@ public class TaskQueueTable extends JTable {
         final TableColumn taskColumn = columnModel.getColumn(COLUMN_TASK_ID_IDX);
         taskColumn.setPreferredWidth(40);
         taskColumn.setMaxWidth(80);
+        columnModel.getColumn(COLUMN_CONNECTION_STATUS_IDX).setMaxWidth(42);
         columnModel.getColumn(COLUMN_START_TIME_IDX).setPreferredWidth(170);
         columnModel.getColumn(COLUMN_END_TIME_IDX).setPreferredWidth(170);
 
@@ -357,10 +361,24 @@ public class TaskQueueTable extends JTable {
         if (editingRow >= 0) {
             if (serverManager != null) {
                 final UUID serverUuid = (UUID) uuidComboBox.getSelectedItem();
-                final Map<UUID, Server> onlineServer = serverManager.getServers();
                 final CommandTask task = (CommandTask) dataModel.getValueAt(editingRow, COLUMN_TASK_INSTANCE_IDX);
-                task.changeServer(serverUuid, onlineServer.get(serverUuid));
-                dataModel.setValueAt(task.getState(), editingRow, COLUMN_STATE_IDX);
+                final Server server = serverManager.getServers().get(serverUuid);
+                if (server != null) {
+                    task.changeServer(serverUuid, server);
+                    if (server.getStatus() == Server.Status.ONLINE) {
+                        dataModel.setValueAt(IconProvider.TASK_ONLINE.getIcon(),
+                                editingRow,
+                                COLUMN_CONNECTION_STATUS_IDX);
+                    } else {
+                        dataModel.setValueAt(IconProvider.TASK_OFFLINE.getIcon(),
+                                editingRow,
+                                COLUMN_CONNECTION_STATUS_IDX);
+                    }
+                } else {
+                    dataModel.setValueAt(IconProvider.TASK_OFFLINE.getIcon(),
+                            editingRow,
+                            COLUMN_CONNECTION_STATUS_IDX);
+                }
                 if (paramsPane != null) {
                     // update the parameter panel if available
                     paramsPane.setViewportView(task.getPresenter());
@@ -517,5 +535,33 @@ public class TaskQueueTable extends JTable {
             }
             return emptyLabel;
         }
+    }
+
+    private class ServerChangeListener implements ServerListener {
+
+        @Override
+        public void onServerChange(UUID uuid, Server server) {
+            for (int i = 0; i < getRowCount(); i++) {
+                final Object obj = dataModel.getValueAt(i, COLUMN_SERVER_UUID_IDX);
+                if (obj instanceof UUID) {
+                    UUID taskUuid = (UUID) obj;
+                    if (taskUuid.compareTo(uuid) == 0) {
+                        if (server.getStatus() == Server.Status.OFFLINE) {
+                            dataModel.setValueAt(IconProvider.TASK_OFFLINE.getIcon(),
+                                    i,
+                                    COLUMN_CONNECTION_STATUS_IDX);
+                        } else {
+                            dataModel.setValueAt(IconProvider.TASK_ONLINE.getIcon(),
+                                    i,
+                                    COLUMN_CONNECTION_STATUS_IDX);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public ServerChangeListener getServerChangeListener() {
+        return new ServerChangeListener();
     }
 }

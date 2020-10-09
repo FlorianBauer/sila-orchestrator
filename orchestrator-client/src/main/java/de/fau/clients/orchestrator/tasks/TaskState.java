@@ -7,5 +7,4 @@ public enum TaskState {
     FINISHED_SUCCESS,
     FINISHED_ERROR,
     SKIPPED,
-    OFFLINE
 }

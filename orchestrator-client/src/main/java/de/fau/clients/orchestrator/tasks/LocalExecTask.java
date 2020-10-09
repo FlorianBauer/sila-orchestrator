@@ -66,10 +66,10 @@ public class LocalExecTask extends QueueTask {
         }
 
         startTimeStamp = OffsetDateTime.now();
-        TaskState oldState = state;
-        state = TaskState.RUNNING;
-        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
-        oldState = state;
+        TaskState oldState = taskState;
+        taskState = TaskState.RUNNING;
+        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, taskState);
+        oldState = taskState;
 
         final ProcessBuilder pb = new ProcessBuilder(execTaskModel.getExecWithArgsAsList());
         try {
@@ -81,11 +81,11 @@ public class LocalExecTask extends QueueTask {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
-        state = (exitValue == execTaskModel.getExpRetVal())
+        taskState = (exitValue == execTaskModel.getExpRetVal())
                 ? TaskState.FINISHED_SUCCESS
                 : TaskState.FINISHED_ERROR;
         endTimeStamp = OffsetDateTime.now();
-        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
+        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, taskState);
         if (isPanelBuilt) {
             execBtn.setEnabled(true);
         }

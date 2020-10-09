@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import de.fau.clients.orchestrator.nodes.NodeFactory;
 import de.fau.clients.orchestrator.nodes.SilaNode;
 import de.fau.clients.orchestrator.nodes.TypeDefLut;
+import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.event.ActionEvent;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -40,8 +41,10 @@ public class CommandTask extends QueueTask {
 
     public CommandTask(final CommandTaskModel commandModel) {
         this.commandModel = commandModel;
-        if (!this.commandModel.isValid()) {
-            state = TaskState.OFFLINE;
+        if (this.commandModel.isValid()) {
+            conStatus = IconProvider.TASK_ONLINE;
+        } else {
+            conStatus = IconProvider.TASK_OFFLINE;
         }
     }
 
@@ -164,8 +167,7 @@ public class CommandTask extends QueueTask {
     }
 
     /**
-     * Changes the UUID and the server instance of this task. The <code>state</code>-field is set
-     * accordingly.
+     * Changes the UUID and the server instance of this task.
      *
      * @param uuid The new UUID to assign.
      * @param server The new server instance or <code>null</code> to set invalid/offline.
@@ -173,11 +175,6 @@ public class CommandTask extends QueueTask {
     public void changeServer(final UUID uuid, final Server server) {
         commandModel.setServerUuid(uuid);
         commandModel.setServerInstance(server);
-        if (commandModel.isValid()) {
-            state = TaskState.READY;
-        } else {
-            state = TaskState.OFFLINE;
-        }
     }
 
     public String getFeatureId() {
@@ -200,14 +197,14 @@ public class CommandTask extends QueueTask {
      */
     @Override
     public void run() {
-        TaskState oldState = state;
+        TaskState oldState = taskState;
         if (!isNodeBuilt) {
             buildNode();
         }
 
         if (!commandModel.isValid()) {
-            state = TaskState.SKIPPED;
-            stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
+            taskState = TaskState.SKIPPED;
+            stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, taskState);
             return;
         }
 
@@ -219,9 +216,9 @@ public class CommandTask extends QueueTask {
                 : SiLACall.Type.UNOBSERVABLE_COMMAND;
 
         startTimeStamp = OffsetDateTime.now();
-        state = TaskState.RUNNING;
-        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
-        oldState = state;
+        taskState = TaskState.RUNNING;
+        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, taskState);
+        oldState = taskState;
 
         String jsonParams = "";
         if (cmdNode != null) {
@@ -244,18 +241,18 @@ public class CommandTask extends QueueTask {
 
         try {
             lastExecResult = ServerManager.getInstance().newCallExecutor(call).execute();
-            state = TaskState.FINISHED_SUCCESS;
+            taskState = TaskState.FINISHED_SUCCESS;
         } catch (RuntimeException ex) {
             log.error(ex.getMessage());
             lastExecResult = ex.getMessage();
-            state = TaskState.FINISHED_ERROR;
+            taskState = TaskState.FINISHED_ERROR;
         } catch (Exception ex) {
             log.error(ex.getMessage());
             lastExecResult = ex.getMessage();
-            state = TaskState.FINISHED_ERROR;
+            taskState = TaskState.FINISHED_ERROR;
         }
         endTimeStamp = OffsetDateTime.now();
-        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, state);
+        stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, taskState);
 
         if (isPanelBuilt) {
             execBtn.setEnabled(true);

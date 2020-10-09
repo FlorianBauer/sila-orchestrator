@@ -797,6 +797,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 removeTaskFromQueue(evt);
             }
         });
+        serverManager.addServerListener(taskQueueTable.getServerChangeListener());
     }
 
     private void initServerTree() {
