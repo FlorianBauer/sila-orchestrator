@@ -67,7 +67,7 @@ public class CommandTaskModel extends TaskModel {
     }
 
     /**
-     * Tries to requires the desired SiLA command instance by using only the given identifier.
+     * Tries to acquire the desired SiLA command instance by using only the given identifier.
      * Therefore a Map of currently available servers has to be provided.
      *
      * @param serverMap The Map with the currently available SiLA servers.
