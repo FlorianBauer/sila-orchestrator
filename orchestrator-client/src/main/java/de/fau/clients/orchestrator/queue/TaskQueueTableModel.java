@@ -30,7 +30,8 @@ class TaskQueueTableModel extends DefaultTableModel {
     protected void addCommandTask(
             int taskId,
             final CommandTask cmdTask,
-            final ExecPolicy policy) {
+            final ExecPolicy policy
+    ) {
         final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         addRow(new Object[]{
             taskId,
@@ -64,7 +65,8 @@ class TaskQueueTableModel extends DefaultTableModel {
             int index,
             int taskId,
             final CommandTask cmdTask,
-            final ExecPolicy policy) {
+            final ExecPolicy policy
+    ) {
         final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         insertRow(index,
                 new Object[]{
@@ -84,7 +86,8 @@ class TaskQueueTableModel extends DefaultTableModel {
     protected void addTask(
             int taskId,
             final QueueTask task,
-            final ExecPolicy policy) {
+            final ExecPolicy policy
+    ) {
         final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         addRow(new Object[]{
             taskId,
@@ -104,7 +107,8 @@ class TaskQueueTableModel extends DefaultTableModel {
             int index,
             int taskId,
             final QueueTask task,
-            final ExecPolicy policy) {
+            final ExecPolicy policy
+    ) {
         final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         insertRow(index,
                 new Object[]{
@@ -199,7 +203,6 @@ class TaskQueueTableModel extends DefaultTableModel {
             default:
                 break;
         }
-
         return false;
     }
 }

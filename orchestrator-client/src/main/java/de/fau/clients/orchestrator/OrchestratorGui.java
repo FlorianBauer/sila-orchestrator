@@ -1264,8 +1264,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 } else if (arg.equalsIgnoreCase("-x") || arg.equalsIgnoreCase("--execute")) {
                     if (i + 1 < args.length) {
                         final String siloFile = args[i + 1];
-                        StringBuilder outMsg = new StringBuilder();
-                        TaskQueueData tcd = TaskQueueData.createFromFile(siloFile, outMsg);
+                        final StringBuilder outMsg = new StringBuilder();
+                        final TaskQueueData tcd = TaskQueueData.createFromFile(siloFile, outMsg);
                         if (tcd != null) {
                             TaskQueueTable tqt = new TaskQueueTable();
                             tcd.importToTaskQueue(tqt, serverManager.getServers());

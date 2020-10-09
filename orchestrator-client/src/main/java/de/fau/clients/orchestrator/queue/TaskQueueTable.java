@@ -267,7 +267,8 @@ public class TaskQueueTable extends JTable {
     public void addCommandTaskWithId(
             int taskId,
             final CommandTask cmdTask,
-            final ExecPolicy policy) {
+            final ExecPolicy policy
+    ) {
         final int uniqueId;
         if (checkAndRegisterTaskId(taskId)) {
             uniqueId = taskId;
@@ -430,8 +431,19 @@ public class TaskQueueTable extends JTable {
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            JTextField tf = (JTextField) super.getTableCellEditorComponent(table, value, isSelected, row, column);
+        public Component getTableCellEditorComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                int row,
+                int column
+        ) {
+            JTextField tf = (JTextField) super.getTableCellEditorComponent(
+                    table,
+                    value,
+                    isSelected,
+                    row,
+                    column);
             if (value != null) {
                 oldTaskId = value.toString();
                 tf.setText(oldTaskId);
@@ -500,7 +512,8 @@ public class TaskQueueTable extends JTable {
                 boolean isSelected,
                 boolean hasFocus,
                 int row,
-                int column) {
+                int column
+        ) {
             if (value != null) {
                 if (table.isCellEditable(row, column)) {
                     comboBox.getModel().setSelectedItem(value.toString());
@@ -528,7 +541,8 @@ public class TaskQueueTable extends JTable {
                 boolean isSelected,
                 boolean hasFocus,
                 int row,
-                int column) {
+                int column
+        ) {
             if (value != null) {
                 comboBox.getModel().setSelectedItem(value.toString());
                 return comboBox;
