@@ -171,10 +171,15 @@ public class CommandTask extends QueueTask {
      *
      * @param uuid The new UUID to assign.
      * @param server The new server instance or <code>null</code> to set invalid/offline.
+     * @return <code>true</code> if the server change was successful, otherwise <code>false</code>.
      */
-    public void changeServer(final UUID uuid, final Server server) {
+    public boolean changeServer(final UUID uuid, final Server server) {
         commandModel.setServerUuid(uuid);
         commandModel.setServerInstance(server);
+        if (commandModel.isValid()) {
+            return true;
+        }
+        return false;
     }
 
     public String getFeatureId() {

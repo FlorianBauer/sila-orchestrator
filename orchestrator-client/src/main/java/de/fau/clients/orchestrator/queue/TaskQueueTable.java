@@ -358,28 +358,29 @@ public class TaskQueueTable extends JTable {
         return this.taskQueueHeaderPopupMenu;
     }
 
+    /**
+     * Changes the server UUID of the given task to the UUID in the corresponding ComboBox of the
+     * same row. Invalid UUIDs are allowed and the connection status icon changes accordingly as
+     * well as the presenter.
+     */
     private void changeTaskUuidActionPerformed() {
         if (editingRow >= 0) {
             if (serverManager != null) {
                 final UUID serverUuid = (UUID) uuidComboBox.getSelectedItem();
-                final CommandTask task = (CommandTask) dataModel.getValueAt(editingRow, COLUMN_TASK_INSTANCE_IDX);
+                final CommandTask task = (CommandTask) dataModel.getValueAt(editingRow,
+                        COLUMN_TASK_INSTANCE_IDX);
                 final Server server = serverManager.getServers().get(serverUuid);
-                if (server != null) {
-                    task.changeServer(serverUuid, server);
-                    if (server.getStatus() == Server.Status.ONLINE) {
-                        dataModel.setValueAt(IconProvider.TASK_ONLINE.getIcon(),
-                                editingRow,
-                                COLUMN_CONNECTION_STATUS_IDX);
-                    } else {
-                        dataModel.setValueAt(IconProvider.TASK_OFFLINE.getIcon(),
-                                editingRow,
-                                COLUMN_CONNECTION_STATUS_IDX);
-                    }
+                boolean wasChangeSuccess = task.changeServer(serverUuid, server);
+                if (wasChangeSuccess && server.getStatus() == Server.Status.ONLINE) {
+                    dataModel.setValueAt(IconProvider.TASK_ONLINE.getIcon(),
+                            editingRow,
+                            COLUMN_CONNECTION_STATUS_IDX);
                 } else {
                     dataModel.setValueAt(IconProvider.TASK_OFFLINE.getIcon(),
                             editingRow,
                             COLUMN_CONNECTION_STATUS_IDX);
                 }
+
                 if (paramsPane != null) {
                     // update the parameter panel if available
                     paramsPane.setViewportView(task.getPresenter());
