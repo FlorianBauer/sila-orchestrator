@@ -208,7 +208,8 @@ public class CommandTask extends QueueTask {
         }
 
         if (!commandModel.isValid()) {
-            taskState = TaskState.SKIPPED;
+            lastExecResult = "Error: Offline or invalid server instance.";
+            taskState = TaskState.FINISHED_ERROR;
             stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, taskState);
             return;
         }

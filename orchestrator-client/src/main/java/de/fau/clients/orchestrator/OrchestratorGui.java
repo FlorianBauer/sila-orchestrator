@@ -1007,7 +1007,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     log.error(ex.getMessage());
                 }
 
-                if (task.getState() == TaskState.FINISHED_ERROR) {
+                if (task.getState() != TaskState.FINISHED_SUCCESS) {
                     // apply execution policy
                     if (taskQueueTable.getTaskPolicyFromRow(i) == ExecPolicy.HALT_AFTER_ERROR) {
                         break;
