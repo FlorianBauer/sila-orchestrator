@@ -112,6 +112,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         serverAddErrorEditorPane.setText(NO_ERROR_STR);
         serverFeatureTree.setRootVisible(false);
+        serverFeatureTree.setEnabled(true);
         addServerDialog.setVisible(false);
         addServerDialog.dispose();
     }
