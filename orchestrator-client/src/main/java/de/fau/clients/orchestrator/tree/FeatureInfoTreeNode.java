@@ -101,7 +101,7 @@ public class FeatureInfoTreeNode extends DefaultMutableTreeNode implements Prese
             txtPane.setEditable(false);
             txtPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             txtPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
-            txtPane.setMargin(new Insets(10, 20, 20, 20));
+            txtPane.setMargin(new Insets(10, 40, 40, 10));
             txtPane.setText(builder.toString());
 
             panel = new JPanel();
