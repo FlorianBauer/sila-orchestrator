@@ -576,7 +576,7 @@ public class TaskQueueTable extends JTable {
         }
     }
 
-    public ServerChangeListener getServerChangeListener() {
+    public ServerListener getServerChangeListener() {
         return new ServerChangeListener();
     }
 }
