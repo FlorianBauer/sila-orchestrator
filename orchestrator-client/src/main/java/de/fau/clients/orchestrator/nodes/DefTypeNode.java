@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import javax.swing.JComponent;
 import lombok.NonNull;
 
@@ -49,7 +50,9 @@ final class DefTypeNode extends SilaNode {
 
     @Override
     public JsonNode toJson() {
-        return defNode.toJson();
+        final ObjectNode objNode = jsonMapper.createObjectNode();
+        objNode.set(typeId, defNode.toJson());
+        return objNode;
     }
 
     @Override
