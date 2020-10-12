@@ -20,8 +20,8 @@ final class DefTypeNode extends SilaNode {
 
     protected static DefTypeNode create(
             @NonNull final TypeDefLut typeDefs,
-            final String typeIdentifier) {
-
+            final String typeIdentifier
+    ) {
         final DefTypeNode node = new DefTypeNode(typeDefs, typeIdentifier);
         node.defNode = NodeFactory.createFromDataType(typeDefs, typeDefs.getElement(typeIdentifier));
         return node;
@@ -31,8 +31,8 @@ final class DefTypeNode extends SilaNode {
             @NonNull final TypeDefLut typeDefs,
             final String typeIdentifier,
             final JsonNode jsonNode,
-            boolean isEditable) {
-
+            boolean isEditable
+    ) {
         final DefTypeNode node = new DefTypeNode(typeDefs, typeIdentifier);
         node.defNode = NodeFactory.createFromJson(
                 typeDefs,
