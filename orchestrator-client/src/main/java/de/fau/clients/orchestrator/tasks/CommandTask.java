@@ -85,7 +85,7 @@ public class CommandTask extends QueueTask {
     /**
      * Build all GUI components in the Panel to allow user-interaction with the command parameters.
      *
-     * @return A populated <code>JPanel</code>.
+     * @return A populated <code>JPanel</code> or <code>null</code> on error.
      */
     @Override
     public JPanel getPresenter() {
