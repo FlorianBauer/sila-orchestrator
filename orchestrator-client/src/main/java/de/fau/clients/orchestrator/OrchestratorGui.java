@@ -798,11 +798,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 removeTaskFromQueue(evt);
             }
         });
-        serverManager.addServerListener(taskQueueTable.getServerChangeListener());
+        serverManager.addServerListener(taskQueueTable);
     }
 
     private void initServerTree() {
-        serverManager.addServerListener(serverFeatureTree.getServerChangeListener());
         serverFeatureTree.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -827,6 +826,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 presenterScrollPane.setViewportView(serverFeatureTree.getPresenter());
             }
         });
+        serverManager.addServerListener(serverFeatureTree);
     }
 
     /**

@@ -35,7 +35,7 @@ import sila_java.library.manager.models.Server;
  */
 @Slf4j
 @SuppressWarnings("serial")
-public class TaskQueueTable extends JTable {
+public class TaskQueueTable extends JTable implements ServerListener {
 
     public static final int COLUMN_TASK_ID_IDX = 0;
     public static final int COLUMN_TASK_INSTANCE_IDX = 1;
@@ -413,6 +413,34 @@ public class TaskQueueTable extends JTable {
     }
 
     /**
+     * Listener for server status (online/offline) which changes the symbols in the queue table
+     * accordingly.
+     *
+     * @param uuid The UUID of the changing server.
+     * @param server The changing server instance.
+     */
+    @Override
+    public void onServerChange(UUID uuid, Server server) {
+        for (int i = 0; i < getRowCount(); i++) {
+            final Object obj = dataModel.getValueAt(i, COLUMN_SERVER_UUID_IDX);
+            if (obj instanceof UUID) {
+                UUID taskUuid = (UUID) obj;
+                if (taskUuid.compareTo(uuid) == 0) {
+                    if (server.getStatus() == Server.Status.OFFLINE) {
+                        dataModel.setValueAt(IconProvider.TASK_OFFLINE.getIcon(),
+                                i,
+                                COLUMN_CONNECTION_STATUS_IDX);
+                    } else {
+                        dataModel.setValueAt(IconProvider.TASK_ONLINE.getIcon(),
+                                i,
+                                COLUMN_CONNECTION_STATUS_IDX);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Custom cell editor for task IDs.
      */
     private class TaskIdCellEditor extends DefaultCellEditor {
@@ -550,33 +578,5 @@ public class TaskQueueTable extends JTable {
             }
             return emptyLabel;
         }
-    }
-
-    private class ServerChangeListener implements ServerListener {
-
-        @Override
-        public void onServerChange(UUID uuid, Server server) {
-            for (int i = 0; i < getRowCount(); i++) {
-                final Object obj = dataModel.getValueAt(i, COLUMN_SERVER_UUID_IDX);
-                if (obj instanceof UUID) {
-                    UUID taskUuid = (UUID) obj;
-                    if (taskUuid.compareTo(uuid) == 0) {
-                        if (server.getStatus() == Server.Status.OFFLINE) {
-                            dataModel.setValueAt(IconProvider.TASK_OFFLINE.getIcon(),
-                                    i,
-                                    COLUMN_CONNECTION_STATUS_IDX);
-                        } else {
-                            dataModel.setValueAt(IconProvider.TASK_ONLINE.getIcon(),
-                                    i,
-                                    COLUMN_CONNECTION_STATUS_IDX);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public ServerListener getServerChangeListener() {
-        return new ServerChangeListener();
     }
 }

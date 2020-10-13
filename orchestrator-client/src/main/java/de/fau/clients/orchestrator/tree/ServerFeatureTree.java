@@ -21,7 +21,7 @@ import sila_java.library.manager.models.Server;
  * Tree class which shows the available servers and features in a hierarchical ordered view.
  */
 @SuppressWarnings("serial")
-public final class ServerFeatureTree extends JTree implements Presentable {
+public final class ServerFeatureTree extends JTree implements Presentable, ServerListener {
 
     private static final String NO_SERVER_STR = "No Server Available";
     private static final String CATEGORY_CORE = "core";
@@ -146,37 +146,28 @@ public final class ServerFeatureTree extends JTree implements Presentable {
     }
 
     /**
-     * Gets the server listener which handles the online/offline render symbols in the server tree.
-     *
-     * @return The server listener.
-     */
-    public ServerListener getServerChangeListener() {
-        return new ServerStatusChangeListener();
-    }
-
-    /**
      * Listener for server status (online/offline) which changes the server tree render symbols
      * accordingly.
+     *
+     * @param uuid The UUID of the changing server.
+     * @param server The changing server instance.
      */
-    private class ServerStatusChangeListener implements ServerListener {
-
-        @Override
-        public void onServerChange(UUID uuid, Server server) {
-            final ServerTreeNode serverNode = serverMap.get(uuid);
-            if (serverNode != null) {
-                final Object obj = serverNode.getUserObject();
-                if (!(obj instanceof TreeNodeType)) {
-                    return;
-                }
-                final TreeNodeType ftt = (TreeNodeType) obj;
-                if (server.getStatus() == Server.Status.OFFLINE) {
-                    ftt.setTreeRenderSymbol(TreeRenderSymbol.SERVER_OFFLINE);
-                } else {
-                    ftt.setTreeRenderSymbol(TreeRenderSymbol.SERVER_ONLINE);
-                }
-                ftt.setDescription(serverNode.getDescription());
-                repaint();
+    @Override
+    public void onServerChange(UUID uuid, Server server) {
+        final ServerTreeNode serverNode = serverMap.get(uuid);
+        if (serverNode != null) {
+            final Object obj = serverNode.getUserObject();
+            if (!(obj instanceof TreeNodeType)) {
+                return;
             }
+            final TreeNodeType ftt = (TreeNodeType) obj;
+            if (server.getStatus() == Server.Status.OFFLINE) {
+                ftt.setTreeRenderSymbol(TreeRenderSymbol.SERVER_OFFLINE);
+            } else {
+                ftt.setTreeRenderSymbol(TreeRenderSymbol.SERVER_ONLINE);
+            }
+            ftt.setDescription(serverNode.getDescription());
+            this.repaint();
         }
     }
 }
