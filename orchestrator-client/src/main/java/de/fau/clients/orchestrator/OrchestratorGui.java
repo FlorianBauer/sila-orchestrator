@@ -30,6 +30,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
@@ -808,8 +809,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 if (evt.isTemporary()) {
                     return;
                 }
-                // only refresh view when the taskQueuTable lost the focus
-                if (evt.getOppositeComponent() == taskQueueTable) {
+                final ListSelectionModel selectModel = taskQueueTable.getSelectionModel();
+                if (!selectModel.isSelectionEmpty()) {
                     taskQueueTable.getSelectionModel().clearSelection();
                     presenterScrollPane.setViewportView(serverFeatureTree.getPresenter());
                 }
