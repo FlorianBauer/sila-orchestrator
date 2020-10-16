@@ -1,9 +1,12 @@
 package de.fau.clients.orchestrator.tasks;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import de.fau.clients.orchestrator.ConnectionManager;
+import de.fau.clients.orchestrator.ctx.CommandContext;
+import de.fau.clients.orchestrator.ctx.FeatureContext;
+import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.nodes.NodeFactory;
 import de.fau.clients.orchestrator.nodes.SilaNode;
-import de.fau.clients.orchestrator.nodes.TypeDefLut;
 import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.event.ActionEvent;
 import java.time.OffsetDateTime;
@@ -15,11 +18,9 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import sila_java.library.core.models.Feature;
 import sila_java.library.core.models.SiLAElement;
-import sila_java.library.manager.ServerManager;
-import sila_java.library.manager.models.Server;
 import sila_java.library.manager.models.SiLACall;
 
 /**
@@ -32,28 +33,75 @@ import sila_java.library.manager.models.SiLACall;
 @Slf4j
 public class CommandTask extends QueueTask {
 
+    private static final ConnectionManager manager = ConnectionManager.getInstance();
     private final CommandTaskModel commandModel;
+    private CommandContext cmdCtx = null;
+    private boolean isCommandValid = false;
     private boolean isPanelBuilt = false;
     private JPanel panel = null;
     private JButton execBtn = null;
     private boolean isNodeBuilt = false;
     private SilaNode cmdNode = null;
 
-    public CommandTask(final CommandTaskModel commandModel) {
+    public CommandTask(@NonNull final CommandTaskModel commandModel) {
         this.commandModel = commandModel;
-        if (this.commandModel.isValid()) {
+        final ServerContext serverCtx = manager.getServerCtx(this.commandModel.getServerUuid());
+        if (serverCtx == null) {
+            conStatus = IconProvider.TASK_OFFLINE;
+            return;
+        }
+
+        isCommandValid = tryToSetServerInstance(serverCtx);
+        if (isCommandValid) {
+            if (serverCtx.isOnline()) {
+                conStatus = IconProvider.TASK_ONLINE;
+                return;
+            }
+        }
+        conStatus = IconProvider.TASK_OFFLINE;
+    }
+
+    public CommandTask(@NonNull final CommandContext commandCtx) {
+        this.cmdCtx = commandCtx;
+        isCommandValid = true;
+        final FeatureContext featCtx = commandCtx.getFeatureCtx();
+        this.commandModel = new CommandTaskModel(
+                featCtx.getServerUuid(),
+                featCtx.getFeatureId(),
+                this.cmdCtx.getCommand().getIdentifier());
+
+        if (featCtx.getServerCtx().isOnline()) {
             conStatus = IconProvider.TASK_ONLINE;
         } else {
             conStatus = IconProvider.TASK_OFFLINE;
         }
     }
 
-    public CommandTask(
-            final UUID serverUuid,
-            final TypeDefLut typeDefs,
-            final Feature.Command command
-    ) {
-        this(new CommandTaskModel(serverUuid, typeDefs, command));
+    /**
+     * Tries to acquire the desired command context by using only the given identifier stored in the
+     * command model. Therefore, a server context has to be provided. The UUID of the model itself
+     * is not altered since the server may be temporarily offline.
+     *
+     * @param serverCtx The server context to get the command from or <code>null</code>.
+     * @return <code>true</code> on success otherwise <code>false</code>.
+     */
+    private boolean tryToSetServerInstance(final ServerContext serverCtx) {
+        if (serverCtx == null) {
+            log.warn("Server with UUID " + commandModel.getServerUuid() + " not found.");
+            return false;
+        }
+
+        final FeatureContext featCtx = serverCtx.getFeatureCtx(commandModel.getFeatureId());
+        if (featCtx != null) {
+            final CommandContext cmdCtx = featCtx.getCommandCtx(commandModel.getCommandId());
+            if (cmdCtx != null) {
+                this.cmdCtx = cmdCtx;
+                return true;
+            }
+        }
+        log.warn("Feature " + commandModel.getFeatureId() + " for " + commandModel.getCommandId()
+                + " not found on server.");
+        return false;
     }
 
     /**
@@ -61,12 +109,12 @@ public class CommandTask extends QueueTask {
      * presenter and stores them in the data-model.
      *
      * @return The task-model of the command with the current parameters.
-     * @see TaskModel
+     * @see CommandTaskModel
      */
     @Override
     public TaskModel getCurrentTaskModel() {
         if (cmdNode != null) {
-            commandModel.setCommandParamsFromString(cmdNode.toJsonString());
+            commandModel.setCommandParams(cmdNode.toJson());
         }
         return commandModel;
     }
@@ -89,7 +137,7 @@ public class CommandTask extends QueueTask {
      */
     @Override
     public JPanel getPresenter() {
-        if (!commandModel.isValid()) {
+        if (!isCommandValid) {
             return null;
         }
 
@@ -105,7 +153,7 @@ public class CommandTask extends QueueTask {
             panel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
             panel.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createTitledBorder(commandModel.getCommand().getDisplayName()),
+                    BorderFactory.createTitledBorder(cmdCtx.getCommand().getDisplayName()),
                     BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
             if (cmdNode != null) {
@@ -132,18 +180,21 @@ public class CommandTask extends QueueTask {
      * before proceeding any actions with the internal <code>cmdNode</code>.
      */
     private boolean buildNode() {
-        if (commandModel.isValid()) {
-            final List<SiLAElement> params = commandModel.getCommand().getParameter();
+        if (isCommandValid) {
+            final List<SiLAElement> params = cmdCtx.getCommand().getParameter();
             if (params.isEmpty()) {
                 isNodeBuilt = true;
                 return true;
             }
 
-            final JsonNode cmdParams = commandModel.getCommandParamsAsJsonNode();
+            final JsonNode cmdParams = commandModel.getCommandParams();
             if (cmdParams == null) {
-                cmdNode = NodeFactory.createFromElements(commandModel.getTypeDefs(), params);
+                cmdNode = NodeFactory.createFromElements(cmdCtx.getFeatureCtx(), params);
             } else {
-                cmdNode = NodeFactory.createFromElementsWithJson(commandModel.getTypeDefs(), params, cmdParams);
+                cmdNode = NodeFactory.createFromElementsWithJson(
+                        cmdCtx.getFeatureCtx(),
+                        params,
+                        cmdParams);
             }
             isNodeBuilt = true;
             return true;
@@ -167,27 +218,21 @@ public class CommandTask extends QueueTask {
     }
 
     /**
-     * Changes the UUID and the server instance of this task.
+     * Changes the UUID and the server instance of this task. The UUID gets changed in the model
+     * even if no valid server instance for the command could not be found.
      *
-     * @param uuid The new UUID to assign.
-     * @param server The new server instance or <code>null</code> to set invalid/offline.
-     * @return <code>true</code> if the server change was successful, otherwise <code>false</code>.
+     * @param serverUuid The server UUID to change.
+     * @return <code>true</code> if the server change was successful and the server instance is
+     * currently online, otherwise <code>false</code>.
      */
-    public boolean changeServer(final UUID uuid, final Server server) {
-        commandModel.setServerUuid(uuid);
-        commandModel.setServerInstance(server);
-        if (commandModel.isValid()) {
-            return true;
+    public boolean changeServer(final UUID serverUuid) {
+        commandModel.setServerUuid(serverUuid);
+        final ServerContext serverCtx = manager.getServerCtx(serverUuid);
+        isCommandValid = tryToSetServerInstance(serverCtx);
+        if (isCommandValid) {
+            return serverCtx.isOnline();
         }
-        return false;
-    }
-
-    public String getFeatureId() {
-        return commandModel.getFeatureId();
-    }
-
-    public String getCommandId() {
-        return commandModel.getCommandId();
+        return isCommandValid;
     }
 
     /**
@@ -207,7 +252,7 @@ public class CommandTask extends QueueTask {
             buildNode();
         }
 
-        if (!commandModel.isValid()) {
+        if (!isCommandValid) {
             lastExecResult = "Error: Offline or invalid server instance.";
             taskState = TaskState.FINISHED_ERROR;
             stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, taskState);
@@ -217,7 +262,7 @@ public class CommandTask extends QueueTask {
         if (isPanelBuilt) {
             execBtn.setEnabled(false);
         }
-        final SiLACall.Type callType = commandModel.getCommand().getObservable().equalsIgnoreCase("yes")
+        final SiLACall.Type callType = cmdCtx.getCommand().getObservable().equalsIgnoreCase("yes")
                 ? SiLACall.Type.OBSERVABLE_COMMAND
                 : SiLACall.Type.UNOBSERVABLE_COMMAND;
 
@@ -246,7 +291,7 @@ public class CommandTask extends QueueTask {
         }
 
         try {
-            lastExecResult = ServerManager.getInstance().newCallExecutor(call).execute();
+            lastExecResult = manager.getServerManager().newCallExecutor(call).execute();
             taskState = TaskState.FINISHED_SUCCESS;
         } catch (RuntimeException ex) {
             log.error(ex.getMessage());

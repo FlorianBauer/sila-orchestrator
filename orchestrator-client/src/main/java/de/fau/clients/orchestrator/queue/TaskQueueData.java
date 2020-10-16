@@ -20,10 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import sila_java.library.manager.models.Server;
 
 /**
  * Class responsible for importing and exporting the task-queue from/to a JSON-file.
@@ -142,14 +139,12 @@ public class TaskQueueData {
      * Imports the data (tasks) hold by this instance into the given task queue.
      *
      * @param queue The task queue to import the data.
-     * @param serverMap A current map with available server.
      */
-    public void importToTaskQueue(final TaskQueueTable queue, final Map<UUID, Server> serverMap) {
+    public void importToTaskQueue(final TaskQueueTable queue) {
         for (final TaskEntry entry : this.tasks) {
             final TaskModel taskModel = entry.getTaskModel();
             if (taskModel instanceof CommandTaskModel) {
                 final CommandTaskModel ctm = (CommandTaskModel) taskModel;
-                ctm.importFromIdentifiers(serverMap);
                 queue.addCommandTaskWithId(entry.taskId, new CommandTask(ctm), entry.taskPolicy);
             } else if (taskModel instanceof DelayTaskModel) {
                 final DelayTaskModel dtm = (DelayTaskModel) taskModel;

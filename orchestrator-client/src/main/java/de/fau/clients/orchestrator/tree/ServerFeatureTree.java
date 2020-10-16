@@ -1,8 +1,11 @@
 package de.fau.clients.orchestrator.tree;
 
 import de.fau.clients.orchestrator.Presentable;
+import de.fau.clients.orchestrator.ctx.CommandContext;
+import de.fau.clients.orchestrator.ctx.FeatureContext;
+import de.fau.clients.orchestrator.ctx.PropertyContext;
+import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.dnd.CommandNodeTransferHandler;
-import de.fau.clients.orchestrator.nodes.TypeDefLut;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
@@ -12,9 +15,9 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
+import lombok.NonNull;
 import sila_java.library.core.models.Feature;
 import sila_java.library.manager.ServerListener;
-import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 
 /**
@@ -24,7 +27,6 @@ import sila_java.library.manager.models.Server;
 public final class ServerFeatureTree extends JTree implements Presentable, ServerListener {
 
     private static final String NO_SERVER_STR = "No Server Available";
-    private static final String CATEGORY_CORE = "core";
     private final HashMap<UUID, ServerTreeNode> serverMap = new HashMap<>();
 
     /**
@@ -46,68 +48,47 @@ public final class ServerFeatureTree extends JTree implements Presentable, Serve
     /**
      * Adds the given server list and all its features to the server tree.
      *
-     * @param serverManager The server manager instance.
-     * @param serverList The list of servers to add to the tree.
+     * @param serverCtxList The list of servers to add to the tree.
      */
-    public void addServersToTree(
-            final ServerManager serverManager,
-            final Collection<Server> serverList
-    ) {
+    public void addServersToTree(@NonNull final Collection<ServerContext> serverCtxList) {
         final DefaultTreeModel model = (DefaultTreeModel) this.treeModel;
         final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
 
-        for (final Server server : serverList) {
-            final UUID serverUuid = server.getConfiguration().getUuid();
-            final ServerTreeNode serverNode = new ServerTreeNode(serverManager, serverUuid);
+        for (final ServerContext serverCtx : serverCtxList) {
+            final UUID serverUuid = serverCtx.getServerUuid();
+            final ServerTreeNode serverNode = new ServerTreeNode(serverCtx);
             serverMap.put(serverUuid, serverNode);
             serverNode.setUserObject(new TreeNodeType(serverNode));
             rootNode.add(serverNode);
 
-            // Sort the feature list and put core freatures at the end.
-            server.getFeatures().sort((Feature t, Feature t1) -> {
-                if (t.getCategory().startsWith(CATEGORY_CORE)) {
-                    return 1;
-                } else if (t1.getCategory().startsWith(CATEGORY_CORE)) {
-                    return -1;
-                }
-                return 0;
-            });
-
-            for (final Feature feature : server.getFeatures()) {
-                final boolean isCoreFeat = feature.getCategory().startsWith(CATEGORY_CORE);
-                final FeatureInfoTreeNode featureNode = new FeatureInfoTreeNode(feature);
-                featureNode.setUserObject(new TreeNodeType(feature, isCoreFeat));
+            for (final FeatureContext featCtx : serverCtx.getFeatureCtxList()) {
+                final Feature feature = featCtx.getFeature();
+                final FeatureInfoTreeNode featureNode = new FeatureInfoTreeNode(featCtx);
+                featureNode.setUserObject(new TreeNodeType(feature, featCtx.isCoreFeature()));
                 serverNode.add(featureNode);
 
-                final TypeDefLut typeDefs = new TypeDefLut(server, feature);
-                if (feature.getProperty() != null && !feature.getProperty().isEmpty()) {
+                final Collection<PropertyContext> propCtxList = featCtx.getPropertyCtxList();
+                if (!propCtxList.isEmpty()) {
                     final DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode("Properties");
                     featureNode.add(propertyNode);
-                    for (final Feature.Property prop : feature.getProperty()) {
-                        final PropertyTreeNode ptn = new PropertyTreeNode(
-                                server.getConfiguration().getUuid(),
-                                feature.getIdentifier(),
-                                typeDefs,
-                                prop);
-                        ptn.setUserObject(new TreeNodeType(prop));
+                    for (final PropertyContext propCtx : propCtxList) {
+                        final PropertyTreeNode ptn = new PropertyTreeNode(propCtx);
+                        ptn.setUserObject(new TreeNodeType(propCtx.getProperty()));
                         propertyNode.add(ptn);
                     }
                 }
 
-                if (feature.getCommand() != null && !feature.getCommand().isEmpty()) {
+                final Collection<CommandContext> cmdCtxList = featCtx.getCommandCtxList();
+                if (!cmdCtxList.isEmpty()) {
                     final DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
                     featureNode.add(commandNode);
-                    for (final Feature.Command command : feature.getCommand()) {
-                        final CommandTreeNode ctn = new CommandTreeNode(
-                                server.getConfiguration().getUuid(),
-                                typeDefs,
-                                command);
-                        ctn.setUserObject(new TreeNodeType(command));
+                    for (final CommandContext cmdCtx : cmdCtxList) {
+                        final CommandTreeNode ctn = new CommandTreeNode(cmdCtx);
+                        ctn.setUserObject(new TreeNodeType(cmdCtx.getCommand()));
                         commandNode.add(ctn);
                     }
                 }
             }
-
         }
         model.reload();
         // Expand all nodes in the tree.

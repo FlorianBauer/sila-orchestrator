@@ -3,13 +3,13 @@ package de.fau.clients.orchestrator.tree;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.Presentable;
+import de.fau.clients.orchestrator.ctx.FeatureContext;
+import de.fau.clients.orchestrator.ctx.PropertyContext;
 import de.fau.clients.orchestrator.nodes.NodeFactory;
 import de.fau.clients.orchestrator.nodes.SilaNode;
-import de.fau.clients.orchestrator.nodes.TypeDefLut;
 import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.UUID;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -19,7 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import sila_java.library.core.models.Feature.Property;
+import sila_java.library.core.models.Feature;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.SiLACall;
 
@@ -35,10 +35,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
      */
     private static final int CONTENT_COMPONENT_IDX = 0;
     private static final ObjectMapper jsonMapper = new ObjectMapper();
-    private final UUID serverUuid;
-    private final String featureId;
-    private final TypeDefLut typeDefs;
-    private final Property property;
+    private final PropertyContext propCtx;
     private JPanel panel;
     private JButton refreshBtn;
     private SilaNode node;
@@ -47,21 +44,10 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
     /**
      * Constructor.
      *
-     * @param serverUuid The current UUID of the server where this SiLA Property belongs to.
-     * @param featureId The SiLA Feature identifier of this Property.
-     * @param typeDefs The Look-Up-Table of the data types from the Feature domain.
-     * @param property The actual SiLA Property.
+     * @param propCtx The property context.
      */
-    public PropertyTreeNode(
-            @NonNull final UUID serverUuid,
-            @NonNull final String featureId,
-            final TypeDefLut typeDefs,
-            @NonNull final Property property
-    ) {
-        this.serverUuid = serverUuid;
-        this.featureId = featureId;
-        this.typeDefs = typeDefs;
-        this.property = property;
+    public PropertyTreeNode(@NonNull final PropertyContext propCtx) {
+        this.propCtx = propCtx;
     }
 
     /**
@@ -75,7 +61,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
             panel = new JPanel();
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
             panel.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createTitledBorder(property.getDisplayName()),
+                    BorderFactory.createTitledBorder(this.propCtx.getProperty().getDisplayName()),
                     BorderFactory.createEmptyBorder(10, 10, 10, 10)));
             refreshBtn = new JButton("Refresh", IconProvider.REFRESH.getIcon());
             refreshBtn.addActionListener((ActionEvent evt) -> {
@@ -101,13 +87,15 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
      * <code>SilaNode</code>.
      */
     public void requestPropertyData() {
-        final SiLACall.Type callType = property.getObservable().equalsIgnoreCase("yes")
+        final SiLACall.Type callType = propCtx.getProperty().getObservable().equalsIgnoreCase("yes")
                 ? SiLACall.Type.OBSERVABLE_PROPERTY
                 : SiLACall.Type.UNOBSERVABLE_PROPERTY;
 
+        final FeatureContext featCtx = propCtx.getFeatureCtx();
+        final Feature.Property property = propCtx.getProperty();
         final SiLACall call = new SiLACall(
-                serverUuid,
-                featureId,
+                featCtx.getServerUuid(),
+                featCtx.getFeatureId(),
                 property.getIdentifier(),
                 callType);
 
@@ -137,7 +125,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
         }
 
         node = NodeFactory.createFromJson(
-                typeDefs,
+                featCtx,
                 property.getDataType(),
                 rootNode.get(property.getIdentifier()),
                 false);
@@ -145,7 +133,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
 
     @Override
     public String toString() {
-        return property.getDisplayName();
+        return this.propCtx.getProperty().getDisplayName();
     }
 
     /**
@@ -162,5 +150,10 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
         }
         panel.revalidate();
         panel.repaint();
+    }
+
+    public SilaNode getCurrentSilaNode() {
+        requestPropertyData();
+        return node;
     }
 }

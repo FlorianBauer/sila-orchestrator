@@ -1,16 +1,14 @@
 package de.fau.clients.orchestrator.tree;
 
-import de.fau.clients.orchestrator.nodes.TypeDefLut;
+import de.fau.clients.orchestrator.ctx.CommandContext;
 import de.fau.clients.orchestrator.tasks.CommandTask;
-import de.fau.clients.orchestrator.tasks.CommandTaskModel;
 import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.BorderLayout;
-import java.util.UUID;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.tree.DefaultMutableTreeNode;
-import sila_java.library.core.models.Feature.Command;
+import lombok.NonNull;
 
 @SuppressWarnings("serial")
 public class CommandTreeNode extends DefaultMutableTreeNode {
@@ -35,19 +33,10 @@ public class CommandTreeNode extends DefaultMutableTreeNode {
         COMMAND_USAGE_PANEL.add(hbox, BorderLayout.CENTER);
     }
 
-    private final CommandTaskModel commandModel;
+    private final CommandContext commandCtx;
 
-    public CommandTreeNode(final CommandTaskModel commandModel) {
-        super();
-        this.commandModel = commandModel;
-    }
-
-    public CommandTreeNode(
-            final UUID serverUuid,
-            final TypeDefLut typeDefs,
-            final Command command
-    ) {
-        this(new CommandTaskModel(serverUuid, typeDefs, command));
+    public CommandTreeNode(@NonNull final CommandContext commandCtx) {
+        this.commandCtx = commandCtx;
     }
 
     /**
@@ -56,11 +45,11 @@ public class CommandTreeNode extends DefaultMutableTreeNode {
      * @return The command used for the task queue table.
      */
     public CommandTask createTableEntry() {
-        return new CommandTask(commandModel);
+        return new CommandTask(commandCtx);
     }
 
     @Override
     public String toString() {
-        return commandModel.getCommand().getDisplayName();
+        return commandCtx.getCommand().getDisplayName();
     }
 }

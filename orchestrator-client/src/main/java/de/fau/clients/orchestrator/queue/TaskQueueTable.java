@@ -27,7 +27,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.manager.ServerListener;
-import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 
 /**
@@ -63,7 +62,6 @@ public class TaskQueueTable extends JTable implements ServerListener {
 
     private static final int INIT_TASK_ID = 1;
     private static int taskId = INIT_TASK_ID;
-    private static ServerManager serverManager = null;
     private final TableColumnHider tch;
     private final JPopupMenu taskQueueHeaderPopupMenu = new JPopupMenu();
     private final JCheckBoxMenuItem[] headerItems = new JCheckBoxMenuItem[COLUMN_TITLES.length];
@@ -195,10 +193,6 @@ public class TaskQueueTable extends JTable implements ServerListener {
 
     public void moveRow(int sourceRowIdx, int targetRowIdx) {
         ((TaskQueueTableModel) dataModel).moveRow(sourceRowIdx, sourceRowIdx, targetRowIdx);
-    }
-
-    public void setServerManager(ServerManager manager) {
-        TaskQueueTable.serverManager = manager;
     }
 
     public void setParamsPane(final JScrollPane pane) {
@@ -365,26 +359,23 @@ public class TaskQueueTable extends JTable implements ServerListener {
      */
     private void changeTaskUuidActionPerformed() {
         if (editingRow >= 0) {
-            if (serverManager != null) {
-                final UUID serverUuid = (UUID) uuidComboBox.getSelectedItem();
-                final CommandTask task = (CommandTask) dataModel.getValueAt(editingRow,
-                        COLUMN_TASK_INSTANCE_IDX);
-                final Server server = serverManager.getServers().get(serverUuid);
-                boolean wasChangeSuccess = task.changeServer(serverUuid, server);
-                if (wasChangeSuccess && server.getStatus() == Server.Status.ONLINE) {
-                    dataModel.setValueAt(IconProvider.TASK_ONLINE.getIcon(),
-                            editingRow,
-                            COLUMN_CONNECTION_STATUS_IDX);
-                } else {
-                    dataModel.setValueAt(IconProvider.TASK_OFFLINE.getIcon(),
-                            editingRow,
-                            COLUMN_CONNECTION_STATUS_IDX);
-                }
+            final UUID serverUuid = (UUID) uuidComboBox.getSelectedItem();
+            final CommandTask task = (CommandTask) dataModel.getValueAt(editingRow,
+                    COLUMN_TASK_INSTANCE_IDX);
+            boolean wasChangeSuccess = task.changeServer(serverUuid);
+            if (wasChangeSuccess) {
+                dataModel.setValueAt(IconProvider.TASK_ONLINE.getIcon(),
+                        editingRow,
+                        COLUMN_CONNECTION_STATUS_IDX);
+            } else {
+                dataModel.setValueAt(IconProvider.TASK_OFFLINE.getIcon(),
+                        editingRow,
+                        COLUMN_CONNECTION_STATUS_IDX);
+            }
 
-                if (paramsPane != null) {
-                    // update the parameter panel if available
-                    paramsPane.setViewportView(task.getPresenter());
-                }
+            if (paramsPane != null) {
+                // update the parameter panel if available
+                paramsPane.setViewportView(task.getPresenter());
             }
         }
     }

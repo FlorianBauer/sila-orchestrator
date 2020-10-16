@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator.nodes;
 
+import de.fau.clients.orchestrator.ctx.FeatureContext;
 import java.util.function.Supplier;
 import javax.swing.JComponent;
 import lombok.NonNull;
@@ -17,7 +18,7 @@ import sila_java.library.core.models.Constraints;
 @Slf4j
 public class ConstraintBasicNode extends BasicNode {
 
-    private final TypeDefLut typeDefs;
+    private final FeatureContext featCtx;
     private final Constraints constraints;
 
     protected ConstraintBasicNode(
@@ -27,25 +28,25 @@ public class ConstraintBasicNode extends BasicNode {
             @NonNull final Constraints constraints
     ) {
         super(type, component, valueSupplier);
-        this.typeDefs = null;
+        this.featCtx = null;
         this.constraints = constraints;
     }
 
     protected ConstraintBasicNode(
-            @NonNull final TypeDefLut typeDefs,
+            @NonNull final FeatureContext featCtx,
             @NonNull final BasicType type,
             @NonNull final JComponent component,
             @NonNull final Supplier<String> valueSupplier,
             @NonNull final Constraints constraints
     ) {
         super(type, component, valueSupplier);
-        this.typeDefs = typeDefs;
+        this.featCtx = featCtx;
         this.constraints = constraints;
     }
 
     @Override
     public ConstraintBasicNode cloneNode() {
-        return ConstraintBasicNodeFactory.create(this.typeDefs, this.type, this.constraints, null);
+        return ConstraintBasicNodeFactory.create(this.featCtx, this.type, this.constraints, null);
     }
 
     @NonNull

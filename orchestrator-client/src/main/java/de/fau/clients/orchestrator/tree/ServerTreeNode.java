@@ -1,10 +1,10 @@
 package de.fau.clients.orchestrator.tree;
 
 import de.fau.clients.orchestrator.Presentable;
+import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.nodes.MaxDim;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.util.UUID;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -17,8 +17,8 @@ import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
 import sila_java.library.manager.models.Server.Status;
 
@@ -26,11 +26,8 @@ import sila_java.library.manager.models.Server.Status;
 @SuppressWarnings("serial")
 public class ServerTreeNode extends DefaultMutableTreeNode implements Presentable {
 
-    private static final int MAX_NAME_LEN = 255;
     private static final Dimension MAX_DIM = MaxDim.TEXT_FIELD.getDim();
-    private final Server server;
-    private final ServerManager manager;
-    private final UUID serverUuid;
+    private final ServerContext serverCtx;
     private boolean wasBuilt = false;
     private JPanel panel = null;
     private JTextField serverNameTextField = null;
@@ -41,13 +38,12 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
     private JTextField joinedTextField = null;
     private JTextField negoTypeTextField = null;
 
-    public ServerTreeNode(final ServerManager manager, final UUID serverUuid) {
-        this.manager = manager;
-        this.serverUuid = serverUuid;
-        this.server = manager.getServers().get(serverUuid);
+    public ServerTreeNode(@NonNull final ServerContext serverCtx) {
+        this.serverCtx = serverCtx;
     }
 
     public String getServerLabel() {
+        final Server server = serverCtx.getServer();
         return "<html><p>" + server.getConfiguration().getName() + "</p>"
                 + "<p>UUID: " + server.getConfiguration().getUuid().toString() + "</p>"
                 + "<p>Addr: " + server.getHostAndPort().toString() + "</p>"
@@ -55,6 +51,7 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
     }
 
     public String getDescription() {
+        final Server server = serverCtx.getServer();
         if (server.getStatus() == Status.ONLINE) {
             return "Joined on " + server.getJoined().toInstant();
         } else {
@@ -62,12 +59,9 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
         }
     }
 
-    public UUID getServerUuid() {
-        return server.getConfiguration().getUuid();
-    }
-
     @Override
     public JPanel getPresenter() {
+        final Server server = serverCtx.getServer();
         if (!wasBuilt) {
             panel = new JPanel();
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -101,7 +95,8 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
             applyNewServerNameBtn.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             applyNewServerNameBtn.setEnabled(false);
             applyNewServerNameBtn.addActionListener((ActionEvent evt) -> {
-                changeServerName();
+                serverCtx.changeServerName(serverNameTextField.getText());
+                applyNewServerNameBtn.setEnabled(false);
             });
 
             panel.add(serverNameTextField);
@@ -185,48 +180,14 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
         return panel;
     }
 
-    private boolean validateServerName(final String changedName) {
-        if (changedName.isBlank()) {
-            return false;
-        }
-
-        if (changedName.equals(server.getConfiguration().getName())) {
-            return false;
-        }
-
-        if (changedName.length() > MAX_NAME_LEN) {
-            return false;
-        }
-
-        if (server.getStatus() != Status.ONLINE) {
-            return false;
-        }
-        return true;
-    }
-
     /**
      * Validates the server name and dis-/enables the "Apply Change"-button accordingly.
      */
     private void validateAndEnableServerNameChange() {
         final String text = serverNameTextField.getText();
-        final boolean isValid = validateServerName(text);
-
+        final boolean isValid = serverCtx.isServerNameValid(text);
         if (applyNewServerNameBtn.isEnabled() != isValid) {
             applyNewServerNameBtn.setEnabled(isValid);
         }
-    }
-
-    /**
-     * Changes the server name without validation checks and disables the "Apply Change"-button.
-     */
-    private void changeServerName() {
-        final String newServerName = serverNameTextField.getText();
-        try {
-            manager.setServerName(serverUuid, newServerName);
-        } catch (Exception ex) {
-            log.warn("Could not set server name to '" + newServerName + "'");
-            return;
-        }
-        applyNewServerNameBtn.setEnabled(false);
     }
 }

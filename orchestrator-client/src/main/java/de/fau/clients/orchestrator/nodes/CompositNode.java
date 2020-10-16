@@ -2,6 +2,7 @@ package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import de.fau.clients.orchestrator.ctx.FeatureContext;
 import static de.fau.clients.orchestrator.nodes.SilaNode.jsonMapper;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,40 +21,40 @@ import sila_java.library.core.models.SiLAElement;
 @Slf4j
 final class CompositNode extends SilaNode {
 
-    private final TypeDefLut typeDefs;
+    private final FeatureContext featCtx;
     private final List<SiLAElement> elements;
     private final List<SilaNode> children;
 
     private CompositNode(
-            @NonNull final TypeDefLut typeDefs,
+            @NonNull final FeatureContext featCtx,
             @NonNull final List<SiLAElement> elements
     ) {
-        this.typeDefs = typeDefs;
+        this.featCtx = featCtx;
         this.elements = elements;
         this.children = new ArrayList<>(elements.size());
     }
 
     protected final static CompositNode create(
-            @NonNull final TypeDefLut typeDefs,
+            @NonNull final FeatureContext featCtx,
             @NonNull final List<SiLAElement> elements
     ) {
-        final CompositNode node = new CompositNode(typeDefs, elements);
+        final CompositNode node = new CompositNode(featCtx, elements);
         for (final SiLAElement elem : node.elements) {
-            node.children.add(NodeFactory.createFromDataType(typeDefs, elem.getDataType()));
+            node.children.add(NodeFactory.createFromDataType(featCtx, elem.getDataType()));
         }
         return node;
     }
 
     protected final static CompositNode createFromJson(
-            @NonNull final TypeDefLut typeDefs,
+            @NonNull final FeatureContext featCtx,
             @NonNull final List<SiLAElement> elements,
             @NonNull final JsonNode jsonNode,
             boolean isEditable
     ) {
-        final CompositNode node = new CompositNode(typeDefs, elements);
+        final CompositNode node = new CompositNode(featCtx, elements);
         for (final SiLAElement elem : node.elements) {
             node.children.add(NodeFactory.createFromJson(
-                    typeDefs,
+                    featCtx,
                     elem.getDataType(),
                     jsonNode.get(elem.getIdentifier()),
                     isEditable));
@@ -63,7 +64,7 @@ final class CompositNode extends SilaNode {
 
     @Override
     public SilaNode cloneNode() {
-        return CompositNode.create(this.typeDefs, this.elements);
+        return CompositNode.create(this.featCtx, this.elements);
     }
 
     @Override

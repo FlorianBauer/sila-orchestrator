@@ -2,6 +2,7 @@ package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ final class ListNode extends SilaNode {
     /**
      * Look-up table for data-types defined by the corresponding SiLA-Feature.
      */
-    private final TypeDefLut typeDefs;
+    private final FeatureContext featCtx;
     /**
      * List holding the SilaNode elements.
      */
@@ -65,20 +66,22 @@ final class ListNode extends SilaNode {
     private Constraints constraints;
 
     private ListNode(
-            @NonNull final TypeDefLut typeDefs,
+            @NonNull final FeatureContext featCtx,
             final SilaNode prototype,
-            boolean isEditable) {
-        this.typeDefs = typeDefs;
+            boolean isEditable
+    ) {
+        this.featCtx = featCtx;
         this.prototype = prototype;
         this.isEditable = isEditable;
         this.constraints = null;
     }
 
     private ListNode(
-            @NonNull final TypeDefLut typeDefs,
+            @NonNull final FeatureContext featCtx,
             final SilaNode prototype,
-            final Constraints constraints) {
-        this.typeDefs = typeDefs;
+            final Constraints constraints
+    ) {
+        this.featCtx = featCtx;
         this.prototype = prototype;
         // constraining the list makes only sense if the list is editable in the first place
         this.isEditable = true;
@@ -86,27 +89,29 @@ final class ListNode extends SilaNode {
     }
 
     protected static ListNode create(
-            @NonNull final TypeDefLut typeDefs,
-            @NonNull final ListType type) {
-        final SilaNode prototype = NodeFactory.createFromDataType(typeDefs, type.getDataType());
-        final ListNode listNode = new ListNode(typeDefs, prototype, true);
+            @NonNull final FeatureContext featCtx,
+            @NonNull final ListType type
+    ) {
+        final SilaNode prototype = NodeFactory.createFromDataType(featCtx, type.getDataType());
+        final ListNode listNode = new ListNode(featCtx, prototype, true);
         listNode.buildNode();
         return listNode;
     }
 
     protected static ListNode createWithConstraint(
-            @NonNull final TypeDefLut typeDefs,
+            @NonNull final FeatureContext featCtx,
             @NonNull final ListType type,
             final Constraints con,
-            final JsonNode jsonNode) {
-        final SilaNode prototype = NodeFactory.createFromDataType(typeDefs, type.getDataType());
-        final ListNode listNode = new ListNode(typeDefs, prototype, con);
+            final JsonNode jsonNode
+    ) {
+        final SilaNode prototype = NodeFactory.createFromDataType(featCtx, type.getDataType());
+        final ListNode listNode = new ListNode(featCtx, prototype, con);
         if (jsonNode != null) {
             final boolean isEditable = listNode.isEditable;
             final Iterator<JsonNode> iter = jsonNode.elements();
             while (iter.hasNext()) {
                 listNode.nodeList.add(NodeFactory.createFromJson(
-                        typeDefs,
+                        featCtx,
                         type.getDataType(),
                         iter.next(),
                         isEditable));
@@ -117,16 +122,17 @@ final class ListNode extends SilaNode {
     }
 
     protected static ListNode createFromJson(
-            @NonNull final TypeDefLut typeDefs,
+            @NonNull final FeatureContext featCtx,
             @NonNull final ListType type,
             final JsonNode jsonNode,
-            boolean isEditable) {
-        final SilaNode prototype = NodeFactory.createFromDataType(typeDefs, type.getDataType());
-        final ListNode listNode = new ListNode(typeDefs, prototype, isEditable);
+            boolean isEditable
+    ) {
+        final SilaNode prototype = NodeFactory.createFromDataType(featCtx, type.getDataType());
+        final ListNode listNode = new ListNode(featCtx, prototype, isEditable);
         final Iterator<JsonNode> iter = jsonNode.elements();
         while (iter.hasNext()) {
             listNode.nodeList.add(NodeFactory.createFromJson(
-                    typeDefs,
+                    featCtx,
                     type.getDataType(),
                     iter.next(),
                     isEditable));
@@ -138,9 +144,9 @@ final class ListNode extends SilaNode {
     @Override
     public ListNode cloneNode() {
         if (constraints != null) {
-            return new ListNode(typeDefs, prototype, constraints);
+            return new ListNode(featCtx, prototype, constraints);
         }
-        return new ListNode(typeDefs, prototype, isEditable);
+        return new ListNode(featCtx, prototype, isEditable);
     }
 
     @Override

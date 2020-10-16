@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
 import de.fau.clients.orchestrator.utils.IconProvider;
@@ -70,7 +71,7 @@ class ConstraintBasicNodeFactory {
     }
 
     protected static ConstraintBasicNode create(
-            final TypeDefLut typeDefs,
+            final FeatureContext featCtx,
             @NonNull final BasicType type,
             @NonNull final Constraints constraints,
             final JsonNode jsonNode
@@ -78,7 +79,7 @@ class ConstraintBasicNodeFactory {
         switch (type) {
             case ANY:
                 // TODO: implement
-                return new ConstraintBasicNode(typeDefs,
+                return new ConstraintBasicNode(featCtx,
                         type,
                         new JLabel("placeholder 03"),
                         () -> ("not implemented 03"),
@@ -97,7 +98,7 @@ class ConstraintBasicNodeFactory {
             case REAL:
                 return createConstrainedRealTypeFromJson(constraints, jsonNode);
             case STRING:
-                return createConstrainedStringTypeFromJson(constraints, jsonNode, typeDefs);
+                return createConstrainedStringTypeFromJson(constraints, jsonNode, featCtx);
             case TIME:
                 return createConstrainedTimeTypeFromJson(constraints, jsonNode);
             case TIMESTAMP:
@@ -366,7 +367,7 @@ class ConstraintBasicNodeFactory {
     protected static ConstraintBasicNode createConstrainedStringTypeFromJson(
             @NonNull final Constraints constraints,
             final JsonNode jsonNode,
-            final TypeDefLut typeDefs
+            final FeatureContext featCtx
     ) {
         final JComponent comp;
         final Supplier<String> supp;
@@ -401,7 +402,7 @@ class ConstraintBasicNodeFactory {
                 validator = () -> (ValidatorUtils.isFullyQualifiedIdentifierValid(
                         fqiType,
                         strField.getText(),
-                        typeDefs));
+                        featCtx));
                 conditionDesc = fqiType;
             } else {
                 final BigInteger min = constraints.getMinimalLength();

@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator.tree;
 
 import de.fau.clients.orchestrator.Presentable;
+import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.utils.VersionNumber;
 import java.awt.Insets;
 import java.util.List;
@@ -60,6 +61,11 @@ public class FeatureInfoTreeNode extends DefaultMutableTreeNode implements Prese
                 + "/" + this.feature.getCategory()
                 + "/" + this.feature.getIdentifier()
                 + "/v" + featVer.getMajorNumber();
+    }
+    
+     public FeatureInfoTreeNode(final FeatureContext featureCtx) {
+        this.feature = featureCtx.getFeature();
+        this.fqfi = featureCtx.getFullyQualifiedIdentifier();
     }
 
     @Override

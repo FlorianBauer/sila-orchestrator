@@ -1,11 +1,12 @@
 package de.fau.clients.orchestrator.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.fau.clients.orchestrator.ctx.CommandContext;
+import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.nodes.FullyQualifiedIdentifier;
-import de.fau.clients.orchestrator.nodes.TypeDefLut;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
+import java.util.Collection;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,22 +36,22 @@ public final class ValidatorUtils {
      * <code>FeatureIdentifier</code>).
      * @param fqiUri The FQI string to validate (e.g.
      * <code>org.silastandard/core/SiLAService/v1</code>).
-     * @param typeDefs The type definitions.
+     * @param featureCtx The feature context holding all type definitions.
      * @return <code>true</code> if valid, otherwise <code>false</code>.
      */
     public static boolean isFullyQualifiedIdentifierValid(
             final String fqiType,
             final String fqiUri,
-            final TypeDefLut typeDefs
+            final FeatureContext featureCtx
     ) {
-        final List<Feature> featList = typeDefs.getServer().getFeatures();
+        final Collection<FeatureContext> featList = featureCtx.getServerCtx().getFeatureCtxList();
         final String[] sections = fqiUri.split("/");
         if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.FEATURE_IDENTIFIER.toString())) {
             if (sections.length < FullyQualifiedIdentifier.FEATURE_IDENTIFIER.getSectionCount()) {
                 return false;
             }
-            for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
+            for (final FeatureContext featCtx : featList) {
+                if (featCtx.getFullyQualifiedIdentifier().equalsIgnoreCase(fqiUri)) {
                     return true;
                 }
             }
@@ -58,10 +59,10 @@ public final class ValidatorUtils {
             if (sections.length < FullyQualifiedIdentifier.COMMAND_IDENTIFIER.getSectionCount()) {
                 return false;
             }
-            for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
-                    for (final Feature.Command cmd : feat.getCommand()) {
-                        if (cmd.getIdentifier().equalsIgnoreCase(sections[5])) {
+            for (final FeatureContext featCtx : featList) {
+                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
+                    for (final CommandContext cmd : featCtx.getCommandCtxList()) {
+                        if (cmd.getCommand().getIdentifier().equalsIgnoreCase(sections[5])) {
                             return true;
                         }
                     }
@@ -71,11 +72,11 @@ public final class ValidatorUtils {
             if (sections.length < FullyQualifiedIdentifier.COMMAND_PARAMETER_IDENTIFIER.getSectionCount()) {
                 return false;
             }
-            for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
-                    for (final Feature.Command cmd : feat.getCommand()) {
-                        if (cmd.getIdentifier().equalsIgnoreCase(sections[5])) {
-                            for (final SiLAElement param : cmd.getParameter()) {
+            for (final FeatureContext featCtx : featList) {
+                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
+                    for (final CommandContext cmd : featCtx.getCommandCtxList()) {
+                        if (cmd.getCommand().getIdentifier().equalsIgnoreCase(sections[5])) {
+                            for (final SiLAElement param : cmd.getCommand().getParameter()) {
                                 if (param.getIdentifier().equalsIgnoreCase(sections[7])) {
                                     return true;
                                 }
@@ -88,11 +89,11 @@ public final class ValidatorUtils {
             if (sections.length < FullyQualifiedIdentifier.COMMAND_RESPONSE_IDENTIFIER.getSectionCount()) {
                 return false;
             }
-            for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
-                    for (final Feature.Command cmd : feat.getCommand()) {
-                        if (cmd.getIdentifier().equalsIgnoreCase(sections[5])) {
-                            for (final SiLAElement resp : cmd.getResponse()) {
+            for (final FeatureContext featCtx : featList) {
+                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
+                    for (final CommandContext cmd : featCtx.getCommandCtxList()) {
+                        if (cmd.getCommand().getIdentifier().equalsIgnoreCase(sections[5])) {
+                            for (final SiLAElement resp : cmd.getCommand().getResponse()) {
                                 if (resp.getIdentifier().equalsIgnoreCase(sections[7])) {
                                     return true;
                                 }
@@ -105,11 +106,11 @@ public final class ValidatorUtils {
             if (sections.length < FullyQualifiedIdentifier.INTERMEDIATE_COMMAND_RESPONSEIDENTIFIER.getSectionCount()) {
                 return false;
             }
-            for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
-                    for (final Feature.Command cmd : feat.getCommand()) {
-                        if (cmd.getIdentifier().equalsIgnoreCase(sections[5])) {
-                            for (final SiLAElement interResp : cmd.getIntermediateResponse()) {
+            for (final FeatureContext featCtx : featList) {
+                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
+                    for (final CommandContext cmd : featCtx.getCommandCtxList()) {
+                        if (cmd.getCommand().getIdentifier().equalsIgnoreCase(sections[5])) {
+                            for (final SiLAElement interResp : cmd.getCommand().getIntermediateResponse()) {
                                 if (interResp.getIdentifier().equalsIgnoreCase(sections[7])) {
                                     return true;
                                 }
@@ -122,9 +123,9 @@ public final class ValidatorUtils {
             if (sections.length < FullyQualifiedIdentifier.DEFINED_EXECUTION_ERROR_IDENTIFIER.getSectionCount()) {
                 return false;
             }
-            for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
-                    for (final Feature.DefinedExecutionError err : feat.getDefinedExecutionError()) {
+            for (final FeatureContext featCtx : featList) {
+                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
+                    for (final Feature.DefinedExecutionError err : featCtx.getFeature().getDefinedExecutionError()) {
                         if (err.getIdentifier().equalsIgnoreCase(sections[5])) {
                             return true;
                         }
@@ -135,9 +136,9 @@ public final class ValidatorUtils {
             if (sections.length < FullyQualifiedIdentifier.PROPERTY_IDENTIFIER.getSectionCount()) {
                 return false;
             }
-            for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
-                    for (final Feature.Property prop : feat.getProperty()) {
+            for (final FeatureContext featCtx : featList) {
+                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
+                    for (final Feature.Property prop : featCtx.getFeature().getProperty()) {
                         if (prop.getIdentifier().equalsIgnoreCase(sections[5])) {
                             return true;
                         }
@@ -148,9 +149,9 @@ public final class ValidatorUtils {
             if (sections.length < FullyQualifiedIdentifier.TYPE_IDENTIFIER.getSectionCount()) {
                 return false;
             }
-            for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
-                    for (final SiLAElement dataTypeDef : feat.getDataTypeDefinition()) {
+            for (final FeatureContext featCtx : featList) {
+                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
+                    for (final SiLAElement dataTypeDef : featCtx.getFeature().getDataTypeDefinition()) {
                         if (dataTypeDef.getIdentifier().equalsIgnoreCase(sections[5])) {
                             return true;
                         }
@@ -161,9 +162,9 @@ public final class ValidatorUtils {
             if (sections.length < FullyQualifiedIdentifier.METADATA_IDENTIFIER.getSectionCount()) {
                 return false;
             }
-            for (final Feature feat : featList) {
-                if (feat.getIdentifier().equalsIgnoreCase(sections[2])) {
-                    for (final Feature.Metadata meta : feat.getMetadata()) {
+            for (final FeatureContext featCtx : featList) {
+                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
+                    for (final Feature.Metadata meta : featCtx.getFeature().getMetadata()) {
                         if (meta.getIdentifier().equalsIgnoreCase(sections[5])) {
                             return true;
                         }

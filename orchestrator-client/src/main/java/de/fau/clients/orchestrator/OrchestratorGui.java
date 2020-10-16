@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator;
 
+import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.dnd.TaskExportTransferHandler;
 import de.fau.clients.orchestrator.queue.TaskQueueData;
 import de.fau.clients.orchestrator.queue.TaskQueueTable;
@@ -22,8 +23,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -44,9 +47,6 @@ import javax.swing.text.NumberFormatter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import lombok.extern.slf4j.Slf4j;
-import sila_java.library.manager.ServerFinder;
-import sila_java.library.manager.ServerManager;
-import sila_java.library.manager.models.Server;
 
 /**
  * The main GUI window and execution entry point of the client. It is advised to use the NetBeans
@@ -61,7 +61,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private static final String STOP_QUEUE_EXEC_LABEL = "Stop Execute All";
     private static final String COPYRIGHT_NOTICE = "Copyright © 2020 Florian Bauer";
     private static final String NO_ERROR_STR = "<No Error>";
-    private static ServerManager serverManager;
+    private static ConnectionManager connectionManager;
     private static String silaOrchestratorVersion;
     private static String gitCommit;
     private static String gitCommitTimestamp;
@@ -83,34 +83,29 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private Thread currentlyExecutedTaskThread = null;
 
     private void addSpecificServer() {
-        String addr = serverAddressTextField.getText();
+        final String addr = serverAddressTextField.getText();
         int port;
         try {
             port = Integer.parseUnsignedInt(serverPortFormattedTextField.getText());
-        } catch (NumberFormatException ex) {
+        } catch (final NumberFormatException ex) {
             serverAddErrorEditorPane.setText("Invalid port number. Possible range [1024..65535]");
             return;
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             log.error(ex.getMessage());
             return;
         }
 
+        final UUID serverUuid;
         try {
-            serverManager.addServer(addr, port);
-        } catch (Exception ex) {
+            serverUuid = connectionManager.addServer(addr, port);
+        } catch (final Exception ex) {
             log.warn(ex.getMessage());
             serverAddErrorEditorPane.setText(ex.getMessage());
             return;
         }
 
-        for (final Server server : serverManager.getServers().values()) {
-            if (server.getHost().equals(addr) && server.getPort() == port) {
-                serverFeatureTree.addServersToTree(serverManager, List.of(server));
-                taskQueueTable.addUuidToSelectionSet(server.getConfiguration().getUuid());
-                break;
-            }
-        }
-
+        serverFeatureTree.addServersToTree(List.of(connectionManager.getServerCtx(serverUuid)));
+        taskQueueTable.addUuidToSelectionSet(serverUuid);
         serverAddErrorEditorPane.setText(NO_ERROR_STR);
         serverFeatureTree.setRootVisible(false);
         serverFeatureTree.setEnabled(true);
@@ -767,7 +762,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void initTaskQueueTable() {
-        taskQueueTable.setServerManager(serverManager);
         taskQueueTable.setParamsPane(presenterScrollPane);
         taskQueueTable.setComponentPopupMenu(taskQueuePopupMenu);
         taskQueueScrollPane.setViewportView(taskQueueTable);
@@ -799,7 +793,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 removeTaskFromQueue(evt);
             }
         });
-        serverManager.addServerListener(taskQueueTable);
+        connectionManager.addServerListener(taskQueueTable);
     }
 
     private void initServerTree() {
@@ -827,7 +821,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 presenterScrollPane.setViewportView(serverFeatureTree.getPresenter());
             }
         });
-        serverManager.addServerListener(serverFeatureTree);
+        connectionManager.addServerListener(serverFeatureTree);
     }
 
     /**
@@ -863,7 +857,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
-        serverManager.close();
+        connectionManager.close();
         System.exit(0);
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
@@ -897,18 +891,18 @@ public class OrchestratorGui extends javax.swing.JFrame {
         final DefaultTreeModel model = (DefaultTreeModel) serverFeatureTree.getModel();
         final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
         rootNode.removeAllChildren();
-        serverManager.clear();
+        connectionManager.clear();
 
         final Runnable scan = () -> {
-            serverManager.getDiscovery().scanNetwork();
-            final List<Server> serverList = ServerFinder.filterBy(ServerFinder.Filter.status(Server.Status.ONLINE)).find();
+            connectionManager.scanNetwork();
+            final Collection<ServerContext> serverList = connectionManager.getServerCtxList();
             final boolean isTreeRootVisible;
             if (!serverList.isEmpty()) {
                 // hide the "No Server Available" string.
                 isTreeRootVisible = false;
-                serverFeatureTree.addServersToTree(serverManager, serverList);
-                for (final Server server : serverList) {
-                    taskQueueTable.addUuidToSelectionSet(server.getConfiguration().getUuid());
+                serverFeatureTree.addServersToTree(serverList);
+                for (final ServerContext serverCtx : serverList) {
+                    taskQueueTable.addUuidToSelectionSet(serverCtx.getServerUuid());
                 }
             } else {
                 // show the "No Server Available" string.
@@ -936,7 +930,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_serverAddressTextFieldActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        serverManager.close();
+        connectionManager.close();
     }//GEN-LAST:event_formWindowClosing
 
     private void addTaskToQueueBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTaskToQueueBtnActionPerformed
@@ -1142,7 +1136,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 return;
             }
             clearQueueActionPerformed(evt);
-            tqd.importToTaskQueue(taskQueueTable, serverManager.getServers());
+            tqd.importToTaskQueue(taskQueueTable);
         }
     }//GEN-LAST:event_openFileActionPerformed
 
@@ -1226,7 +1220,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         try {
             // retrieve version info from the maven git plug-in
             properties.load(OrchestratorGui.class.getClassLoader().getResourceAsStream("git.properties"));
-            serverManager = ServerManager.getInstance();
+            connectionManager = ConnectionManager.getInstance();
         } catch (IOException ex) {
             log.error(ex.getMessage());
             System.exit(1);
@@ -1270,7 +1264,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                         final TaskQueueData tcd = TaskQueueData.createFromFile(siloFile, outMsg);
                         if (tcd != null) {
                             TaskQueueTable tqt = new TaskQueueTable();
-                            tcd.importToTaskQueue(tqt, serverManager.getServers());
+                            tcd.importToTaskQueue(tqt);
                             for (int j = 0; j < tqt.getRowCount(); j++) {
                                 final QueueTask task = tqt.getTaskFromRow(j);
                                 task.run();
