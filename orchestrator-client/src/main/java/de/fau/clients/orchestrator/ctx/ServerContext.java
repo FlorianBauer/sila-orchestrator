@@ -1,6 +1,5 @@
 package de.fau.clients.orchestrator.ctx;
 
-import de.fau.clients.orchestrator.ConnectionManager;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;

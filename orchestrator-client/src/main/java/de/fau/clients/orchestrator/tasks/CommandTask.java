@@ -1,7 +1,7 @@
 package de.fau.clients.orchestrator.tasks;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import de.fau.clients.orchestrator.ConnectionManager;
+import de.fau.clients.orchestrator.ctx.ConnectionManager;
 import de.fau.clients.orchestrator.ctx.CommandContext;
 import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.ctx.ServerContext;
