@@ -6,6 +6,10 @@ import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.nodes.FullyQualifiedIdentifier;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -252,5 +256,21 @@ public final class ValidatorUtils {
         } catch (IOException ex) {
             return false;
         }
+    }
+
+    /**
+     * Checks if the given input has a valid UTF-8 encoding.
+     *
+     * @param input The input data to validate.
+     * @return true if the input can be represented as UTF-8 string, otherwise false.
+     */
+    public static boolean isValidUtf8(byte[] input) {
+        final CharsetDecoder cs = StandardCharsets.UTF_8.newDecoder();
+        try {
+            cs.decode(ByteBuffer.wrap(input));
+        } catch (final CharacterCodingException ex) {
+            return false;
+        }
+        return true;
     }
 }
