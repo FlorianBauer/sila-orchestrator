@@ -15,7 +15,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
@@ -211,8 +211,8 @@ public final class ValidatorUtils {
      * and may be rewritten, extended or removed in the future. (2020-09-05,
      * florian.bauer.dev@gmail.com)
      *
-     * @param xml The XML input to validate.
-     * @param xsd The stream source of the XSD data to validate against.
+     * @param xml The XML input source to validate.
+     * @param xsd The source of the XSD data to validate against.
      *
      * @return <code>true</code> if valid, otherwise <code>false</code>.
      *
@@ -221,7 +221,7 @@ public final class ValidatorUtils {
      * @see #isXmlWellFormed
      */
     @Deprecated
-    public static boolean isXmlValid(final InputStream xml, final StreamSource xsd) {
+    public static boolean isXmlValid(final Source xml, final Source xsd) {
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setValidating(false);
         factory.setNamespaceAware(true);
@@ -230,7 +230,7 @@ public final class ValidatorUtils {
             final Schema schema = schemaFactory.newSchema(xsd);
             factory.setSchema(schema);
             final Validator validator = schema.newValidator();
-            validator.validate(new StreamSource(xml));
+            validator.validate(xml);
             return true;
         } catch (IOException | SAXException ex) {
             return false;
