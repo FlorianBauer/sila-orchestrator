@@ -46,7 +46,7 @@ public final class NodeFactory {
     ) {
         if (type.getBasic() != null) {
             // basic type
-            return BasicNodeFactory.create(type.getBasic());
+            return BasicNodeFactory.create(type.getBasic(), true);
         } else {
             // derived type
             if (type.getConstrained() != null) {

@@ -18,20 +18,23 @@ class BasicNode extends SilaNode {
     protected final BasicType type;
     protected final JComponent component;
     protected final Supplier<String> valueSupplier;
+    protected final boolean isEditable;
 
     protected BasicNode(
             @NonNull final BasicType type,
             @NonNull final JComponent component,
-            @NonNull final Supplier<String> valueSupplier
+            @NonNull final Supplier<String> valueSupplier,
+            boolean isEditable
     ) {
         this.type = type;
         this.component = component;
         this.valueSupplier = valueSupplier;
+        this.isEditable = isEditable;
     }
 
     @Override
     public BasicNode cloneNode() {
-        return BasicNodeFactory.create(this.type);
+        return BasicNodeFactory.create(this.type, isEditable);
     }
 
     @Override

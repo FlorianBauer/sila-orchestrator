@@ -1,6 +1,9 @@
 package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerModel;
@@ -9,7 +12,12 @@ import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor.FormatterTy
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerModel;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerModel;
+import de.fau.clients.orchestrator.utils.ValidatorUtils;
+import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
@@ -26,6 +34,8 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
+import lombok.NonNull;
+import sila2.org.silastandard.SiLAFramework;
 import sila_java.library.core.models.BasicType;
 
 /**
@@ -46,236 +56,345 @@ final class BasicNodeFactory {
         throw new UnsupportedOperationException("Instantiation not allowed.");
     }
 
-    protected static BasicNode create(final BasicType type) {
+    protected static BasicNode create(@NonNull final BasicType type, boolean isEditable) {
         switch (type) {
             case ANY:
-                // TODO: implement
-                return new BasicNode(type, new JLabel("placeholder 01"), () -> ("not implemented 01"));
+                throw new IllegalArgumentException("'Any'-type without typ info not supported.");
             case BINARY:
-                return BasicNodeFactory.createBinaryTypeFromJson(null, true);
+                return createBinaryType("".getBytes(), isEditable);
             case BOOLEAN:
-                return BasicNodeFactory.createBooleanTypeFromJson(null, true);
+                return createBooleanType(false, isEditable);
             case DATE:
-                return BasicNodeFactory.createDateTypeFromJson(null, true);
+                return createDateType(LocalDate.now(), isEditable);
             case INTEGER:
-                return BasicNodeFactory.createIntegerTypeFromJson(null, true);
+                return createIntegerType(0, isEditable);
             case REAL:
-                return BasicNodeFactory.createRealTypeFromJson(null, true);
+                return createRealType(0.0, isEditable);
             case STRING:
-                return BasicNodeFactory.createStringTypeFromJson(null, true);
+                return createStringType("", isEditable);
             case TIME:
-                return BasicNodeFactory.createTimeTypeFromJson(null, true);
+                return createTimeType(OffsetTime.now(), isEditable);
             case TIMESTAMP:
-                return BasicNodeFactory.createTimestampTypeFromJson(null, true);
+                return createTimestampType(OffsetDateTime.now(), isEditable);
             default:
                 throw new IllegalArgumentException("Not a supported BasicType.");
         }
     }
 
     protected static BasicNode createFromJson(
-            final BasicType type,
+            @NonNull final BasicType type,
             final JsonNode jsonNode,
             boolean isEditable
     ) {
+        if (jsonNode == null) {
+            return create(type, isEditable);
+        }
+
         switch (type) {
             case ANY:
-                // TODO: implement
-                return new BasicNode(type, new JLabel("placeholder 05"), () -> ("not implemented 05"));
-            case BINARY:
-                return BasicNodeFactory.createBinaryTypeFromJson(jsonNode, isEditable);
+                return createAnyTypeFromJson(jsonNode, isEditable);
+            case BINARY: {
+                try {
+                    return createBinaryType(jsonNode.binaryValue(), isEditable);
+                } catch (final IOException ex) {
+                    return createErrorType(type, ex.getMessage());
+                }
+            }
             case BOOLEAN:
-                return BasicNodeFactory.createBooleanTypeFromJson(jsonNode, isEditable);
+                return createBooleanType(jsonNode.asBoolean(), isEditable);
             case DATE:
-                return BasicNodeFactory.createDateTypeFromJson(jsonNode, isEditable);
+                final LocalDate initDate = DateTimeParser.parseIsoDate(jsonNode.asText());
+                return createDateType(initDate, isEditable);
             case INTEGER:
-                return BasicNodeFactory.createIntegerTypeFromJson(jsonNode, isEditable);
+                return createIntegerType(jsonNode.asLong(), isEditable);
             case REAL:
-                return BasicNodeFactory.createRealTypeFromJson(jsonNode, isEditable);
+                return createRealType(jsonNode.asDouble(), isEditable);
             case STRING:
-                return BasicNodeFactory.createStringTypeFromJson(jsonNode, isEditable);
+                return createStringType(jsonNode.asText(), isEditable);
             case TIME:
-                return BasicNodeFactory.createTimeTypeFromJson(jsonNode, isEditable);
+                final OffsetTime initTime = DateTimeParser.parseIsoTime(jsonNode.asText());
+                return createTimeType(initTime, isEditable);
             case TIMESTAMP:
-                return BasicNodeFactory.createTimestampTypeFromJson(jsonNode, isEditable);
+                final OffsetDateTime initTimesamp = DateTimeParser.parseIsoDateTime(jsonNode.asText());
+                return createTimestampType(initTimesamp, isEditable);
             default:
                 throw new IllegalArgumentException("Not a supported BasicType.");
         }
     }
 
+    protected static BasicNode createAnyTypeFromJson(
+            @NonNull final JsonNode jsonNode,
+            boolean isEditable
+    ) {
+        final BasicType basicType = BasicType.ANY;
+        final XmlMapper xmlMapper = new XmlMapper();
+        final JsonNode xmlTypeNode;
+        final String type;
+        final byte[] payload;
+        try {
+            xmlTypeNode = xmlMapper.readTree(jsonNode.get("type").asText());
+            type = xmlTypeNode.get("Basic").asText();
+            payload = jsonNode.get("payload").binaryValue();
+        } catch (final IOException ex) {
+            return createErrorType(basicType, ex.getMessage());
+        }
+
+        if (type.equals(BasicType.BINARY.value())) {
+            try {
+                final ByteString byteVal = SiLAFramework.Binary.parseFrom(payload).getValue();
+                return createBinaryType(byteVal.toByteArray(), isEditable);
+            } catch (final InvalidProtocolBufferException ex) {
+                return createErrorType(basicType, ex.getMessage());
+            }
+        } else if (type.equals(BasicType.BOOLEAN.value())) {
+            try {
+                final boolean boolVal = SiLAFramework.Boolean.parseFrom(payload).getValue();
+                return createBooleanType(boolVal, isEditable);
+            } catch (final InvalidProtocolBufferException ex) {
+                return createErrorType(basicType, ex.getMessage());
+            }
+        } else if (type.equals(BasicType.DATE.value())) {
+            final SiLAFramework.Date dateVal;
+            try {
+                dateVal = SiLAFramework.Date.parseFrom(payload);
+            } catch (final InvalidProtocolBufferException ex) {
+                return createErrorType(basicType, ex.getMessage());
+            }
+            return createDateType(
+                    LocalDate.of(dateVal.getDay(), dateVal.getMonth(), dateVal.getYear()),
+                    isEditable);
+        } else if (type.equals(BasicType.INTEGER.value())) {
+            try {
+                final long intVal = SiLAFramework.Integer.parseFrom(payload).getValue();
+                return createIntegerType(intVal, isEditable);
+            } catch (final InvalidProtocolBufferException ex) {
+                return createErrorType(basicType, ex.getMessage());
+            }
+        } else if (type.equals(BasicType.REAL.value())) {
+            try {
+                final double realVal = SiLAFramework.Real.parseFrom(payload).getValue();
+                return createRealType(realVal, isEditable);
+            } catch (final InvalidProtocolBufferException ex) {
+                return createErrorType(basicType, ex.getMessage());
+            }
+        } else if (type.equals(BasicType.STRING.value())) {
+            try {
+                final String stringVal = SiLAFramework.String.parseFrom(payload).getValue();
+                return createStringType(stringVal, isEditable);
+            } catch (final InvalidProtocolBufferException ex) {
+                return createErrorType(basicType, ex.getMessage());
+            }
+        } else if (type.equals(BasicType.TIME.value())) {
+            final SiLAFramework.Time timeVal;
+            try {
+                timeVal = SiLAFramework.Time.parseFrom(payload);
+            } catch (final InvalidProtocolBufferException ex) {
+                return createErrorType(basicType, ex.getMessage());
+            }
+            final SiLAFramework.Timezone tz = timeVal.getTimezone();
+            final ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutes(tz.getHours(), tz.getMinutes());
+            final OffsetTime offsetTime = OffsetTime.of(
+                    timeVal.getHour(),
+                    timeVal.getMinute(),
+                    timeVal.getSecond(),
+                    0,
+                    zoneOffset);
+            return createTimeType(offsetTime, isEditable);
+        } else if (type.equals(BasicType.TIMESTAMP.value())) {
+            final SiLAFramework.Timestamp timestampVal;
+            try {
+                timestampVal = SiLAFramework.Timestamp.parseFrom(payload);
+            } catch (final InvalidProtocolBufferException ex) {
+                return createErrorType(basicType, ex.getMessage());
+            }
+            final SiLAFramework.Timezone tz = timestampVal.getTimezone();
+            final ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutes(tz.getHours(), tz.getMinutes());
+            final OffsetDateTime timestamp = OffsetDateTime.of(
+                    timestampVal.getYear(),
+                    timestampVal.getMonth(),
+                    timestampVal.getDay(),
+                    timestampVal.getHour(),
+                    timestampVal.getMinute(),
+                    timestampVal.getSecond(),
+                    0,
+                    zoneOffset);
+            return createTimestampType(timestamp, isEditable);
+        } else {
+            return createErrorType(basicType, "Undefined Any type.");
+        }
+    }
+
     /**
-     * Creates a <code>BasicNode</code> of the type <code>BasicType.Binary</code>. If the given
-     * jsonNode is <code>null</code>, the node is initialize with an empty String.
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.Binary</code>. Input data which
+     * can not be interpreted as UTF-8 string is not editable even if the provided parameter states
+     * otherwise.
      *
-     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param byteValue The byte array to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a binary value.
      */
-    protected static BasicNode createBinaryTypeFromJson(
-            final JsonNode jsonNode,
+    protected static BasicNode createBinaryType(
+            @NonNull final byte[] byteValue,
             boolean isEditable
     ) {
-        final JEditorPane editorPane = new JEditorPane();
-        editorPane.setEnabled(isEditable);
-        editorPane.setContentType("text/plain");
-        String plainTxt = "";
-        if (jsonNode != null) {
-            plainTxt = new String(Base64.getDecoder().decode(jsonNode.asText()),
-                    StandardCharsets.UTF_8);
+        final JComponent comp;
+        final Supplier<String> supp;
+        String binaryReprStr;
+        final boolean isUtf8 = ValidatorUtils.isValidUtf8(byteValue);
+        if (isUtf8) {
+            binaryReprStr = new String(byteValue, StandardCharsets.UTF_8);
+            final JEditorPane editorPane = new JEditorPane();
+            editorPane.setEnabled(isEditable);
+            editorPane.setText(binaryReprStr);
+            final JScrollPane scrollPane = new JScrollPane(editorPane);
+            scrollPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+            scrollPane.setMaximumSize(MaxDim.TEXT_FIELD_MULTI_LINE.getDim());
+            comp = scrollPane;
+            supp = () -> {
+                return Base64.getEncoder().encodeToString(editorPane
+                        .getText()
+                        .getBytes(StandardCharsets.UTF_8));
+            };
+        } else {
+            try {
+                final MessageDigest md = MessageDigest.getInstance("SHA-256");
+                binaryReprStr = "SHA-256: " + toHexString(md.digest(byteValue));
+            } catch (final NoSuchAlgorithmException ex) {
+                binaryReprStr = "SHA-256: error";
+            }
+            final JTextField textField = new JTextField();
+            textField.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            textField.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
+            // Raw (non UTF-8) data can not be edited.
+            textField.setEnabled(false);
+            textField.setText(binaryReprStr);
+            comp = textField;
+            supp = () -> (Base64.getEncoder().encodeToString(byteValue));
+            isEditable = false;
         }
-        editorPane.setText(plainTxt);
-        final Supplier<String> supp = () -> {
-            return Base64.getEncoder().encodeToString(editorPane
-                    .getText()
-                    .getBytes(StandardCharsets.UTF_8));
-        };
-
-        final JScrollPane scrollPane = new JScrollPane(editorPane);
-        scrollPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scrollPane.setMaximumSize(MaxDim.TEXT_FIELD_MULTI_LINE.getDim());
-        return new BasicNode(BasicType.BINARY, scrollPane, supp);
+        return new BasicNode(BasicType.BINARY, comp, supp, isEditable);
     }
 
     /**
-     * Creates a <code>BasicNode</code> of the type <code>BasicType.BOOLEAN</code>. If the given
-     * jsonNode is <code>null</code>, the node is initialize with <code>false</code>.
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.BOOLEAN</code>.
      *
-     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param boolValue The bool value to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a boolean value.
      */
-    protected static BasicNode createBooleanTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
+    protected static BasicNode createBooleanType(final boolean boolValue, boolean isEditable) {
         final JCheckBox checkBox = new JCheckBox();
         checkBox.setEnabled(isEditable);
-        checkBox.setSelected((jsonNode != null) ? jsonNode.asBoolean() : false);
+        checkBox.setSelected(boolValue);
         final Supplier<String> supp = () -> (checkBox.isSelected() ? "true" : "false");
-        return new BasicNode(BasicType.BOOLEAN, checkBox, supp);
+        return new BasicNode(BasicType.BOOLEAN, checkBox, supp, isEditable);
     }
 
     /**
-     * Creates a <code>BasicNode</code> of the type <code>BasicType.DATE</code>. If the given
-     * jsonNode is <code>null</code>, the node is initialize with the current date.
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.DATE</code>.
      *
-     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param jsonNode The <code>LocalDate</code> to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a date value.
      */
-    protected static BasicNode createDateTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
-        LocalDate parsedDate = null;
-        if (jsonNode != null) {
-            try {
-                parsedDate = DateTimeParser.parseIsoDate(jsonNode.asText());
-            } catch (Exception ex) {
-                // do nothing and use the current date instead
-            }
-        }
-
-        final LocalDate initDate = (parsedDate != null) ? parsedDate : LocalDate.now();
+    protected static BasicNode createDateType(
+            @NonNull final LocalDate dateValue,
+            boolean isEditable
+    ) {
         if (isEditable) {
             final JSpinner dateSpinner = new JSpinner();
-            dateSpinner.setModel(new LocalDateSpinnerModel(initDate, null, null, null));
+            dateSpinner.setModel(new LocalDateSpinnerModel(dateValue, null, null, null));
             dateSpinner.setEditor(new LocalDateSpinnerEditor(dateSpinner));
             dateSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             final Supplier<String> supp = () -> {
-                return initDate.toString();
+                return dateValue.toString();
             };
-            return new BasicNode(BasicType.DATE, dateSpinner, supp);
+            return new BasicNode(BasicType.DATE, dateSpinner, supp, isEditable);
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
-            strField.setText(initDate.toString());
-            return new BasicNode(BasicType.DATE, strField, () -> (strField.getText()));
+            strField.setText(dateValue.toString());
+            return new BasicNode(BasicType.DATE, strField, () -> (strField.getText()), isEditable);
         }
     }
 
     /**
-     * Creates a <code>BasicNode</code> of the type <code>BasicType.INTEGER</code>. If the given
-     * jsonNode is <code>null</code>, the node is initialize with <code>0</code>.
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.INTEGER</code>.
      *
-     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param intValue The integer value to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a integer value.
      */
-    protected static BasicNode createIntegerTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
+    protected static BasicNode createIntegerType(final long intValue, boolean isEditable) {
         if (isEditable) {
             final SpinnerModel model = new SpinnerNumberModel();
             final JSpinner spinner = new JSpinner(model);
             spinner.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
-            model.setValue((jsonNode != null) ? jsonNode.asLong() : 0L);
-            return new BasicNode(BasicType.INTEGER, spinner, () -> (spinner.getValue().toString()));
+            model.setValue(intValue);
+            return new BasicNode(BasicType.INTEGER, spinner, () -> (spinner.getValue().toString()), isEditable);
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
-            strField.setText((jsonNode != null) ? jsonNode.asText() : "0");
-            return new BasicNode(BasicType.INTEGER, strField, () -> (strField.getText()));
+            strField.setText(Long.toString(intValue));
+            return new BasicNode(BasicType.INTEGER, strField, () -> (strField.getText()), isEditable);
         }
     }
 
     /**
-     * Creates a <code>BasicNode</code> of the type <code>BasicType.REAL</code>. If the given
-     * jsonNode is <code>null</code>, the node is initialize with <code>0.0</code>.
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.REAL</code>.
      *
-     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param realValue The double value to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a double value.
      */
-    protected static BasicNode createRealTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
+    protected static BasicNode createRealType(final double realValue, boolean isEditable) {
         if (isEditable) {
-            final SpinnerModel model = new SpinnerNumberModel(0.0, null, null, REAL_STEP_SIZE);
+            final SpinnerModel model = new SpinnerNumberModel(realValue, null, null, REAL_STEP_SIZE);
             final JSpinner spinner = new JSpinner(model);
             spinner.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
-            model.setValue((jsonNode != null) ? jsonNode.asDouble() : 0.0);
-            return new BasicNode(BasicType.REAL, spinner, () -> (spinner.getValue().toString()));
+            return new BasicNode(BasicType.REAL, spinner, () -> (spinner.getValue().toString()), isEditable);
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
-            strField.setText((jsonNode != null) ? jsonNode.asText() : "0.0");
-            return new BasicNode(BasicType.REAL, strField, () -> (strField.getText()));
+            strField.setText(Double.toString(realValue));
+            return new BasicNode(BasicType.REAL, strField, () -> (strField.getText()), isEditable);
         }
     }
 
     /**
-     * Creates a <code>BasicNode</code> of the type <code>BasicType.STRING</code>. If the given
-     * jsonNode is <code>null</code>, the node is initialize with an empty String.
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.STRING</code>.
      *
-     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param stringValue The String to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a String.
      */
-    protected static BasicNode createStringTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
+    protected static BasicNode createStringType(
+            @NonNull final String stringValue,
+            boolean isEditable
+    ) {
         final JTextField strField = new JTextField();
         strField.setEditable(isEditable);
         strField.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
-        strField.setText((jsonNode != null) ? jsonNode.asText() : "");
-        return new BasicNode(BasicType.STRING, strField, () -> (strField.getText()));
+        strField.setText(stringValue);
+        return new BasicNode(BasicType.STRING, strField, () -> (strField.getText()), isEditable);
     }
 
     /**
-     * Creates a <code>BasicNode</code> of the type <code>BasicType.TIME</code>. If the given
-     * jsonNode is <code>null</code>, the node is initialize with the current time.
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.TIME</code>.
      *
-     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param timeValue The <code>OffsetTime</code> to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
      * @return The initialize BasicNode representing a time value.
      */
-    protected static BasicNode createTimeTypeFromJson(final JsonNode jsonNode, boolean isEditable) {
-        OffsetTime parsedTime = null;
-        if (jsonNode != null) {
-            try {
-                parsedTime = DateTimeParser.parseIsoTime(jsonNode.asText())
-                        .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
-            } catch (Exception ex) {
-                // do nothing and use the current time instead
-            }
-        }
-
-        final OffsetTime initTime = (parsedTime != null)
-                ? parsedTime
-                : OffsetTime.now().truncatedTo(ChronoUnit.MILLIS);
-
+    protected static BasicNode createTimeType(
+            @NonNull final OffsetTime timeValue,
+            boolean isEditable
+    ) {
+        final OffsetTime initTime = timeValue.truncatedTo(ChronoUnit.MILLIS);
         if (isEditable) {
             final JSpinner timeSpinner = new JSpinner();
             timeSpinner.setModel(new OffsetTimeSpinnerModel(initTime, null, null, null));
@@ -286,7 +405,7 @@ final class BasicNodeFactory {
                         .withOffsetSameInstant(ZoneOffset.UTC)
                         .toString();
             };
-            return new BasicNode(BasicType.TIME, timeSpinner, supp);
+            return new BasicNode(BasicType.TIME, timeSpinner, supp, isEditable);
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
@@ -295,36 +414,22 @@ final class BasicNodeFactory {
             final Supplier<String> supp = () -> {
                 return initTime.withOffsetSameInstant(ZoneOffset.UTC).toString();
             };
-            return new BasicNode(BasicType.TIME, strField, supp);
+            return new BasicNode(BasicType.TIME, strField, supp, isEditable);
         }
     }
 
     /**
-     * Creates a <code>BasicNode</code> of the type <code>BasicType.TIMESTAMP</code>. If the given
-     * jsonNode is <code>null</code>, the node is initialized with the current date and time.
+     * Creates a <code>BasicNode</code> of the type <code>BasicType.TIMESTAMP</code>.
      *
-     * @param jsonNode A JSON node with a value to initialize or <code>null</code>.
+     * @param timestampValue The <code>OffsetDateTime</code> to initialize the node with.
      * @param isEditable Determines whether the User can edit the represented value or not.
      * @return The initialized BasicNode representing a timestamp value.
      */
-    protected static BasicNode createTimestampTypeFromJson(
-            final JsonNode jsonNode,
+    protected static BasicNode createTimestampType(
+            @NonNull final OffsetDateTime timestampValue,
             boolean isEditable
     ) {
-        OffsetDateTime parsedDateTime = null;
-        if (jsonNode != null) {
-            try {
-                parsedDateTime = DateTimeParser.parseIsoDateTime(jsonNode.asText())
-                        .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
-            } catch (Exception ex) {
-                // do nothing and use the current time instead
-            }
-        }
-
-        final OffsetDateTime initDateTime = (parsedDateTime != null)
-                ? parsedDateTime
-                : OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-
+        final OffsetDateTime initDateTime = timestampValue.truncatedTo(ChronoUnit.MILLIS);
         if (isEditable) {
             final JSpinner timestampSpinner = new JSpinner();
             timestampSpinner.setModel(
@@ -338,7 +443,7 @@ final class BasicNodeFactory {
                         .withOffsetSameInstant(ZoneOffset.UTC)
                         .toString();
             };
-            return new BasicNode(BasicType.TIMESTAMP, timestampSpinner, supp);
+            return new BasicNode(BasicType.TIMESTAMP, timestampSpinner, supp, isEditable);
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
@@ -347,7 +452,31 @@ final class BasicNodeFactory {
             final Supplier<String> supp = () -> {
                 return initDateTime.withOffsetSameInstant(ZoneOffset.UTC).toString();
             };
-            return new BasicNode(BasicType.TIMESTAMP, strField, supp);
+            return new BasicNode(BasicType.TIMESTAMP, strField, supp, isEditable);
         }
+    }
+
+    protected static BasicNode createErrorType(
+            @NonNull final BasicType basicType,
+            @NonNull final String errorMsg
+    ) {
+        final JLabel errLabel = new JLabel(errorMsg);
+        errLabel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+        return new BasicNode(basicType, errLabel, () -> ("Error"), false);
+    }
+
+    /**
+     * Converts hexadecimal byte values to a string.
+     *
+     * @param hexValues The hex values to represent as string.
+     * @return A the hex values as String.
+     */
+    public static String toHexString(byte[] hexValues) {
+        final BigInteger number = new BigInteger(1, hexValues);
+        final StringBuilder hexString = new StringBuilder(number.toString(16));
+        while (hexString.length() < 32) {
+            hexString.insert(0, '0');
+        }
+        return hexString.toString();
     }
 }

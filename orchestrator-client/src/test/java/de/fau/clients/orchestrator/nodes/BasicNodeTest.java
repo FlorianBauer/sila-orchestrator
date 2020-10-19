@@ -1,47 +1,134 @@
 package de.fau.clients.orchestrator.nodes;
 
+import javax.swing.JCheckBox;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import sila_java.library.core.models.BasicType;
 
 public class BasicNodeTest {
 
+    private static BasicNode binaryNode;
+    private static BasicNode booleanNode;
+    private static BasicNode dateNode;
+    private static BasicNode integerNode;
+    private static BasicNode realNode;
+    private static BasicNode stringNode;
+    private static BasicNode timeNode;
+    private static BasicNode timestampNode;
+
+    @BeforeAll
+    public static void initNodes() {
+        binaryNode = BasicNodeFactory.create(BasicType.BINARY, true);
+        booleanNode = BasicNodeFactory.create(BasicType.BOOLEAN, true);
+        dateNode = BasicNodeFactory.create(BasicType.DATE, true);
+        integerNode = BasicNodeFactory.create(BasicType.INTEGER, true);
+        realNode = BasicNodeFactory.create(BasicType.REAL, true);
+        stringNode = BasicNodeFactory.create(BasicType.STRING, true);
+        timeNode = BasicNodeFactory.create(BasicType.TIME, true);
+        timestampNode = BasicNodeFactory.create(BasicType.TIMESTAMP, true);
+    }
+
+    @Test
+    public void getType() {
+        assertEquals(BasicType.BINARY, binaryNode.getType());
+        assertEquals(BasicType.BOOLEAN, booleanNode.getType());
+        assertEquals(BasicType.DATE, dateNode.getType());
+        assertEquals(BasicType.INTEGER, integerNode.getType());
+        assertEquals(BasicType.REAL, realNode.getType());
+        assertEquals(BasicType.STRING, stringNode.getType());
+        assertEquals(BasicType.TIME, timeNode.getType());
+        assertEquals(BasicType.TIMESTAMP, timestampNode.getType());
+    }
+
+    @Test
+    public void getComponent() {
+        assertEquals(JScrollPane.class, binaryNode.getComponent().getClass());
+        assertEquals(JCheckBox.class, booleanNode.getComponent().getClass());
+        assertEquals(JSpinner.class, dateNode.getComponent().getClass());
+        assertEquals(JSpinner.class, integerNode.getComponent().getClass());
+        assertEquals(JSpinner.class, realNode.getComponent().getClass());
+        assertEquals(JTextField.class, stringNode.getComponent().getClass());
+        assertEquals(JSpinner.class, timeNode.getComponent().getClass());
+        assertEquals(JSpinner.class, timestampNode.getComponent().getClass());
+    }
+
     @Test
     public void toJsonString() {
-        String actual = BasicNodeFactory.create(BasicType.ANY).toJsonString();
-        assertEquals("{\"value\":\"not implemented 01\"}", actual);
-        actual = BasicNodeFactory.create(BasicType.BINARY).toJsonString();
+        String actual = binaryNode.toJsonString();
         assertEquals("{\"value\":\"\"}", actual);
-        actual = BasicNodeFactory.create(BasicType.BOOLEAN).toJsonString();
+        actual = booleanNode.toJsonString();
         assertEquals("{\"value\":\"false\"}", actual);
-        actual = BasicNodeFactory.create(BasicType.DATE).toJsonString();
+        actual = dateNode.toJsonString();
         // e.g. {"value":"2020-06-04"}
         assertTrue(actual.matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}\"\\}"), actual);
-        actual = BasicNodeFactory.create(BasicType.INTEGER).toJsonString();
+        actual = integerNode.toJsonString();
         assertEquals("{\"value\":\"0\"}", actual);
-        actual = BasicNodeFactory.create(BasicType.REAL).toJsonString();
+        actual = realNode.toJsonString();
         assertEquals("{\"value\":\"0.0\"}", actual);
-        actual = BasicNodeFactory.create(BasicType.STRING).toJsonString();
+        actual = stringNode.toJsonString();
         assertEquals("{\"value\":\"\"}", actual);
-        actual = BasicNodeFactory.create(BasicType.TIME).toJsonString();
+        actual = timeNode.toJsonString();
         // e.g. {"value":"20:15:00.000Z"}
         assertTrue(actual.matches("\\{\"value\":\"\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z\"\\}"), actual);
-        actual = BasicNodeFactory.create(BasicType.TIMESTAMP).toJsonString();
+        actual = timestampNode.toJsonString();
         // e.g. {"value":"2020-06-04T20:15:00.000Z"}
         assertTrue(actual.matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z\"\\}"), actual);
     }
 
     @Test
     public void cloneNode() {
-        BasicNode exp;
-        BasicNode act;
-        for (final BasicType type : BasicType.values()) {
-            exp = BasicNodeFactory.create(type);
-            act = exp.cloneNode();
-            assertNotNull(act);
-            assertEquals(exp.toString(), act.toString());
-        }
+        BasicNode exp = binaryNode;
+        BasicNode act = exp.cloneNode();
+        assertNotNull(act);
+        assertEquals(exp.toString(), act.toString());
+        assertEquals(exp.getType(), act.getType());
+
+        exp = booleanNode;
+        act = exp.cloneNode();
+        assertNotNull(act);
+        assertEquals(exp.toString(), act.toString());
+        assertEquals(exp.getType(), act.getType());
+
+        exp = dateNode;
+        act = exp.cloneNode();
+        assertNotNull(act);
+        assertEquals(exp.toString(), act.toString());
+        assertEquals(exp.getType(), act.getType());
+
+        exp = integerNode;
+        act = exp.cloneNode();
+        assertNotNull(act);
+        assertEquals(exp.toString(), act.toString());
+        assertEquals(exp.getType(), act.getType());
+
+        exp = realNode;
+        act = exp.cloneNode();
+        assertNotNull(act);
+        assertEquals(exp.toString(), act.toString());
+        assertEquals(exp.getType(), act.getType());
+
+        exp = stringNode;
+        act = exp.cloneNode();
+        assertNotNull(act);
+        assertEquals(exp.toString(), act.toString());
+        assertEquals(exp.getType(), act.getType());
+
+        exp = timeNode;
+        act = exp.cloneNode();
+        assertNotNull(act);
+        assertEquals(exp.toString(), act.toString());
+        assertEquals(exp.getType(), act.getType());
+
+        exp = timestampNode;
+        act = exp.cloneNode();
+        assertNotNull(act);
+        assertEquals(exp.toString(), act.toString());
+        assertEquals(exp.getType(), act.getType());
     }
 }

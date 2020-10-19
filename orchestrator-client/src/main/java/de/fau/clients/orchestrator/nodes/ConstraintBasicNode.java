@@ -27,7 +27,7 @@ public class ConstraintBasicNode extends BasicNode {
             @NonNull final Supplier<String> valueSupplier,
             @NonNull final Constraints constraints
     ) {
-        super(type, component, valueSupplier);
+        super(type, component, valueSupplier, true);
         this.featCtx = null;
         this.constraints = constraints;
     }
@@ -39,7 +39,7 @@ public class ConstraintBasicNode extends BasicNode {
             @NonNull final Supplier<String> valueSupplier,
             @NonNull final Constraints constraints
     ) {
-        super(type, component, valueSupplier);
+        super(type, component, valueSupplier, true);
         this.featCtx = featCtx;
         this.constraints = constraints;
     }
