@@ -2,9 +2,9 @@ package de.fau.clients.orchestrator.queue;
 
 import de.fau.clients.orchestrator.dnd.TaskImportTransferHandler;
 import de.fau.clients.orchestrator.tasks.CommandTask;
+import de.fau.clients.orchestrator.tasks.ConnectionStatus;
 import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.QueueTask;
-import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -364,11 +364,11 @@ public class TaskQueueTable extends JTable implements ServerListener {
                     COLUMN_TASK_INSTANCE_IDX);
             boolean wasChangeSuccess = task.changeServer(serverUuid);
             if (wasChangeSuccess) {
-                dataModel.setValueAt(IconProvider.TASK_ONLINE.getIcon(),
+                dataModel.setValueAt(ConnectionStatus.ONLINE.getIcon(),
                         editingRow,
                         COLUMN_CONNECTION_STATUS_IDX);
             } else {
-                dataModel.setValueAt(IconProvider.TASK_OFFLINE.getIcon(),
+                dataModel.setValueAt(ConnectionStatus.OFFLINE.getIcon(),
                         editingRow,
                         COLUMN_CONNECTION_STATUS_IDX);
             }
@@ -417,12 +417,12 @@ public class TaskQueueTable extends JTable implements ServerListener {
             if (obj instanceof UUID) {
                 UUID taskUuid = (UUID) obj;
                 if (taskUuid.compareTo(uuid) == 0) {
-                    if (server.getStatus() == Server.Status.OFFLINE) {
-                        dataModel.setValueAt(IconProvider.TASK_OFFLINE.getIcon(),
+                    if (server.getStatus() == Server.Status.ONLINE) {
+                        dataModel.setValueAt(ConnectionStatus.ONLINE.getIcon(),
                                 i,
                                 COLUMN_CONNECTION_STATUS_IDX);
                     } else {
-                        dataModel.setValueAt(IconProvider.TASK_ONLINE.getIcon(),
+                        dataModel.setValueAt(ConnectionStatus.OFFLINE.getIcon(),
                                 i,
                                 COLUMN_CONNECTION_STATUS_IDX);
                     }

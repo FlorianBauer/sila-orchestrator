@@ -7,7 +7,6 @@ import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.nodes.NodeFactory;
 import de.fau.clients.orchestrator.nodes.SilaNode;
-import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.event.ActionEvent;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -47,18 +46,18 @@ public class CommandTask extends QueueTask {
         this.commandModel = commandModel;
         final ServerContext serverCtx = manager.getServerCtx(this.commandModel.getServerUuid());
         if (serverCtx == null) {
-            conStatus = IconProvider.TASK_OFFLINE;
+            conStatus = ConnectionStatus.OFFLINE;
             return;
         }
 
         isCommandValid = tryToSetServerInstance(serverCtx);
         if (isCommandValid) {
             if (serverCtx.isOnline()) {
-                conStatus = IconProvider.TASK_ONLINE;
+                conStatus = ConnectionStatus.ONLINE;
                 return;
             }
         }
-        conStatus = IconProvider.TASK_OFFLINE;
+        conStatus = ConnectionStatus.OFFLINE;
     }
 
     public CommandTask(@NonNull final CommandContext commandCtx) {
@@ -71,9 +70,9 @@ public class CommandTask extends QueueTask {
                 this.cmdCtx.getCommand().getIdentifier());
 
         if (featCtx.getServerCtx().isOnline()) {
-            conStatus = IconProvider.TASK_ONLINE;
+            conStatus = ConnectionStatus.ONLINE;
         } else {
-            conStatus = IconProvider.TASK_OFFLINE;
+            conStatus = ConnectionStatus.OFFLINE;
         }
     }
 

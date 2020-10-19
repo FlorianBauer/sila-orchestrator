@@ -29,7 +29,7 @@ public abstract class QueueTask implements Runnable, Presentable {
     protected OffsetDateTime startTimeStamp = null;
     protected OffsetDateTime endTimeStamp = null;
     protected String lastExecResult = "";
-    protected IconProvider conStatus = IconProvider.TASK_NEUTRAL;
+    protected ConnectionStatus conStatus = ConnectionStatus.NEUTRAL;
     protected TaskState taskState = TaskState.READY;
 
     /**
@@ -104,7 +104,7 @@ public abstract class QueueTask implements Runnable, Presentable {
      *
      * @return The connection status.
      */
-    public IconProvider getConnectionStatus() {
+    public ConnectionStatus getConnectionStatus() {
         return conStatus;
     }
 
