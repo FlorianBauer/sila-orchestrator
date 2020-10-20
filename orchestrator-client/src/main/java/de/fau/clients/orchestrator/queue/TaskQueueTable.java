@@ -94,10 +94,8 @@ public class TaskQueueTable extends JTable implements ServerListener {
         this.setDragEnabled(false);
         this.setDropMode(DropMode.INSERT_ROWS);
         tch = new TableColumnHider(columnModel, COLUMN_TITLES);
-        final TableColumn taskColumn = columnModel.getColumn(COLUMN_TASK_ID_IDX);
-        taskColumn.setPreferredWidth(40);
-        taskColumn.setMaxWidth(80);
         columnModel.getColumn(COLUMN_CONNECTION_STATUS_IDX).setMaxWidth(42);
+        columnModel.getColumn(COLUMN_STATE_IDX).setMaxWidth(42);
         columnModel.getColumn(COLUMN_START_TIME_IDX).setPreferredWidth(170);
         columnModel.getColumn(COLUMN_END_TIME_IDX).setPreferredWidth(170);
 
