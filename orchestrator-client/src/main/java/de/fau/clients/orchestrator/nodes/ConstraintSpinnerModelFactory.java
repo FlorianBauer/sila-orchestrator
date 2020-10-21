@@ -18,7 +18,7 @@ import sila_java.library.core.models.Constraints;
  * <code>Double</code>, <code>LocalDate</code>, <code>OffsetDateTime</code> and
  * <code>OffsetTime</code> types.
  */
-public class ConstraintSpinnerModelFactory {
+class ConstraintSpinnerModelFactory {
 
     /**
      * The precision of the offset-limit of an exclusive float range (e.g. the exclusive upper-limit
