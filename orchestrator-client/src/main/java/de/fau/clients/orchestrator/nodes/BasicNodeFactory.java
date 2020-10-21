@@ -135,7 +135,7 @@ final class BasicNodeFactory {
             xmlTypeNode = xmlMapper.readTree(jsonNode.get("type").asText());
             type = xmlTypeNode.get("Basic").asText();
             payload = jsonNode.get("payload").binaryValue();
-        } catch (final IOException ex) {
+        } catch (final Exception ex) {
             return createErrorType(basicType, ex.getMessage());
         }
 
@@ -220,7 +220,7 @@ final class BasicNodeFactory {
                     zoneOffset);
             return createTimestampType(timestamp, isEditable);
         } else {
-            return createErrorType(basicType, "Undefined Any type.");
+            return createErrorType(basicType, "Undefined 'Any'-type.");
         }
     }
 
@@ -458,11 +458,11 @@ final class BasicNodeFactory {
 
     protected static BasicNode createErrorType(
             @NonNull final BasicType basicType,
-            @NonNull final String errorMsg
+            final String errorMsg
     ) {
-        final JLabel errLabel = new JLabel(errorMsg);
+        final JLabel errLabel = new JLabel("Error: " + errorMsg);
         errLabel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-        return new BasicNode(basicType, errLabel, () -> ("Error"), false);
+        return new BasicNode(basicType, errLabel, () -> (""), false);
     }
 
     /**

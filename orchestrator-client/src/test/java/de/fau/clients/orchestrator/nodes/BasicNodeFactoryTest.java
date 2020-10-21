@@ -12,6 +12,7 @@ import java.util.Base64;
 import java.util.Base64.Encoder;
 import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -96,8 +97,8 @@ public class BasicNodeFactoryTest {
         boolean isEditable = false;
         BasicNode actual = BasicNodeFactory.createAnyTypeFromJson(jsonNode.get("Any"), isEditable);
         assertEquals(BasicType.STRING, actual.getType());
-        assertEquals(JTextField.class,
-                actual.getComponent().getClass());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JTextField.class, actual.getComponent().getClass());
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals("SiLA", actual.getValue());
         assertEquals("{\"value\":\"SiLA\"}", actual.toJsonString());
@@ -109,27 +110,24 @@ public class BasicNodeFactoryTest {
                 + "</DataType>\\n\","
                 + "\"payload\":\"CgR0ZXN0\"}}";
         jsonNode = mapper.readTree(jsonStr);
-        isEditable = false;
         actual = BasicNodeFactory.createAnyTypeFromJson(jsonNode.get("Any"), isEditable);
         assertEquals(BasicType.STRING, actual.getType());
-        assertEquals(JTextField.class,
-                actual.getComponent().getClass());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JTextField.class, actual.getComponent().getClass());
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals("test", actual.getValue());
         assertEquals("{\"value\":\"test\"}", actual.toJsonString());
 
         jsonStr = "{\"Any\":{\"type\":\""
-                + "<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\" standalone=\\\"yes\\\"?>\\n"
                 + "<dataTypeType>\\n"
                 + "    <Basic>Integer</Basic>\\n"
                 + "</dataTypeType>\\n\","
                 + "\"payload\":\"CLkK\"}}";
         jsonNode = mapper.readTree(jsonStr);
-        isEditable = false;
         actual = BasicNodeFactory.createAnyTypeFromJson(jsonNode.get("Any"), isEditable);
         assertEquals(BasicType.INTEGER, actual.getType());
-        assertEquals(JTextField.class,
-                actual.getComponent().getClass());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JTextField.class, actual.getComponent().getClass());
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals("1337", actual.getValue());
         assertEquals("{\"value\":\"1337\"}", actual.toJsonString());
@@ -140,14 +138,63 @@ public class BasicNodeFactoryTest {
                 + "</dataTypeType>\\n\","
                 + "\"payload\":\"CIkG\"}}";
         jsonNode = mapper.readTree(jsonStr);
-        isEditable = false;
         actual = BasicNodeFactory.createAnyTypeFromJson(jsonNode.get("Any"), isEditable);
         assertEquals(BasicType.INTEGER, actual.getType());
-        assertEquals(JTextField.class,
-                actual.getComponent().getClass());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JTextField.class, actual.getComponent().getClass());
         assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals("777", actual.getValue());
         assertEquals("{\"value\":\"777\"}", actual.toJsonString());
+
+        isEditable = true;
+        actual = BasicNodeFactory.createAnyTypeFromJson(jsonNode.get("Any"), isEditable);
+        assertEquals(BasicType.INTEGER, actual.getType());
+        assertEquals(true, actual.isEditable);
+        assertEquals(JSpinner.class, actual.getComponent().getClass());
+        assertEquals(isEditable, ((JSpinner) actual.getComponent()).isEnabled());
+
+        jsonStr = "{\"Any\":{\"type\":\""
+                + "<dataTypeType>"
+                + "  <UnknownTag>Integer</UnknownTag>"
+                + "</dataTypeType>\","
+                + "\"payload\":\"CIkG\"}}";
+        jsonNode = mapper.readTree(jsonStr);
+
+        actual = BasicNodeFactory.createAnyTypeFromJson(jsonNode.get("Any"), isEditable);
+        assertEquals(BasicType.ANY, actual.getType());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JLabel.class, actual.getComponent().getClass());
+        assertEquals("Error: null", ((JLabel) actual.getComponent()).getText());
+        assertEquals("", actual.getValue());
+        assertEquals("{\"value\":\"\"}", actual.toJsonString());
+
+        jsonStr = "{\"Any\":{\"type\":\""
+                + "<unclosedTag>"
+                + "  <Basic>Integer</Basic>"
+                + "<unclosedTag>\","
+                + "\"payload\":\"CIkG\"}}";
+        jsonNode = mapper.readTree(jsonStr);
+        actual = BasicNodeFactory.createAnyTypeFromJson(jsonNode.get("Any"), isEditable);
+        assertEquals(BasicType.ANY, actual.getType());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JLabel.class, actual.getComponent().getClass());
+        assertTrue(((JLabel) actual.getComponent()).getText().startsWith("Error: Unexpected EOF"));
+        assertEquals("", actual.getValue());
+        assertEquals("{\"value\":\"\"}", actual.toJsonString());
+
+        jsonStr = "{\"Any\":{\"type\":\""
+                + "<dataTypeType>"
+                + "  <Basic>UnknownBasicType</Basic>"
+                + "</dataTypeType>\","
+                + "\"payload\":\"CIkG\"}}";
+        jsonNode = mapper.readTree(jsonStr);
+        actual = BasicNodeFactory.createAnyTypeFromJson(jsonNode.get("Any"), isEditable);
+        assertEquals(BasicType.ANY, actual.getType());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JLabel.class, actual.getComponent().getClass());
+        assertEquals("Error: Undefined 'Any'-type.", ((JLabel) actual.getComponent()).getText());
+        assertEquals("", actual.getValue());
+        assertEquals("{\"value\":\"\"}", actual.toJsonString());
     }
 
     @Test
