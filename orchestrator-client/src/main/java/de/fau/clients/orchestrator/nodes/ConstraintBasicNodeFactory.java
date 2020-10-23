@@ -82,14 +82,27 @@ class ConstraintBasicNodeFactory {
                 return new ConstraintBasicNode(featCtx,
                         type,
                         new JLabel("placeholder 03"),
-                        () -> ("not implemented 03"),
+                        () -> (""),
                         constraints);
             case BINARY:
-                return createConstrainedBinaryTypeFromJson(constraints, jsonNode);
+                final byte[] binaryVal;
+                if (jsonNode != null) {
+                    try {
+                        binaryVal = jsonNode.binaryValue();
+                    } catch (final IOException ex) {
+                        return new ConstraintBasicNode(type,
+                                new JLabel("Error: " + ex.getMessage()),
+                                () -> (""),
+                                constraints);
+                    }
+                } else {
+                    binaryVal = "".getBytes();
+                }
+                return createConstrainedBinaryType(constraints, binaryVal);
             case BOOLEAN:
                 // Whoever is trying to constrain a boolean even more deserves a special exception message.
                 throw new IllegalArgumentException("Booleans can not be constrained. Try using "
-                        + "'BasicNodeFactory.createBooleanTypeFromJson(null, false);' for a "
+                        + "'BasicNodeFactory.createBooleanType(boolValue, false);' for a "
                         + "non-editable bool node.");
             case DATE:
                 return createConstrainedDateTypeFromJson(constraints, jsonNode);
@@ -108,59 +121,70 @@ class ConstraintBasicNodeFactory {
         }
     }
 
-    protected static ConstraintBasicNode createConstrainedBinaryTypeFromJson(
+    /**
+     * Creates a binary type node. This function is also responsible for the supported binary
+     * formats and their representation.
+     *
+     * @param constraints The constraints.
+     * @param binaryValue The binary values as byte array.
+     * @return The binary node.
+     */
+    protected static ConstraintBasicNode createConstrainedBinaryType(
             @NonNull final Constraints constraints,
-            final JsonNode jsonNode
+            @NonNull final byte[] binaryValue
     ) {
-        final JComponent comp;
-        final Supplier<String> supp;
-        final Constraints.ContentType contentType = constraints.getContentType();
-        if (contentType != null) {
-            if (contentType.getType().equalsIgnoreCase("image")) {
-                final String subtype = contentType.getSubtype();
-                if (subtype.equalsIgnoreCase("jpeg")
-                        || subtype.equalsIgnoreCase("png")
-                        || subtype.equalsIgnoreCase("bmp")
-                        || subtype.equalsIgnoreCase("gif")) {
-                    BufferedImage img = null;
-                    try {
-                        if (jsonNode != null) {
-                            img = ImageIO.read(new ByteArrayInputStream(jsonNode.binaryValue()));
-                        } else {
-                            img = ImageIO.read(IMAGE_MISSING);
-                        }
-                    } catch (IOException ex) {
-                        System.err.println(ex.getMessage());
-                    }
-
-                    if (img != null) {
-                        comp = new ImagePanel(img);
-                        final BufferedImage tmpImg = img;
-                        supp = () -> {
-                            final ByteArrayOutputStream os = new ByteArrayOutputStream();
-                            boolean hasWriter;
-                            try {
-                                hasWriter = ImageIO.write(tmpImg,
-                                        subtype.toLowerCase(),
-                                        Base64.getEncoder().wrap(os));
-                                os.close();
-                            } catch (IOException ex) {
-                                return ex.getMessage();
-                            }
-                            if (hasWriter) {
-                                return os.toString(StandardCharsets.UTF_8);
-                            } else {
-                                return "No ImageWriter found.";
-                            }
-                        };
-                        return new ConstraintBasicNode(BasicType.BINARY, comp, supp, constraints);
-                    }
+        boolean isValid = true;
+        String errorMsg = "Unsupported constrained binary type.";
+        if (constraints.getLength() != null) {
+            final int len = constraints.getLength().intValue();
+            if (binaryValue.length != len) {
+                isValid = false;
+                errorMsg = "Wrong binary length (len != " + len + " bytes).";
+            }
+        } else {
+            if (constraints.getMinimalLength() != null) {
+                final int minLen = constraints.getMinimalLength().intValue();
+                if (binaryValue.length < minLen) {
+                    isValid = false;
+                    errorMsg = "Wrong binary length (len < " + minLen + " bytes).";
+                }
+            }
+            if (constraints.getMaximalLength() != null) {
+                final int maxLen = constraints.getMaximalLength().intValue();
+                if (binaryValue.length > maxLen) {
+                    isValid = false;
+                    errorMsg = "Wrong binary length (len > " + maxLen + " bytes).";
                 }
             }
         }
-        comp = new JLabel("Unknown constrained binary type");
-        supp = () -> ("not implemented 04");
-        return new ConstraintBasicNode(BasicType.BINARY, comp, supp, constraints);
+
+        // If a previous applied constraint failed, we can omit to check for the content type.
+        if (isValid) {
+            final Constraints.ContentType contType = constraints.getContentType();
+            if (contType != null) {
+                final InternalContentType ict = getSupportedContentType(contType);
+                switch (ict) {
+                    case UNKNOWN:
+                        // We don't know the type, so check for a valid UTF-8 enconding and present it as plain text.
+                        if (ValidatorUtils.isValidUtf8(binaryValue)) {
+                            return createTextNodeFromBinary(constraints, binaryValue);
+                        }
+                        break;
+                    case TEXT:
+                        return createTextNodeFromBinary(constraints, binaryValue);
+                    case TEXT_XML:
+                        return createXmlNodeFromBinary(constraints, binaryValue);
+                    case IMAGE:
+                        return createImageNodeFromBinary(constraints, binaryValue);
+                }
+            } else {
+                if (ValidatorUtils.isValidUtf8(binaryValue)) {
+                    return createTextNodeFromBinary(constraints, binaryValue);
+                }
+            }
+        }
+        final JLabel errorLabel = new JLabel("Error: " + errorMsg);
+        return new ConstraintBasicNode(BasicType.BINARY, errorLabel, () -> (""), constraints);
     }
 
     protected static ConstraintBasicNode createConstrainedDateTypeFromJson(
@@ -720,5 +744,173 @@ class ConstraintBasicNodeFactory {
             comp = hBox;
         }
         return new ConstraintBasicNode(BasicType.TIMESTAMP, comp, supp, constraints);
+    }
+
+    /**
+     * Creates a plain text node from the given binary values. The text is represented in an editor
+     * pane with scroll bars. Checks on a valid UTF-8 encoding have to be done beforehand.
+     *
+     * @param binaryValue The UTF-8 encoded input data.
+     * @param constraints The constraints.
+     * @return The constrained node.
+     *
+     * @see ValidatorUtils#isValidUtf8
+     */
+    protected static ConstraintBasicNode createTextNodeFromBinary(
+            @NonNull final Constraints constraints,
+            @NonNull final byte[] binaryValue
+    ) {
+        final String plainTxt = new String(binaryValue, StandardCharsets.UTF_8);
+        final JEditorPane editorPane = new JEditorPane();
+        editorPane.setText(plainTxt);
+        final JScrollPane scrollPane = new JScrollPane(editorPane);
+        scrollPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.setMaximumSize(MaxDim.TEXT_FIELD_MULTI_LINE.getDim());
+        final Supplier<String> supp = () -> {
+            return Base64.getEncoder().encodeToString(editorPane
+                    .getText()
+                    .getBytes(StandardCharsets.UTF_8));
+        };
+        return new ConstraintBasicNode(BasicType.BINARY, editorPane, supp, constraints);
+    }
+
+    /**
+     * Creates a plain text node with XML validation from the given binary values. Checks on a valid
+     * UTF-8 encoding have to be done beforehand.
+     *
+     * @param binaryValue The UTF-8 encoded input data.
+     * @param constraints The constraints.
+     * @return The constrained node.
+     *
+     * @see ValidatorUtils#isValidUtf8
+     */
+    public static ConstraintBasicNode createXmlNodeFromBinary(
+            @NonNull final Constraints constraints,
+            @NonNull final byte[] binaryValue
+    ) {
+        final String plainText = new String(binaryValue, StandardCharsets.UTF_8);
+        final JEditorPane editorPane = new JEditorPane();
+        final Supplier<Boolean> validator = () -> (ValidatorUtils.isXmlWellFormed(
+                new ByteArrayInputStream(editorPane.getText().getBytes(StandardCharsets.UTF_8))));
+        final JLabel validationLabel = new JLabel(IconProvider.STATUS_OK.getIcon());
+        validationLabel.setDisabledIcon(IconProvider.STATUS_WARNING.getIcon());
+        validationLabel.setEnabled(false);
+        // validate after focus was lost
+        editorPane.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(final FocusEvent evt) {
+                validationLabel.setEnabled(validator.get());
+            }
+        });
+
+        final JScrollPane scrollPane = new JScrollPane(editorPane);
+        scrollPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        final Box hBox = Box.createHorizontalBox();
+        hBox.add(scrollPane);
+        hBox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
+        hBox.add(new JLabel("Xml"));
+        hBox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
+        hBox.add(validationLabel);
+        hBox.setMaximumSize(MaxDim.TEXT_FIELD_MULTI_LINE.getDim());
+
+        editorPane.setText(plainText);
+        // validate after import
+        validationLabel.setEnabled(validator.get());
+
+        final Supplier<String> supp = () -> {
+            return Base64.getEncoder().encodeToString(editorPane
+                    .getText()
+                    .getBytes(StandardCharsets.UTF_8));
+        };
+        return new ConstraintBasicNode(BasicType.BINARY, hBox, supp, constraints);
+    }
+
+    /**
+     * Creates a image node from binary data. Only jpeg, png, bmp and gif formats are supported. The
+     * exported image is always a Base64 encoded jpeg picture.
+     *
+     * @param binaryValue The binary data of the image.
+     * @param constraints The constraints.
+     * @return The image type constrained node.
+     */
+    protected static ConstraintBasicNode createImageNodeFromBinary(
+            @NonNull final Constraints constraints,
+            @NonNull final byte[] binaryValue
+    ) {
+        final BufferedImage img;
+        try {
+            img = ImageIO.read(new ByteArrayInputStream(binaryValue));
+        } catch (final IOException ex) {
+            return new ConstraintBasicNode(BasicType.BINARY,
+                    new JLabel("Error: " + ex.getMessage()),
+                    () -> (""),
+                    constraints);
+        }
+
+        final ImagePanel imgPanel = new ImagePanel(img);
+        final Supplier<String> supp = () -> {
+            final ByteArrayOutputStream os = new ByteArrayOutputStream();
+            final boolean hasWriter;
+            try {
+                hasWriter = ImageIO.write(img,
+                        constraints.getContentType().getSubtype().toLowerCase(),
+                        Base64.getEncoder().wrap(os));
+                os.close();
+            } catch (final Exception ex) {
+                return "";
+            }
+            if (hasWriter) {
+                return os.toString(StandardCharsets.UTF_8);
+            } else {
+                return "";
+            }
+        };
+        return new ConstraintBasicNode(BasicType.BINARY, imgPanel, supp, constraints);
+    }
+
+    /**
+     * Gets the internal used enumeration to mark (un-)supported types for the process of node
+     * creation.
+     *
+     * @param contentType The ContentType object holding the IANA media type (MIME type).
+     * @return The only internally used enum for (un-)supported types.
+     */
+    protected static InternalContentType getSupportedContentType(
+            @NonNull final Constraints.ContentType contentType
+    ) {
+        final String type = contentType.getType().toLowerCase();
+        final String subtype;
+        if (contentType.getSubtype() != null) {
+            subtype = contentType.getSubtype().toLowerCase();
+        } else {
+            subtype = "";
+        }
+
+        switch (type) {
+            case "application":
+                switch (subtype) {
+                    case "animl":
+                        return InternalContentType.TEXT_XML;
+                }
+                return InternalContentType.UNKNOWN;
+            case "image":
+                switch (subtype) {
+                    case "jpeg":
+                    case "png":
+                    case "bmp":
+                    case "gif":
+                        return InternalContentType.IMAGE;
+                }
+                return InternalContentType.UNSUPPORTED;
+            case "text":
+                switch (subtype) {
+                    case "xml":
+                        return InternalContentType.TEXT_XML;
+                }
+                return InternalContentType.TEXT;
+        }
+        return InternalContentType.UNKNOWN;
     }
 }
