@@ -987,6 +987,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         executeAllBtn.setIcon(IconProvider.QUEUE_EXEC_STOP.getIcon());
         executeAllBtn.setText(STOP_QUEUE_EXEC_LABEL);
         executeAllMenuItem.setEnabled(false);
+        taskQueueTable.resetAllTaskStates();
         isOnExecution = true;
 
         final Runnable queueRunner = () -> {

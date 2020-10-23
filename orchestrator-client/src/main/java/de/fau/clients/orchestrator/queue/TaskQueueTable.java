@@ -198,7 +198,7 @@ public class TaskQueueTable extends JTable implements ServerListener {
     }
 
     public int getTaskIdFromRow(int rowIdx) {
-        return Integer.parseInt(dataModel.getValueAt(rowIdx, TaskQueueTable.COLUMN_TASK_ID_IDX).toString());
+        return Integer.parseInt(dataModel.getValueAt(rowIdx, COLUMN_TASK_ID_IDX).toString());
     }
 
     public QueueTask getTaskFromRow(int rowIdx) {
@@ -207,6 +207,21 @@ public class TaskQueueTable extends JTable implements ServerListener {
 
     public ExecPolicy getTaskPolicyFromRow(int rowIdx) {
         return (ExecPolicy) dataModel.getValueAt(rowIdx, COLUMN_EXEC_POLICY_IDX);
+    }
+
+    /**
+     * Resets the run-time states of every task in the queue. The the following fields get set to
+     * their default values:
+     * <ul>
+     * <li>state icon</li>
+     * <li>start-time</li>
+     * <li>end-time</li>
+     * <li>duration</li>
+     * <li>result</li>
+     * </ul>
+     */
+    public void resetAllTaskStates() {
+        ((TaskQueueTableModel) dataModel).resetTaskStates();
     }
 
     /**

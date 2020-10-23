@@ -125,6 +125,16 @@ class TaskQueueTableModel extends DefaultTableModel {
         addStateListener(task);
     }
 
+    protected void resetTaskStates() {
+        for (int i = 0; i < getRowCount(); i++) {
+            setValueAt(TaskState.NEUTRAL.getIcon(), i, TaskQueueTable.COLUMN_STATE_IDX);
+            setValueAt("-", i, TaskQueueTable.COLUMN_DURATION_IDX);
+            setValueAt("-", i, TaskQueueTable.COLUMN_END_TIME_IDX);
+            setValueAt("-", i, TaskQueueTable.COLUMN_START_TIME_IDX);
+            setValueAt("", i, TaskQueueTable.COLUMN_RESULT_IDX);
+        }
+    }
+
     private void addStateListener(final QueueTask taskEntry) {
         taskEntry.addStatusChangeListener((PropertyChangeEvent pcEvt) -> {
             if (pcEvt.getPropertyName().equals(QueueTask.TASK_STATE_PROPERTY)) {
