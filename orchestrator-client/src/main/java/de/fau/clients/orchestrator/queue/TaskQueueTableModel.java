@@ -42,8 +42,8 @@ class TaskQueueTableModel extends DefaultTableModel {
             cmdTask.getStartTimeStamp(),
             cmdTask.getEndTimeStamp(),
             cmdTask.getDuration(),
-            cmdTask.getLastExecResult(),
-            pol});
+            pol,
+            cmdTask.getLastExecResult()});
         addStateListener(cmdTask);
     }
 
@@ -78,8 +78,8 @@ class TaskQueueTableModel extends DefaultTableModel {
                     cmdTask.getStartTimeStamp(),
                     cmdTask.getEndTimeStamp(),
                     cmdTask.getDuration(),
-                    cmdTask.getLastExecResult(),
-                    pol});
+                    pol,
+                    cmdTask.getLastExecResult()});
         addStateListener(cmdTask);
     }
 
@@ -98,8 +98,8 @@ class TaskQueueTableModel extends DefaultTableModel {
             task.getStartTimeStamp(),
             task.getEndTimeStamp(),
             task.getDuration(),
-            task.getLastExecResult(),
-            pol});
+            pol,
+            task.getLastExecResult()});
         addStateListener(task);
     }
 
@@ -120,8 +120,8 @@ class TaskQueueTableModel extends DefaultTableModel {
                     task.getStartTimeStamp(),
                     task.getEndTimeStamp(),
                     task.getDuration(),
-                    task.getLastExecResult(),
-                    pol});
+                    pol,
+                    task.getLastExecResult()});
         addStateListener(task);
     }
 

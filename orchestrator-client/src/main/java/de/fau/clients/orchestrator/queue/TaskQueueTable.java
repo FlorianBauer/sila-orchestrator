@@ -44,8 +44,8 @@ public class TaskQueueTable extends JTable implements ServerListener {
     public static final int COLUMN_START_TIME_IDX = 5;
     public static final int COLUMN_END_TIME_IDX = 6;
     public static final int COLUMN_DURATION_IDX = 7;
-    public static final int COLUMN_RESULT_IDX = 8;
-    public static final int COLUMN_EXEC_POLICY_IDX = 9;
+    public static final int COLUMN_EXEC_POLICY_IDX = 8;
+    public static final int COLUMN_RESULT_IDX = 9;
 
     public static final String[] COLUMN_TITLES = {
         "ID",
@@ -56,8 +56,8 @@ public class TaskQueueTable extends JTable implements ServerListener {
         "Start Time",
         "End Time",
         "Duration",
-        "Result",
-        "Policy"
+        "Policy",
+        "Result"
     };
 
     private static final int INIT_TASK_ID = 1;
@@ -126,7 +126,6 @@ public class TaskQueueTable extends JTable implements ServerListener {
         tch.hideColumn(COLUMN_SERVER_UUID_IDX);
         tch.hideColumn(COLUMN_START_TIME_IDX);
         tch.hideColumn(COLUMN_END_TIME_IDX);
-        tch.hideColumn(COLUMN_RESULT_IDX);
 
         for (int i = 0; i < TaskQueueTable.COLUMN_TITLES.length; i++) {
             if (i == COLUMN_TASK_INSTANCE_IDX) {
@@ -138,8 +137,7 @@ public class TaskQueueTable extends JTable implements ServerListener {
             final boolean isChecked;
             if (colIdx == COLUMN_SERVER_UUID_IDX
                     || colIdx == COLUMN_START_TIME_IDX
-                    || colIdx == COLUMN_END_TIME_IDX
-                    || colIdx == COLUMN_RESULT_IDX) {
+                    || colIdx == COLUMN_END_TIME_IDX) {
                 // uncheck hidden columns
                 isChecked = false;
             } else {
