@@ -372,9 +372,12 @@ public class TaskQueueTable extends JTable implements ServerListener {
      */
     private void changeTaskUuidActionPerformed() {
         if (editingRow >= 0) {
+            final Object taskObj = dataModel.getValueAt(editingRow, COLUMN_TASK_INSTANCE_IDX);
+            if (!(taskObj instanceof CommandTask)) {
+                return;
+            }
+            final CommandTask task = (CommandTask) taskObj;
             final UUID serverUuid = (UUID) uuidComboBox.getSelectedItem();
-            final CommandTask task = (CommandTask) dataModel.getValueAt(editingRow,
-                    COLUMN_TASK_INSTANCE_IDX);
             boolean wasChangeSuccess = task.changeServer(serverUuid);
             if (wasChangeSuccess) {
                 dataModel.setValueAt(ConnectionStatus.ONLINE.getIcon(),
