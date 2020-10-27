@@ -46,26 +46,26 @@ import sila_java.library.manager.models.Server;
 public class TaskQueueTable extends JTable implements ServerListener {
 
     public static final int COLUMN_TASK_ID_IDX = 0;
-    public static final int COLUMN_TASK_INSTANCE_IDX = 1;
-    public static final int COLUMN_CONNECTION_STATUS_IDX = 2;
+    public static final int COLUMN_CONNECTION_STATUS_IDX = 1;
+    public static final int COLUMN_TASK_INSTANCE_IDX = 2;
     public static final int COLUMN_SERVER_UUID_IDX = 3;
-    public static final int COLUMN_STATE_IDX = 4;
-    public static final int COLUMN_START_TIME_IDX = 5;
-    public static final int COLUMN_END_TIME_IDX = 6;
-    public static final int COLUMN_DURATION_IDX = 7;
-    public static final int COLUMN_EXEC_POLICY_IDX = 8;
+    public static final int COLUMN_EXEC_POLICY_IDX = 4;
+    public static final int COLUMN_STATE_IDX = 5;
+    public static final int COLUMN_START_TIME_IDX = 6;
+    public static final int COLUMN_END_TIME_IDX = 7;
+    public static final int COLUMN_DURATION_IDX = 8;
     public static final int COLUMN_RESULT_IDX = 9;
 
     public static final String[] COLUMN_TITLES = {
         "ID",
-        "Task",
         "Connection",
+        "Task",
         "Server UUID",
+        "Policy",
         "State",
         "Start Time",
         "End Time",
         "Duration",
-        "Policy",
         "Result"
     };
 

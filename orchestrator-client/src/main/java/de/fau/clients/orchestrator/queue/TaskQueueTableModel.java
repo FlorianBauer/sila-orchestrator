@@ -35,14 +35,14 @@ class TaskQueueTableModel extends DefaultTableModel {
         final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         addRow(new Object[]{
             taskId,
-            cmdTask,
             cmdTask.getConnectionStatus().getIcon(),
+            cmdTask,
             cmdTask.getServerUuid(),
+            pol,
             cmdTask.getState().getIcon(),
             cmdTask.getStartTimeStamp(),
             cmdTask.getEndTimeStamp(),
             cmdTask.getDuration(),
-            pol,
             cmdTask.getLastExecResult()});
         addStateListener(cmdTask);
     }
@@ -71,14 +71,14 @@ class TaskQueueTableModel extends DefaultTableModel {
         insertRow(index,
                 new Object[]{
                     taskId,
-                    cmdTask,
                     cmdTask.getConnectionStatus().getIcon(),
+                    cmdTask,
                     cmdTask.getServerUuid(),
+                    pol,
                     cmdTask.getState().getIcon(),
                     cmdTask.getStartTimeStamp(),
                     cmdTask.getEndTimeStamp(),
                     cmdTask.getDuration(),
-                    pol,
                     cmdTask.getLastExecResult()});
         addStateListener(cmdTask);
     }
@@ -91,14 +91,14 @@ class TaskQueueTableModel extends DefaultTableModel {
         final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         addRow(new Object[]{
             taskId,
-            task,
             task.getConnectionStatus().getIcon(),
+            task,
             "",
+            pol,
             task.getState().getIcon(),
             task.getStartTimeStamp(),
             task.getEndTimeStamp(),
             task.getDuration(),
-            pol,
             task.getLastExecResult()});
         addStateListener(task);
     }
@@ -113,14 +113,14 @@ class TaskQueueTableModel extends DefaultTableModel {
         insertRow(index,
                 new Object[]{
                     taskId,
-                    task,
                     task.getConnectionStatus().getIcon(),
+                    task,
                     "",
+                    pol,
                     task.getState().getIcon(),
                     task.getStartTimeStamp(),
                     task.getEndTimeStamp(),
                     task.getDuration(),
-                    pol,
                     task.getLastExecResult()});
         addStateListener(task);
     }
