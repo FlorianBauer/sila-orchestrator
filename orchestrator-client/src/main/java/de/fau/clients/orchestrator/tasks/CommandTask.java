@@ -1,8 +1,10 @@
 package de.fau.clients.orchestrator.tasks;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import de.fau.clients.orchestrator.ctx.ConnectionManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.ctx.CommandContext;
+import de.fau.clients.orchestrator.ctx.ConnectionManager;
 import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.nodes.NodeFactory;
@@ -33,6 +35,7 @@ import sila_java.library.manager.models.SiLACall;
 public class CommandTask extends QueueTask {
 
     private static final ConnectionManager manager = ConnectionManager.getInstance();
+    private static final ObjectMapper jsonMapper = new ObjectMapper();
     private final CommandTaskModel commandModel;
     private CommandContext cmdCtx = null;
     private boolean isCommandValid = false;
@@ -175,6 +178,40 @@ public class CommandTask extends QueueTask {
     }
 
     /**
+     * Creates the Presenter to view the latest result within a widget component.
+     *
+     * @return The JComponent presenting the results or <code>null</code> on error or empty result.
+     */
+    public JComponent getResultPresenter() {
+
+        if (lastExecResult.isEmpty()) {
+            return null;
+        }
+
+        final JsonNode results;
+        try {
+            results = jsonMapper.readTree(lastExecResult);
+        } catch (final JsonProcessingException ex) {
+            log.error(ex.getMessage());
+            return null;
+        }
+
+        if (results.isEmpty()) {
+            return null;
+        }
+
+        final List<SiLAElement> params = cmdCtx.getCommand().getResponse();
+        final SilaNode silaNode = NodeFactory.createFromElementsWithJson(
+                cmdCtx.getFeatureCtx(),
+                params,
+                results,
+                false);
+        final JComponent comp = silaNode.getComponent();
+        comp.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        return comp;
+    }
+
+    /**
      * Builds up the <code>SilaNode</code>. This method shall only be called once an must be used
      * before proceeding any actions with the internal <code>cmdNode</code>.
      */
@@ -193,7 +230,8 @@ public class CommandTask extends QueueTask {
                 cmdNode = NodeFactory.createFromElementsWithJson(
                         cmdCtx.getFeatureCtx(),
                         params,
-                        cmdParams);
+                        cmdParams,
+                        true);
             }
             isNodeBuilt = true;
             return true;

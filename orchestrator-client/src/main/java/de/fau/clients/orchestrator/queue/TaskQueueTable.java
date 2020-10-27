@@ -5,22 +5,31 @@ import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.ConnectionStatus;
 import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.QueueTask;
+import de.fau.clients.orchestrator.tasks.TaskState;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.UUID;
+import javax.swing.AbstractCellEditor;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DropMode;
 import javax.swing.InputVerifier;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -60,6 +69,7 @@ public class TaskQueueTable extends JTable implements ServerListener {
         "Result"
     };
 
+    private static final JLabel EMPTY_LABEL = new JLabel(" - ");
     private static final int INIT_TASK_ID = 1;
     private static int taskId = INIT_TASK_ID;
     private final TableColumnHider tch;
@@ -111,11 +121,11 @@ public class TaskQueueTable extends JTable implements ServerListener {
             changeTaskUuidActionPerformed();
         });
 
-        // make the result cell editable with a non-editable text field to allow copying
         final TableColumn resultColumn = columnModel.getColumn(COLUMN_RESULT_IDX);
-        final JTextField resultTextField = new JTextField();
-        resultTextField.setEditable(false);
-        resultColumn.setCellEditor(new DefaultCellEditor(resultTextField));
+        resultColumn.setMaxWidth(52);
+        // Set the editor and renderer for the result cell to view the returned response.
+        resultColumn.setCellRenderer(new ResultCellEditor());
+        resultColumn.setCellEditor(new ResultCellEditor());
 
         final TableColumn policyColumn = columnModel.getColumn(COLUMN_EXEC_POLICY_IDX);
         policyColumn.setCellRenderer(new ExecPolicyCellRenderer());
@@ -474,7 +484,7 @@ public class TaskQueueTable extends JTable implements ServerListener {
                 int row,
                 int column
         ) {
-            JTextField tf = (JTextField) super.getTableCellEditorComponent(
+            final JTextField tf = (JTextField) super.getTableCellEditorComponent(
                     table,
                     value,
                     isSelected,
@@ -495,12 +505,12 @@ public class TaskQueueTable extends JTable implements ServerListener {
                 return true;
             }
 
-            boolean isValid = verifier.verify(editorComponent) && super.stopCellEditing();
+            final boolean isValid = verifier.verify(editorComponent) && super.stopCellEditing();
             if (isValid) {
                 try {
                     taskIdSet.add(Integer.parseInt(value));
                     taskIdSet.remove(Integer.parseInt(oldTaskId));
-                } catch (NumberFormatException ex) {
+                } catch (final NumberFormatException ex) {
                     return false;
                 }
             }
@@ -519,7 +529,7 @@ public class TaskQueueTable extends JTable implements ServerListener {
             int newTaskId;
             try {
                 newTaskId = Integer.parseInt(text);
-            } catch (NumberFormatException ex) {
+            } catch (final NumberFormatException ex) {
                 return false;
             }
 
@@ -539,7 +549,6 @@ public class TaskQueueTable extends JTable implements ServerListener {
     private static final class UuidCellRenderer implements TableCellRenderer {
 
         private final JComboBox<String> comboBox = new JComboBox<>();
-        private final JLabel emptyLabel = new JLabel();
 
         @Override
         public Component getTableCellRendererComponent(
@@ -556,7 +565,7 @@ public class TaskQueueTable extends JTable implements ServerListener {
                     return comboBox;
                 }
             }
-            return emptyLabel;
+            return EMPTY_LABEL;
         }
     }
 
@@ -568,7 +577,6 @@ public class TaskQueueTable extends JTable implements ServerListener {
     private static final class ExecPolicyCellRenderer implements TableCellRenderer {
 
         private final JComboBox<String> comboBox = new JComboBox<>();
-        private final JLabel emptyLabel = new JLabel();
 
         @Override
         public Component getTableCellRendererComponent(
@@ -583,7 +591,122 @@ public class TaskQueueTable extends JTable implements ServerListener {
                 comboBox.getModel().setSelectedItem(value.toString());
                 return comboBox;
             }
-            return emptyLabel;
+            return EMPTY_LABEL;
+        }
+    }
+
+    /**
+     * Nested class to render/view the latest results provided by the command response.
+     */
+    private final class ResultCellEditor extends AbstractCellEditor implements TableCellEditor,
+            TableCellRenderer {
+
+        private static final int POPUP_WIDTH = 300;
+        private final Dimension buttonDim = new Dimension(60, 24);
+        private final JButton expandBtn;
+        private final ButtonGroup btnGroup = new ButtonGroup();
+        private final JToggleButton rawViewBtn;
+        private final JToggleButton nodeViewBtn;
+        private final JPopupMenu editorPopup;
+        private final JEditorPane editorPane;
+        private Object value;
+
+        public ResultCellEditor() {
+            editorPane = new JEditorPane();
+            editorPane.setEditable(false);
+
+            final JScrollPane scrollPane = new JScrollPane(editorPane);
+            scrollPane.setAlignmentY(LEFT_ALIGNMENT);
+
+            rawViewBtn = new JToggleButton("Raw");
+            rawViewBtn.setAlignmentY(RIGHT_ALIGNMENT);
+            rawViewBtn.setPreferredSize(buttonDim);
+            rawViewBtn.addActionListener((final ActionEvent evt) -> {
+                final QueueTask task = getTaskFromRow(editingRow);
+                editorPane.setText(task.getLastExecResult());
+                scrollPane.setViewportView(editorPane);
+            });
+            nodeViewBtn = new JToggleButton("Node");
+            nodeViewBtn.setAlignmentY(RIGHT_ALIGNMENT);
+            nodeViewBtn.setPreferredSize(buttonDim);
+            nodeViewBtn.addActionListener((final ActionEvent evt) -> {
+                final QueueTask queueTask = getTaskFromRow(editingRow);
+                if (!(queueTask instanceof CommandTask)) {
+                    return;
+                }
+                final CommandTask task = (CommandTask) queueTask;
+                scrollPane.setViewportView(task.getResultPresenter());
+            });
+
+            btnGroup.add(rawViewBtn);
+            btnGroup.add(nodeViewBtn);
+
+            final Box btnBox = Box.createHorizontalBox();
+            btnBox.setAlignmentY(RIGHT_ALIGNMENT);
+            btnBox.add(Box.createHorizontalGlue());
+            btnBox.add(rawViewBtn);
+            btnBox.add(nodeViewBtn);
+
+            editorPopup = new JPopupMenu();
+            editorPopup.setAlignmentY(LEFT_ALIGNMENT);
+            editorPopup.setPreferredSize(new Dimension(POPUP_WIDTH, 256));
+            editorPopup.add(btnBox);
+            editorPopup.add(scrollPane);
+
+            expandBtn = new JButton("[...]");
+            expandBtn.setAlignmentY(RIGHT_ALIGNMENT);
+            expandBtn.addActionListener((final ActionEvent evt) -> {
+                final QueueTask queueTask = getTaskFromRow(editingRow);
+                if (!(queueTask instanceof CommandTask)) {
+                    return;
+                }
+                final CommandTask task = (CommandTask) queueTask;
+                if (task.getState() != TaskState.FINISHED_SUCCESS) {
+                    rawViewBtn.setSelected(true);
+                    nodeViewBtn.setEnabled(false);
+                    editorPane.setText(task.getLastExecResult());
+                    scrollPane.setViewportView(editorPane);
+                } else {
+                    nodeViewBtn.setEnabled(true);
+                    nodeViewBtn.setSelected(true);
+                    scrollPane.setViewportView(task.getResultPresenter());
+                }
+                editorPopup.show(expandBtn,
+                        -(POPUP_WIDTH - expandBtn.getWidth()),
+                        expandBtn.getHeight());
+            });
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return value;
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                int row,
+                int column
+        ) {
+            this.value = value;
+            return expandBtn;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                boolean hasFocus,
+                int row,
+                int column
+        ) {
+            if (!value.toString().isEmpty()) {
+                return expandBtn;
+            }
+            return EMPTY_LABEL;
         }
     }
 }

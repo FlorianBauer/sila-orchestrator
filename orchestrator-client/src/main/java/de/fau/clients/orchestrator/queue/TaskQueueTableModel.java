@@ -206,7 +206,6 @@ class TaskQueueTableModel extends DefaultTableModel {
         // make the task-ID and the server-UUID column editable
         switch (col) {
             case TaskQueueTable.COLUMN_TASK_ID_IDX:
-            case TaskQueueTable.COLUMN_RESULT_IDX:
             case TaskQueueTable.COLUMN_EXEC_POLICY_IDX:
                 return true;
             case TaskQueueTable.COLUMN_SERVER_UUID_IDX:
@@ -214,6 +213,12 @@ class TaskQueueTableModel extends DefaultTableModel {
                     return true;
                 }
                 break;
+            case TaskQueueTable.COLUMN_RESULT_IDX:
+                final String result = (String) getValueAt(row, TaskQueueTable.COLUMN_RESULT_IDX);
+                if (!result.isEmpty()) {
+                    return true;
+                }
+                return false;
             default:
                 break;
         }

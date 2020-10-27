@@ -35,9 +35,10 @@ public final class NodeFactory {
     public final static SilaNode createFromElementsWithJson(
             @NonNull final FeatureContext featCtx,
             @NonNull final List<SiLAElement> elements,
-            @NonNull final JsonNode jsonNode
+            @NonNull final JsonNode jsonNode,
+            boolean isEditable
     ) {
-        return CompositNode.createFromJson(featCtx, elements, jsonNode, true);
+        return CompositNode.createFromJson(featCtx, elements, jsonNode, isEditable);
     }
 
     public final static SilaNode createFromDataType(
