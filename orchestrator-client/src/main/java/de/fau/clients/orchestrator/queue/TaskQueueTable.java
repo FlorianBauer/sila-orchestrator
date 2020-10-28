@@ -122,7 +122,7 @@ public final class TaskQueueTable extends JTable implements ServerListener {
         });
 
         final TableColumn resultColumn = columnModel.getColumn(COLUMN_RESULT_IDX);
-        resultColumn.setMaxWidth(52);
+        resultColumn.setMaxWidth(64);
         // Set the editor and renderer for the result cell to view the returned response.
         resultColumn.setCellRenderer(new ResultCellEditor());
         resultColumn.setCellEditor(new ResultCellEditor());
