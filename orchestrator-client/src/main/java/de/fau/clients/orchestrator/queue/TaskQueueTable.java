@@ -43,7 +43,7 @@ import sila_java.library.manager.models.Server;
  */
 @Slf4j
 @SuppressWarnings("serial")
-public class TaskQueueTable extends JTable implements ServerListener {
+public final class TaskQueueTable extends JTable implements ServerListener {
 
     public static final int COLUMN_TASK_ID_IDX = 0;
     public static final int COLUMN_CONNECTION_STATUS_IDX = 1;
