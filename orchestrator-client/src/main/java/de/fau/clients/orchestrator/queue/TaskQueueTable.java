@@ -307,7 +307,9 @@ public final class TaskQueueTable extends JTable implements ServerListener {
      */
     public void addTask(final QueueTask task) {
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
+        int rowIdx = tqtModel.getRowCount();
         tqtModel.addTask(generateAndRegisterTaskId(), task, ExecPolicy.HALT_AFTER_ERROR);
+        selectionModel.setSelectionInterval(rowIdx, rowIdx);
     }
 
     /**
@@ -322,6 +324,7 @@ public final class TaskQueueTable extends JTable implements ServerListener {
     public void insertTask(int idx, final QueueTask task) {
         final TaskQueueTableModel tqtModel = (TaskQueueTableModel) dataModel;
         tqtModel.insertTask(idx, generateAndRegisterTaskId(), task, ExecPolicy.HALT_AFTER_ERROR);
+        selectionModel.setSelectionInterval(idx, idx);
     }
 
     /**
