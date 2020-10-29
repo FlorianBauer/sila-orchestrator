@@ -2,6 +2,7 @@ package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
@@ -37,6 +38,7 @@ import javax.swing.SpinnerNumberModel;
 import lombok.NonNull;
 import sila2.org.silastandard.SiLAFramework;
 import sila_java.library.core.models.BasicType;
+import sila_java.library.core.models.DataTypeType;
 
 /**
  * A Factory for <code>BasicNode</code> objects.
@@ -126,101 +128,109 @@ final class BasicNodeFactory {
             @NonNull final JsonNode jsonNode,
             boolean isEditable
     ) {
-        final BasicType basicType = BasicType.ANY;
         final XmlMapper xmlMapper = new XmlMapper();
-        final JsonNode xmlTypeNode;
-        final String type;
+        xmlMapper.registerModule(new JaxbAnnotationModule());
+        final DataTypeType dtt;
         final byte[] payload;
         try {
-            xmlTypeNode = xmlMapper.readTree(jsonNode.get("type").asText());
-            type = xmlTypeNode.get("Basic").asText();
+            dtt = xmlMapper.readValue(jsonNode.get("type").asText(), DataTypeType.class);
             payload = jsonNode.get("payload").binaryValue();
         } catch (final Exception ex) {
-            return createErrorType(basicType, ex.getMessage());
+            return createErrorType(BasicType.ANY, ex.getMessage());
         }
 
-        if (type.equals(BasicType.BINARY.value())) {
+        final BasicType basicType = dtt.getBasic();
+        if (basicType == null) {
+            return createErrorType(BasicType.ANY, "Not a BasicType.");
+        }
+
+        switch (basicType) {
+            case BINARY:
             try {
                 final ByteString byteVal = SiLAFramework.Binary.parseFrom(payload).getValue();
                 return createBinaryType(byteVal.toByteArray(), isEditable);
             } catch (final InvalidProtocolBufferException ex) {
                 return createErrorType(basicType, ex.getMessage());
             }
-        } else if (type.equals(BasicType.BOOLEAN.value())) {
-            try {
+            case BOOLEAN:
+                 try {
                 final boolean boolVal = SiLAFramework.Boolean.parseFrom(payload).getValue();
                 return createBooleanType(boolVal, isEditable);
             } catch (final InvalidProtocolBufferException ex) {
                 return createErrorType(basicType, ex.getMessage());
             }
-        } else if (type.equals(BasicType.DATE.value())) {
-            final SiLAFramework.Date dateVal;
-            try {
-                dateVal = SiLAFramework.Date.parseFrom(payload);
-            } catch (final InvalidProtocolBufferException ex) {
-                return createErrorType(basicType, ex.getMessage());
-            }
-            return createDateType(
-                    LocalDate.of(dateVal.getDay(), dateVal.getMonth(), dateVal.getYear()),
-                    isEditable);
-        } else if (type.equals(BasicType.INTEGER.value())) {
-            try {
+            case DATE:
+                final SiLAFramework.Date dateVal;
+                try {
+                    dateVal = SiLAFramework.Date.parseFrom(payload);
+                } catch (final InvalidProtocolBufferException ex) {
+                    return createErrorType(basicType, ex.getMessage());
+                }
+                return createDateType(
+                        LocalDate.of(dateVal.getDay(), dateVal.getMonth(), dateVal.getYear()),
+                        isEditable);
+            case INTEGER:
+                try {
                 final long intVal = SiLAFramework.Integer.parseFrom(payload).getValue();
                 return createIntegerType(intVal, isEditable);
             } catch (final InvalidProtocolBufferException ex) {
                 return createErrorType(basicType, ex.getMessage());
             }
-        } else if (type.equals(BasicType.REAL.value())) {
-            try {
+            case REAL:
+                 try {
                 final double realVal = SiLAFramework.Real.parseFrom(payload).getValue();
                 return createRealType(realVal, isEditable);
             } catch (final InvalidProtocolBufferException ex) {
                 return createErrorType(basicType, ex.getMessage());
             }
-        } else if (type.equals(BasicType.STRING.value())) {
-            try {
+            case STRING:
+                  try {
                 final String stringVal = SiLAFramework.String.parseFrom(payload).getValue();
                 return createStringType(stringVal, isEditable);
             } catch (final InvalidProtocolBufferException ex) {
                 return createErrorType(basicType, ex.getMessage());
             }
-        } else if (type.equals(BasicType.TIME.value())) {
-            final SiLAFramework.Time timeVal;
-            try {
-                timeVal = SiLAFramework.Time.parseFrom(payload);
-            } catch (final InvalidProtocolBufferException ex) {
-                return createErrorType(basicType, ex.getMessage());
+            case TIME: {
+                final SiLAFramework.Time timeVal;
+                try {
+                    timeVal = SiLAFramework.Time.parseFrom(payload);
+                } catch (final InvalidProtocolBufferException ex) {
+                    return createErrorType(basicType, ex.getMessage());
+                }
+                final SiLAFramework.Timezone tz = timeVal.getTimezone();
+                final ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutes(tz.getHours(),
+                        tz.getMinutes());
+                final OffsetTime offsetTime = OffsetTime.of(
+                        timeVal.getHour(),
+                        timeVal.getMinute(),
+                        timeVal.getSecond(),
+                        0,
+                        zoneOffset);
+                return createTimeType(offsetTime, isEditable);
             }
-            final SiLAFramework.Timezone tz = timeVal.getTimezone();
-            final ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutes(tz.getHours(), tz.getMinutes());
-            final OffsetTime offsetTime = OffsetTime.of(
-                    timeVal.getHour(),
-                    timeVal.getMinute(),
-                    timeVal.getSecond(),
-                    0,
-                    zoneOffset);
-            return createTimeType(offsetTime, isEditable);
-        } else if (type.equals(BasicType.TIMESTAMP.value())) {
-            final SiLAFramework.Timestamp timestampVal;
-            try {
-                timestampVal = SiLAFramework.Timestamp.parseFrom(payload);
-            } catch (final InvalidProtocolBufferException ex) {
-                return createErrorType(basicType, ex.getMessage());
+            case TIMESTAMP: {
+                final SiLAFramework.Timestamp timestampVal;
+                try {
+                    timestampVal = SiLAFramework.Timestamp.parseFrom(payload);
+                } catch (final InvalidProtocolBufferException ex) {
+                    return createErrorType(basicType, ex.getMessage());
+                }
+                final SiLAFramework.Timezone tz = timestampVal.getTimezone();
+                final ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutes(tz.getHours(),
+                        tz.getMinutes());
+                final OffsetDateTime timestamp = OffsetDateTime.of(
+                        timestampVal.getYear(),
+                        timestampVal.getMonth(),
+                        timestampVal.getDay(),
+                        timestampVal.getHour(),
+                        timestampVal.getMinute(),
+                        timestampVal.getSecond(),
+                        0,
+                        zoneOffset);
+                return createTimestampType(timestamp, isEditable);
             }
-            final SiLAFramework.Timezone tz = timestampVal.getTimezone();
-            final ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutes(tz.getHours(), tz.getMinutes());
-            final OffsetDateTime timestamp = OffsetDateTime.of(
-                    timestampVal.getYear(),
-                    timestampVal.getMonth(),
-                    timestampVal.getDay(),
-                    timestampVal.getHour(),
-                    timestampVal.getMinute(),
-                    timestampVal.getSecond(),
-                    0,
-                    zoneOffset);
-            return createTimestampType(timestamp, isEditable);
-        } else {
-            return createErrorType(basicType, "Undefined 'Any'-type.");
+            default:
+                return createErrorType(basicType, "Unknown BasicType in 'Any'-type.");
         }
     }
 

@@ -164,7 +164,7 @@ public class BasicNodeFactoryTest {
         assertEquals(BasicType.ANY, actual.getType());
         assertEquals(false, actual.isEditable);
         assertEquals(JLabel.class, actual.getComponent().getClass());
-        assertEquals("Error: null", ((JLabel) actual.getComponent()).getText());
+        assertTrue(((JLabel) actual.getComponent()).getText().startsWith("Error: Unrecognized"));
         assertEquals("", actual.getValue());
         assertEquals("{\"value\":\"\"}", actual.toJsonString());
 
@@ -192,7 +192,7 @@ public class BasicNodeFactoryTest {
         assertEquals(BasicType.ANY, actual.getType());
         assertEquals(false, actual.isEditable);
         assertEquals(JLabel.class, actual.getComponent().getClass());
-        assertEquals("Error: Undefined 'Any'-type.", ((JLabel) actual.getComponent()).getText());
+        assertTrue(((JLabel) actual.getComponent()).getText().startsWith("Error: Cannot"));
         assertEquals("", actual.getValue());
         assertEquals("{\"value\":\"\"}", actual.toJsonString());
     }
