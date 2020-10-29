@@ -78,6 +78,7 @@ public class DelayTask extends QueueTask {
             panel.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createTitledBorder(this.toString()),
                     BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+            panel.setFocusCycleRoot(true);
 
             int[] delay = delayModel.getDelayAsMinSecMilli();
             minModel = new SpinnerNumberModel(delay[0], 0, 1440, 1);

@@ -157,6 +157,7 @@ public class CommandTask extends QueueTask {
             panel.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createTitledBorder(cmdCtx.getCommand().getDisplayName()),
                     BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+            panel.setFocusCycleRoot(true);
 
             if (cmdNode != null) {
                 final JComponent comp = cmdNode.getComponent();
@@ -171,7 +172,6 @@ public class CommandTask extends QueueTask {
                 executeCommandBtnActionPerformed();
             });
             panel.add(execBtn);
-            panel.setFocusCycleRoot(true);
             isPanelBuilt = true;
         }
         return panel;

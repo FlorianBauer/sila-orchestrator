@@ -105,6 +105,8 @@ public class LocalExecTask extends QueueTask {
             panel.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createTitledBorder(this.toString()),
                     BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+            panel.setFocusCycleRoot(true);
+
             final Box vBox = Box.createVerticalBox();
             vBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             final JLabel execCmdLabel = new JLabel("Exec Command");
