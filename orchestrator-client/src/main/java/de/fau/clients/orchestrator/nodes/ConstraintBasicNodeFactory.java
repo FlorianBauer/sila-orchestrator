@@ -18,7 +18,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -51,8 +50,6 @@ import sila_java.library.core.models.Constraints;
  * @see ConstraintBasicNode
  */
 class ConstraintBasicNodeFactory {
-
-    private static final URL IMAGE_MISSING = ConstraintBasicNode.class.getResource("/icons/document-missing-64px.png");
 
     /**
      * The horizontal gap size between parameter component, condition description and validation
@@ -239,7 +236,7 @@ class ConstraintBasicNodeFactory {
             if (jsonNode != null) {
                 try {
                     initDate = DateTimeParser.parseIsoDate(jsonNode.asText());
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     // do nothing
                 }
             }
@@ -586,7 +583,7 @@ class ConstraintBasicNodeFactory {
                 try {
                     times[i] = DateTimeParser.parseIsoTime(timeSet.get(i))
                             .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     // skip invalid entries
                 }
             }
@@ -633,7 +630,7 @@ class ConstraintBasicNodeFactory {
                 try {
                     initTime = DateTimeParser.parseIsoTime(jsonNode.asText())
                             .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     // do nothing and use the current time instead
                 }
             }
@@ -671,7 +668,7 @@ class ConstraintBasicNodeFactory {
                 try {
                     times[i] = DateTimeParser.parseIsoDateTime(timeSet.get(i))
                             .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     // skip invalid entries
                 }
             }
@@ -721,7 +718,7 @@ class ConstraintBasicNodeFactory {
             if (jsonNode != null) {
                 try {
                     initDateTime = DateTimeParser.parseIsoDateTime(jsonNode.asText());
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     // do nothing and use the current time instead
                 }
             }
@@ -828,8 +825,7 @@ class ConstraintBasicNodeFactory {
     }
 
     /**
-     * Creates a image node from binary data. Only jpeg, png, bmp and gif formats are supported. The
-     * exported image is always a Base64 encoded jpeg picture.
+     * Creates a image node from binary data. Only jpeg, png, bmp and gif formats are supported.
      *
      * @param binaryValue The binary data of the image.
      * @param constraints The constraints.
