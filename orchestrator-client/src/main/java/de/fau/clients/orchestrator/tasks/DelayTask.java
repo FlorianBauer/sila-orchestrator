@@ -65,7 +65,7 @@ public class DelayTask extends QueueTask {
     }
 
     /**
-     * Presenter which widgets to adjust the minutes, seconds, and milliseconds properties.
+     * Presenter which holds widgets to adjust the minutes, seconds, and milliseconds properties.
      *
      * @return A <code>JPanel</code> populated with widgets for delay adjustments.
      */
@@ -151,7 +151,7 @@ public class DelayTask extends QueueTask {
         boolean wasCanceled = false;
         try {
             Thread.sleep(delayModel.getDelayInMillisec());
-        } catch (InterruptedException ex) {
+        } catch (final InterruptedException ex) {
             wasCanceled = true;
         }
 
