@@ -45,8 +45,8 @@ public class ConstraintBasicNode extends BasicNode {
     }
 
     @Override
-    public ConstraintBasicNode cloneNode() {
-        return ConstraintBasicNodeFactory.create(this.featCtx, this.type, this.constraints, null);
+    public BasicNode cloneNode() {
+        return ConstraintBasicNodeFactory.create(this.featCtx, this.type, this.constraints);
     }
 
     @NonNull

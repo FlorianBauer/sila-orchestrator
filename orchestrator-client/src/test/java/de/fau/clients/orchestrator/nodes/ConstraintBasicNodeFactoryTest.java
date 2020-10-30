@@ -28,7 +28,7 @@ public class ConstraintBasicNodeFactoryTest {
     @Test
     void create() {
         try {
-            ConstraintBasicNodeFactory.create(null, BasicType.BOOLEAN, null, null);
+            ConstraintBasicNodeFactory.create(null, BasicType.BOOLEAN, null);
             fail("NullPointerException was expected but not thrown.");
         } catch (NullPointerException ex) {
         } catch (Exception ex) {
@@ -37,14 +37,14 @@ public class ConstraintBasicNodeFactoryTest {
 
         Constraints con = new Constraints();
         try {
-            ConstraintBasicNodeFactory.create(null, null, con, null);
+            ConstraintBasicNodeFactory.create(null, null, con);
             fail("NullPointerException was expected but not thrown.");
         } catch (NullPointerException ex) {
         } catch (Exception ex) {
             fail("Only a NullPointer was expected.");
         }
 
-        ConstraintBasicNode act = ConstraintBasicNodeFactory.create(null, BasicType.BINARY, con, null);
+        BasicNode act = ConstraintBasicNodeFactory.create(null, BasicType.BINARY, con);
         assertEquals(BasicType.BINARY, act.getType());
         assertEquals("", act.getValue());
         assertEquals(JEditorPane.class, act.getComponent().getClass());
@@ -317,7 +317,7 @@ public class ConstraintBasicNodeFactoryTest {
     public void createConstrainedBoolean() {
         Constraints con = new Constraints();
         try {
-            ConstraintBasicNodeFactory.create(null, BasicType.BOOLEAN, con, null);
+            ConstraintBasicNodeFactory.create(null, BasicType.BOOLEAN, con);
             fail("IllegalArgumentException was expected but not thrown.");
         } catch (IllegalArgumentException ex) {
         } catch (Exception ex) {

@@ -1,6 +1,8 @@
 package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
@@ -43,6 +45,7 @@ import javax.swing.text.AbstractDocument;
 import lombok.NonNull;
 import sila_java.library.core.models.BasicType;
 import sila_java.library.core.models.Constraints;
+import sila_java.library.core.models.DataTypeType;
 
 /**
  * A Factory for <code>ConstraintBasicNode</code>s.
@@ -67,33 +70,57 @@ class ConstraintBasicNodeFactory {
         throw new UnsupportedOperationException("Instantiation not allowed.");
     }
 
-    protected static ConstraintBasicNode create(
+    protected static BasicNode create(
+            final FeatureContext featCtx,
+            @NonNull final BasicType type,
+            @NonNull final Constraints constraints
+    ) {
+        switch (type) {
+            case ANY:
+                return createConstrainedAnyType(constraints, null);
+            case BINARY:
+                return createConstrainedBinaryType(constraints, "".getBytes());
+            case BOOLEAN:
+                // Whoever is trying to constrain a boolean even more deserves a special exception message.
+                throw new IllegalArgumentException("Booleans can not be constrained. Try using "
+                        + "'BasicNodeFactory.createBooleanType(boolValue, false);' for a "
+                        + "non-editable bool node.");
+            case DATE:
+                return createConstrainedDateTypeFromJson(constraints, null);
+            case INTEGER:
+                return createConstrainedIntegerTypeFromJson(constraints, null);
+            case REAL:
+                return createConstrainedRealTypeFromJson(constraints, null);
+            case STRING:
+                return createConstrainedStringTypeFromJson(constraints, null, featCtx);
+            case TIME:
+                return createConstrainedTimeTypeFromJson(constraints, null);
+            case TIMESTAMP:
+                return createConstrainedTimestampeTypeFromJson(constraints, null);
+            default:
+                throw new IllegalArgumentException("Not a valid BasicType.");
+        }
+    }
+
+    protected static BasicNode createFromJson(
             final FeatureContext featCtx,
             @NonNull final BasicType type,
             @NonNull final Constraints constraints,
             final JsonNode jsonNode
     ) {
+        if (jsonNode == null) {
+            return create(featCtx, type, constraints);
+        }
+
         switch (type) {
             case ANY:
-                // TODO: implement
-                return new ConstraintBasicNode(featCtx,
-                        type,
-                        new JLabel("placeholder 03"),
-                        () -> (""),
-                        constraints);
+                return createConstrainedAnyType(constraints, jsonNode);
             case BINARY:
                 final byte[] binaryVal;
-                if (jsonNode != null) {
-                    try {
-                        binaryVal = jsonNode.binaryValue();
-                    } catch (final IOException ex) {
-                        return new ConstraintBasicNode(type,
-                                new JLabel("Error: " + ex.getMessage()),
-                                () -> (""),
-                                constraints);
-                    }
-                } else {
-                    binaryVal = "".getBytes();
+                try {
+                    binaryVal = jsonNode.get("value").binaryValue();
+                } catch (final IOException ex) {
+                    return BasicNodeFactory.createErrorType(BasicType.ANY, ex.getMessage());
                 }
                 return createConstrainedBinaryType(constraints, binaryVal);
             case BOOLEAN:
@@ -102,20 +129,47 @@ class ConstraintBasicNodeFactory {
                         + "'BasicNodeFactory.createBooleanType(boolValue, false);' for a "
                         + "non-editable bool node.");
             case DATE:
-                return createConstrainedDateTypeFromJson(constraints, jsonNode);
+                return createConstrainedDateTypeFromJson(constraints, jsonNode.get("value"));
             case INTEGER:
-                return createConstrainedIntegerTypeFromJson(constraints, jsonNode);
+                return createConstrainedIntegerTypeFromJson(constraints, jsonNode.get("value"));
             case REAL:
-                return createConstrainedRealTypeFromJson(constraints, jsonNode);
+                return createConstrainedRealTypeFromJson(constraints, jsonNode.get("value"));
             case STRING:
-                return createConstrainedStringTypeFromJson(constraints, jsonNode, featCtx);
+                return createConstrainedStringTypeFromJson(constraints, jsonNode.get("value"), featCtx);
             case TIME:
-                return createConstrainedTimeTypeFromJson(constraints, jsonNode);
+                return createConstrainedTimeTypeFromJson(constraints, jsonNode.get("value"));
             case TIMESTAMP:
-                return createConstrainedTimestampeTypeFromJson(constraints, jsonNode);
+                return createConstrainedTimestampeTypeFromJson(constraints, jsonNode.get("value"));
             default:
                 throw new IllegalArgumentException("Not a valid BasicType.");
         }
+    }
+
+    protected static BasicNode createConstrainedAnyType(
+            @NonNull final Constraints constraints,
+            final JsonNode jsonNode
+    ) {
+        final XmlMapper xmlMapper = new XmlMapper();
+        xmlMapper.registerModule(new JaxbAnnotationModule());
+        final DataTypeType dtt;
+        try {
+            dtt = xmlMapper.readValue(jsonNode.get("type").asText(), DataTypeType.class);
+        } catch (final Exception ex) {
+            return BasicNodeFactory.createErrorType(BasicType.ANY, ex.getMessage());
+        }
+
+        final Constraints.AllowedTypes allowedTypes = constraints.getAllowedTypes();
+        if (allowedTypes != null) {
+            final List<DataTypeType> list = allowedTypes.getDataType();
+            if (dtt.getBasic() != null) {
+                for (final DataTypeType allowedType : list) {
+                    if (dtt.getBasic().compareTo(allowedType.getBasic()) == 0) {
+                        return BasicNodeFactory.createAnyTypeFromJson(jsonNode, false);
+                    }
+                }
+            }
+        }
+        return BasicNodeFactory.createErrorType(BasicType.ANY, "Type not allowed.");
     }
 
     /**
