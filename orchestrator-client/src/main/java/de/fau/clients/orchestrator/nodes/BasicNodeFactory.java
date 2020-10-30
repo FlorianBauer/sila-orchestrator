@@ -1,8 +1,6 @@
 package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
@@ -14,6 +12,7 @@ import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerModel;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerModel;
 import de.fau.clients.orchestrator.utils.ValidatorUtils;
+import de.fau.clients.orchestrator.utils.XmlUtils;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -85,16 +84,20 @@ final class BasicNodeFactory {
 
     protected static BasicNode createFromJson(
             @NonNull final BasicType type,
-            final JsonNode jsonNode,
+            @NonNull final JsonNode jsonNode,
             boolean isEditable
     ) {
-        if (jsonNode == null) {
-            return create(type, isEditable);
-        }
-
         switch (type) {
             case ANY:
-                return createAnyTypeFromJson(jsonNode, isEditable);
+                final DataTypeType dtt;
+                final byte[] payload;
+                try {
+                    dtt = XmlUtils.parseXmlDataType(jsonNode.get("type").asText());
+                    payload = jsonNode.get("payload").binaryValue();
+                } catch (final IOException ex) {
+                    return createErrorType(type, ex.getMessage());
+                }
+                return createAnyType(dtt, payload, isEditable);
             case BINARY: {
                 try {
                     return createBinaryType(jsonNode.binaryValue(), isEditable);
@@ -124,21 +127,11 @@ final class BasicNodeFactory {
         }
     }
 
-    protected static BasicNode createAnyTypeFromJson(
-            @NonNull final JsonNode jsonNode,
+    protected static BasicNode createAnyType(
+            @NonNull final DataTypeType dtt,
+            @NonNull final byte[] payload,
             boolean isEditable
     ) {
-        final XmlMapper xmlMapper = new XmlMapper();
-        xmlMapper.registerModule(new JaxbAnnotationModule());
-        final DataTypeType dtt;
-        final byte[] payload;
-        try {
-            dtt = xmlMapper.readValue(jsonNode.get("type").asText(), DataTypeType.class);
-            payload = jsonNode.get("payload").binaryValue();
-        } catch (final Exception ex) {
-            return createErrorType(BasicType.ANY, ex.getMessage());
-        }
-
         final BasicType basicType = dtt.getBasic();
         if (basicType == null) {
             return createErrorType(BasicType.ANY, "Not a BasicType.");

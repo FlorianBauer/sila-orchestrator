@@ -1,9 +1,8 @@
 package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import de.fau.clients.orchestrator.ctx.FeatureContext;
+import static de.fau.clients.orchestrator.nodes.BasicNodeFactory.createErrorType;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.DocumentLengthFilter;
 import de.fau.clients.orchestrator.utils.IconProvider;
@@ -13,6 +12,7 @@ import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor.FormatterType;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.ValidatorUtils;
+import de.fau.clients.orchestrator.utils.XmlUtils;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
@@ -77,7 +77,7 @@ class ConstraintBasicNodeFactory {
     ) {
         switch (type) {
             case ANY:
-                return createConstrainedAnyType(constraints, null);
+                throw new IllegalArgumentException("'Any'-type without typ info not supported.");
             case BINARY:
                 return createConstrainedBinaryType(constraints, "".getBytes());
             case BOOLEAN:
@@ -114,13 +114,21 @@ class ConstraintBasicNodeFactory {
 
         switch (type) {
             case ANY:
-                return createConstrainedAnyType(constraints, jsonNode);
+                final DataTypeType dtt;
+                final byte[] payload;
+                try {
+                    dtt = XmlUtils.parseXmlDataType(jsonNode.get("type").asText());
+                    payload = jsonNode.get("payload").binaryValue();
+                } catch (final IOException ex) {
+                    return createErrorType(type, ex.getMessage());
+                }
+                return createConstrainedAnyType(constraints, dtt, payload);
             case BINARY:
                 final byte[] binaryVal;
                 try {
                     binaryVal = jsonNode.get("value").binaryValue();
                 } catch (final IOException ex) {
-                    return BasicNodeFactory.createErrorType(BasicType.ANY, ex.getMessage());
+                    return BasicNodeFactory.createErrorType(type, ex.getMessage());
                 }
                 return createConstrainedBinaryType(constraints, binaryVal);
             case BOOLEAN:
@@ -147,24 +155,16 @@ class ConstraintBasicNodeFactory {
 
     protected static BasicNode createConstrainedAnyType(
             @NonNull final Constraints constraints,
-            final JsonNode jsonNode
+            @NonNull final DataTypeType dtt,
+            @NonNull final byte[] payload
     ) {
-        final XmlMapper xmlMapper = new XmlMapper();
-        xmlMapper.registerModule(new JaxbAnnotationModule());
-        final DataTypeType dtt;
-        try {
-            dtt = xmlMapper.readValue(jsonNode.get("type").asText(), DataTypeType.class);
-        } catch (final Exception ex) {
-            return BasicNodeFactory.createErrorType(BasicType.ANY, ex.getMessage());
-        }
-
         final Constraints.AllowedTypes allowedTypes = constraints.getAllowedTypes();
         if (allowedTypes != null) {
             final List<DataTypeType> list = allowedTypes.getDataType();
             if (dtt.getBasic() != null) {
                 for (final DataTypeType allowedType : list) {
                     if (dtt.getBasic().compareTo(allowedType.getBasic()) == 0) {
-                        return BasicNodeFactory.createAnyTypeFromJson(jsonNode, false);
+                        return BasicNodeFactory.createAnyType(dtt, payload, false);
                     }
                 }
             }
