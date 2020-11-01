@@ -11,7 +11,7 @@ import sila_java.library.core.models.DataTypeType;
 public class XmlUtilsTest {
 
     @Test
-    public void parserXmlDataType() throws JsonProcessingException {
+    public void parserXmlDataTypeBasic() throws JsonProcessingException {
         String xmlTypeStr = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
                 + "<DataType>\n"
                 + "  <Basic>Integer</Basic>\n"
@@ -40,12 +40,49 @@ public class XmlUtilsTest {
         assertNull(act.getList());
         assertNull(act.getStructure());
 
-        xmlTypeStr = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-                + "<dataTypeType>"
+        xmlTypeStr = "<DataType>"
+                + "  <Basic>Date</Basic>"
+                + "</DataType>";
+        act = XmlUtils.parseXmlDataType(xmlTypeStr);
+        assertEquals(BasicType.DATE, act.getBasic());
+        assertNull(act.getConstrained());
+        assertNull(act.getList());
+        assertNull(act.getStructure());
+
+    }
+
+    @Test
+    public void parserXmlDataTypeConstrained() throws JsonProcessingException {
+        String xmlTypeStr = "<dataTypeType>"
                 + "  <Constrained>"
                 + "    <DataType>"
                 + "      <Basic>Real</Basic>"
                 + "    </DataType>"
+                + "    <Constraints>"
+                + "      <MaximalExclusive>3.141592</MaximalExclusive>"
+                + "    </Constraints>"
+                + "  </Constrained>"
+                + "</dataTypeType>";
+        DataTypeType act = XmlUtils.parseXmlDataType(xmlTypeStr);
+        assertNull(act.getBasic());
+        assertNotNull(act.getConstrained());
+        assertNull(act.getList());
+        assertNull(act.getStructure());
+        assertEquals(BasicType.REAL, act.getConstrained().getDataType().getBasic());
+        assertEquals("3.141592", act.getConstrained().getConstraints().getMaximalExclusive());
+
+        xmlTypeStr = "<dataTypeType>"
+                + "  <Constrained>"
+                + "    <DataType>"
+                + "      <Basic>String</Basic>"
+                + "    </DataType>"
+                + "    <Constraints>"
+                + "     <Set>"
+                + "       <Value>A</Value>"
+                + "       <Value>B</Value>"
+                + "       <Value>C</Value>"
+                + "      </Set>"
+                + "    </Constraints>"
                 + "  </Constrained>"
                 + "</dataTypeType>";
         act = XmlUtils.parseXmlDataType(xmlTypeStr);
@@ -53,6 +90,10 @@ public class XmlUtilsTest {
         assertNotNull(act.getConstrained());
         assertNull(act.getList());
         assertNull(act.getStructure());
-        assertEquals(BasicType.REAL, act.getConstrained().getDataType().getBasic());
+        assertEquals(BasicType.STRING, act.getConstrained().getDataType().getBasic());
+        assertNotNull(act.getConstrained().getConstraints().getSet());
+        assertEquals("A", act.getConstrained().getConstraints().getSet().getValue().get(0));
+        assertEquals("B", act.getConstrained().getConstraints().getSet().getValue().get(1));
+        assertEquals("C", act.getConstrained().getConstraints().getSet().getValue().get(2));
     }
 }

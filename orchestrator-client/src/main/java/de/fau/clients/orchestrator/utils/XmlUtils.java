@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import lombok.NonNull;
@@ -11,16 +12,19 @@ import sila_java.library.core.models.DataTypeType;
  */
 public final class XmlUtils {
 
-    private static final XmlMapper xmlMapper = new XmlMapper();
+    private static final XmlMapper xmlMapper;
 
     static {
+        final JacksonXmlModule module = new JacksonXmlModule();
+        module.setDefaultUseWrapper(false);
+        xmlMapper = new XmlMapper(module);
         xmlMapper.registerModule(new JaxbAnnotationModule());
     }
 
     /**
-     * Parses the given XML string into a SilA <code>DataTypeType</code>.
+     * Deserializes the given XML string into a SilA <code>DataTypeType</code>.
      *
-     * @param typeAsXml
+     * @param typeAsXml The type encoded as XML string.
      * @return The <code>DataTypeType</code> object form the unmarshalled XML string on success.
      * @throws JsonProcessingException
      * @see ..BasicNodeFactory#createAnyType
