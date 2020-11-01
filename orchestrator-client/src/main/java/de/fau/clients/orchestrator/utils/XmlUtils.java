@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import lombok.NonNull;
+import sila_java.library.core.models.Constraints;
 import sila_java.library.core.models.DataTypeType;
 
 /**
@@ -32,5 +33,17 @@ public final class XmlUtils {
     public static DataTypeType parseXmlDataType(@NonNull final String typeAsXml)
             throws JsonProcessingException {
         return xmlMapper.readValue(typeAsXml, DataTypeType.class);
+    }
+
+    /**
+     * Deserializes the given XML string into a SilA <code>Constraints</code> object.
+     *
+     * @param constraintsAsXml The constraints type encoded as XML string.
+     * @return The <code>Constraints</code> object form the unmarshalled XML string on success.
+     * @throws JsonProcessingException
+     */
+    public static Constraints parseXmlConstraints(@NonNull final String constraintsAsXml)
+            throws JsonProcessingException {
+        return xmlMapper.readValue(constraintsAsXml, Constraints.class);
     }
 }
