@@ -61,6 +61,14 @@ final class BasicNodeFactory {
         throw new UnsupportedOperationException("Instantiation not allowed.");
     }
 
+    /**
+     * Creates a basic node initialized with default values.
+     *
+     * @param type The node type to create.
+     * @param isEditable Determines wether the data in the resulting node can be modified by the
+     * user or not.
+     * @return The default initialized basic node.
+     */
     protected static BasicNode create(@NonNull final BasicType type, boolean isEditable) {
         switch (type) {
             case ANY:
@@ -86,6 +94,15 @@ final class BasicNodeFactory {
         }
     }
 
+    /**
+     * Creates a BasicNode initialized with the data provided by the JSON node.
+     *
+     * @param type The node type to create.
+     * @param jsonNode The JSON node containing the data to initialize the node with.
+     * @param isEditable Determines wether the data in the resulting node can be modified by the
+     * user or not.
+     * @return The initialized basic node.
+     */
     protected static BasicNode createFromJson(
             @NonNull final BasicType type,
             @NonNull final JsonNode jsonNode,
@@ -131,6 +148,19 @@ final class BasicNodeFactory {
         }
     }
 
+    /**
+     * Creates a basic node from an SiLA Any-type.
+     *
+     * @param dtt The SiLA <code>DataTypeType</code>-type defining the node type of the Any-type.
+     * @param payload The encoded data to initialize the node with.
+     * @param isEditable Determines wether the data in the resulting node can be modified by the
+     * user or not.
+     * @return The initialized basic node.
+     *
+     * @note Only Any-types holding a BasicType can be handled properly. Support for complex and
+     * nested Any-types is postponed due to its complexity and its rare usage in real-world
+     * scenarios. (2020-11-03 florian.bauer.dev@gmail.com)
+     */
     protected static BasicNode createAnyType(
             @NonNull final DataTypeType dtt,
             @NonNull final byte[] payload,
@@ -252,7 +282,7 @@ final class BasicNodeFactory {
      *
      * @param byteValue The byte array to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
-     * @return The initialize BasicNode representing a binary value.
+     * @return The initialized BasicNode representing a binary value.
      */
     protected static BasicNode createBinaryType(
             @NonNull final byte[] byteValue,
@@ -302,7 +332,7 @@ final class BasicNodeFactory {
      *
      * @param boolValue The bool value to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
-     * @return The initialize BasicNode representing a boolean value.
+     * @return The initialized BasicNode representing a boolean value.
      */
     protected static BasicNode createBooleanType(final boolean boolValue, boolean isEditable) {
         final JCheckBox checkBox = new JCheckBox();
@@ -317,7 +347,7 @@ final class BasicNodeFactory {
      *
      * @param jsonNode The <code>LocalDate</code> to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
-     * @return The initialize BasicNode representing a date value.
+     * @return The initialized BasicNode representing a date value.
      */
     protected static BasicNode createDateType(
             @NonNull final LocalDate dateValue,
@@ -346,7 +376,7 @@ final class BasicNodeFactory {
      *
      * @param intValue The integer value to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
-     * @return The initialize BasicNode representing a integer value.
+     * @return The initialized BasicNode representing a integer value.
      */
     protected static BasicNode createIntegerType(final long intValue, boolean isEditable) {
         if (isEditable) {
@@ -369,7 +399,7 @@ final class BasicNodeFactory {
      *
      * @param realValue The double value to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
-     * @return The initialize BasicNode representing a double value.
+     * @return The initialized BasicNode representing a double value.
      */
     protected static BasicNode createRealType(final double realValue, boolean isEditable) {
         if (isEditable) {
@@ -391,7 +421,7 @@ final class BasicNodeFactory {
      *
      * @param stringValue The String to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
-     * @return The initialize BasicNode representing a String.
+     * @return The initialized BasicNode representing a String.
      */
     protected static BasicNode createStringType(
             @NonNull final String stringValue,
@@ -409,7 +439,7 @@ final class BasicNodeFactory {
      *
      * @param timeValue The <code>OffsetTime</code> to initialize the node with.
      * @param isEditable Determines whether the user can edit the represented value or not.
-     * @return The initialize BasicNode representing a time value.
+     * @return The initialized BasicNode representing a time value.
      */
     protected static BasicNode createTimeType(
             @NonNull final OffsetTime timeValue,
@@ -477,6 +507,15 @@ final class BasicNodeFactory {
         }
     }
 
+    /**
+     * Creates a node carrying a label with a error message. This kind of node is used when
+     * something went wrong but instead of secretly logging the error in the console, the message
+     * should appear in the GUI, so the user is able to see the actual error string.
+     *
+     * @param basicType The BasicType on which the error occurred.
+     * @param errorMsg The error message as string shown in the GUI.
+     * @return The node holding the error message.
+     */
     protected static BasicNode createErrorType(
             @NonNull final BasicType basicType,
             final String errorMsg
