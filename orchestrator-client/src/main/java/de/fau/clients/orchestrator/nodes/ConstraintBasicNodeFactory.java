@@ -167,7 +167,25 @@ class ConstraintBasicNodeFactory {
                         return BasicNodeFactory.createAnyType(dtt, payload, false);
                     }
                 }
+            } else if (dtt.getConstrained() != null) {
+                return createConstrainedAnyType(dtt.getConstrained().getConstraints(), dtt, payload);
+            } else if (dtt.getList() != null) {
+                // TODO: implement allowed type check
+                return BasicNodeFactory.createAnyType(dtt, payload, false);
+            } else if (dtt.getStructure() != null) {
+                // TODO: implement allowed type check
+                return BasicNodeFactory.createAnyType(dtt, payload, false);
             }
+        } else if (constraints.getMaximalExclusive() != null
+                || constraints.getMaximalInclusive() != null
+                || constraints.getMinimalExclusive() != null
+                || constraints.getMinimalInclusive() != null) {
+            // Only basic types can have these constraints.
+            return BasicNodeFactory.createAnyType(dtt.getConstrained().getDataType(), payload, false);
+        } else if (constraints.getUnit() != null) {
+            // Only INTEGER and REAL types can have these constraints.
+            // TODO: Implement function which put the unit label besides the BasicType.
+            return BasicNodeFactory.createAnyType(dtt.getConstrained().getDataType(), payload, false);
         }
         return BasicNodeFactory.createErrorType(BasicType.ANY, "Type not allowed.");
     }

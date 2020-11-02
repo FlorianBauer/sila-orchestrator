@@ -2,6 +2,8 @@ package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
@@ -38,6 +40,8 @@ import lombok.NonNull;
 import sila2.org.silastandard.SiLAFramework;
 import sila_java.library.core.models.BasicType;
 import sila_java.library.core.models.DataTypeType;
+import sila_java.library.core.sila.mapping.feature.MalformedSiLAFeature;
+import sila_java.library.core.sila.mapping.grpc.ProtoMapper;
 
 /**
  * A Factory for <code>BasicNode</code> objects.
@@ -133,97 +137,111 @@ final class BasicNodeFactory {
             boolean isEditable
     ) {
         final BasicType basicType = dtt.getBasic();
-        if (basicType == null) {
-            return createErrorType(BasicType.ANY, "Not a BasicType.");
-        }
-
-        switch (basicType) {
-            case BINARY:
+        if (basicType != null) {
+            switch (basicType) {
+                case BINARY:
+                try {
+                    final ByteString byteVal = SiLAFramework.Binary.parseFrom(payload).getValue();
+                    return createBinaryType(byteVal.toByteArray(), isEditable);
+                } catch (final InvalidProtocolBufferException ex) {
+                    return createErrorType(basicType, ex.getMessage());
+                }
+                case BOOLEAN:
+                     try {
+                    final boolean boolVal = SiLAFramework.Boolean.parseFrom(payload).getValue();
+                    return createBooleanType(boolVal, isEditable);
+                } catch (final InvalidProtocolBufferException ex) {
+                    return createErrorType(basicType, ex.getMessage());
+                }
+                case DATE:
+                    final SiLAFramework.Date dateVal;
+                    try {
+                        dateVal = SiLAFramework.Date.parseFrom(payload);
+                    } catch (final InvalidProtocolBufferException ex) {
+                        return createErrorType(basicType, ex.getMessage());
+                    }
+                    return createDateType(
+                            LocalDate.of(dateVal.getDay(), dateVal.getMonth(), dateVal.getYear()),
+                            isEditable);
+                case INTEGER:
+                    try {
+                    final long intVal = SiLAFramework.Integer.parseFrom(payload).getValue();
+                    return createIntegerType(intVal, isEditable);
+                } catch (final InvalidProtocolBufferException ex) {
+                    return createErrorType(basicType, ex.getMessage());
+                }
+                case REAL:
+                     try {
+                    final double realVal = SiLAFramework.Real.parseFrom(payload).getValue();
+                    return createRealType(realVal, isEditable);
+                } catch (final InvalidProtocolBufferException ex) {
+                    return createErrorType(basicType, ex.getMessage());
+                }
+                case STRING:
+                      try {
+                    final String stringVal = SiLAFramework.String.parseFrom(payload).getValue();
+                    return createStringType(stringVal, isEditable);
+                } catch (final InvalidProtocolBufferException ex) {
+                    return createErrorType(basicType, ex.getMessage());
+                }
+                case TIME: {
+                    final SiLAFramework.Time timeVal;
+                    try {
+                        timeVal = SiLAFramework.Time.parseFrom(payload);
+                    } catch (final InvalidProtocolBufferException ex) {
+                        return createErrorType(basicType, ex.getMessage());
+                    }
+                    final SiLAFramework.Timezone tz = timeVal.getTimezone();
+                    final ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutes(tz.getHours(),
+                            tz.getMinutes());
+                    final OffsetTime offsetTime = OffsetTime.of(
+                            timeVal.getHour(),
+                            timeVal.getMinute(),
+                            timeVal.getSecond(),
+                            0,
+                            zoneOffset);
+                    return createTimeType(offsetTime, isEditable);
+                }
+                case TIMESTAMP: {
+                    final SiLAFramework.Timestamp timestampVal;
+                    try {
+                        timestampVal = SiLAFramework.Timestamp.parseFrom(payload);
+                    } catch (final InvalidProtocolBufferException ex) {
+                        return createErrorType(basicType, ex.getMessage());
+                    }
+                    final SiLAFramework.Timezone tz = timestampVal.getTimezone();
+                    final ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutes(tz.getHours(),
+                            tz.getMinutes());
+                    final OffsetDateTime timestamp = OffsetDateTime.of(
+                            timestampVal.getYear(),
+                            timestampVal.getMonth(),
+                            timestampVal.getDay(),
+                            timestampVal.getHour(),
+                            timestampVal.getMinute(),
+                            timestampVal.getSecond(),
+                            0,
+                            zoneOffset);
+                    return createTimestampType(timestamp, isEditable);
+                }
+                default:
+                    return createErrorType(basicType, "Unknown BasicType in 'Any'-type.");
+            }
+        } else {
+            final Descriptors.Descriptor desc;
+            final DynamicMessage dynMsg;
             try {
-                final ByteString byteVal = SiLAFramework.Binary.parseFrom(payload).getValue();
-                return createBinaryType(byteVal.toByteArray(), isEditable);
-            } catch (final InvalidProtocolBufferException ex) {
-                return createErrorType(basicType, ex.getMessage());
+                desc = ProtoMapper.dataTypeToDescriptor(dtt);
+                dynMsg = DynamicMessage.parseFrom(desc, payload);
+            } catch (final MalformedSiLAFeature | InvalidProtocolBufferException ex) {
+                return createErrorType(BasicType.ANY, ex.getMessage());
             }
-            case BOOLEAN:
-                 try {
-                final boolean boolVal = SiLAFramework.Boolean.parseFrom(payload).getValue();
-                return createBooleanType(boolVal, isEditable);
-            } catch (final InvalidProtocolBufferException ex) {
-                return createErrorType(basicType, ex.getMessage());
-            }
-            case DATE:
-                final SiLAFramework.Date dateVal;
-                try {
-                    dateVal = SiLAFramework.Date.parseFrom(payload);
-                } catch (final InvalidProtocolBufferException ex) {
-                    return createErrorType(basicType, ex.getMessage());
-                }
-                return createDateType(
-                        LocalDate.of(dateVal.getDay(), dateVal.getMonth(), dateVal.getYear()),
-                        isEditable);
-            case INTEGER:
-                try {
-                final long intVal = SiLAFramework.Integer.parseFrom(payload).getValue();
-                return createIntegerType(intVal, isEditable);
-            } catch (final InvalidProtocolBufferException ex) {
-                return createErrorType(basicType, ex.getMessage());
-            }
-            case REAL:
-                 try {
-                final double realVal = SiLAFramework.Real.parseFrom(payload).getValue();
-                return createRealType(realVal, isEditable);
-            } catch (final InvalidProtocolBufferException ex) {
-                return createErrorType(basicType, ex.getMessage());
-            }
-            case STRING:
-                  try {
-                final String stringVal = SiLAFramework.String.parseFrom(payload).getValue();
-                return createStringType(stringVal, isEditable);
-            } catch (final InvalidProtocolBufferException ex) {
-                return createErrorType(basicType, ex.getMessage());
-            }
-            case TIME: {
-                final SiLAFramework.Time timeVal;
-                try {
-                    timeVal = SiLAFramework.Time.parseFrom(payload);
-                } catch (final InvalidProtocolBufferException ex) {
-                    return createErrorType(basicType, ex.getMessage());
-                }
-                final SiLAFramework.Timezone tz = timeVal.getTimezone();
-                final ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutes(tz.getHours(),
-                        tz.getMinutes());
-                final OffsetTime offsetTime = OffsetTime.of(
-                        timeVal.getHour(),
-                        timeVal.getMinute(),
-                        timeVal.getSecond(),
-                        0,
-                        zoneOffset);
-                return createTimeType(offsetTime, isEditable);
-            }
-            case TIMESTAMP: {
-                final SiLAFramework.Timestamp timestampVal;
-                try {
-                    timestampVal = SiLAFramework.Timestamp.parseFrom(payload);
-                } catch (final InvalidProtocolBufferException ex) {
-                    return createErrorType(basicType, ex.getMessage());
-                }
-                final SiLAFramework.Timezone tz = timestampVal.getTimezone();
-                final ZoneOffset zoneOffset = ZoneOffset.ofHoursMinutes(tz.getHours(),
-                        tz.getMinutes());
-                final OffsetDateTime timestamp = OffsetDateTime.of(
-                        timestampVal.getYear(),
-                        timestampVal.getMonth(),
-                        timestampVal.getDay(),
-                        timestampVal.getHour(),
-                        timestampVal.getMinute(),
-                        timestampVal.getSecond(),
-                        0,
-                        zoneOffset);
-                return createTimestampType(timestamp, isEditable);
-            }
-            default:
-                return createErrorType(basicType, "Unknown BasicType in 'Any'-type.");
+            // TODO: Complex Any-types require to be build-up in a recursive fashion. This means 
+            // they need a dedicated bulid function for every available type they can contain 
+            // similiar to the 'createFromJason()' functions, only dealing with DynamicMessages 
+            // instead of JSON. At this point, it is not worth the effort. Therefore the result 
+            // is shown as string within an error message. (2020-11-02 florian.bauer.dev@gmail.com)
+            return createErrorType(BasicType.ANY, "Not implemented, but here is the result so far: '"
+                    + dynMsg.toString() + "'.");
         }
     }
 
