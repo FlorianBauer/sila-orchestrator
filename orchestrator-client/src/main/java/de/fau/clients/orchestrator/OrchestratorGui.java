@@ -1074,6 +1074,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             taskQueueTable.getCellEditor().stopCellEditing();
         }
         taskQueueTable.removeRow(selectedRowIdx);
+        presenterScrollPane.setViewportView(null);
     }//GEN-LAST:event_removeTaskFromQueue
 
     private void saveFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveFileActionPerformed
