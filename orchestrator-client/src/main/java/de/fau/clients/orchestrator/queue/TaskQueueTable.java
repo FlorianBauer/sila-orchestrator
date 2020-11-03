@@ -184,10 +184,9 @@ public final class TaskQueueTable extends JTable implements ServerListener {
      * used task IDs are released as well.
      */
     public void clearTable() {
-        final TableCellEditor ce = getCellEditor();
-        if (ce != null) {
+        if (isEditing()) {
             // abort editing before purging the entries
-            ce.stopCellEditing();
+            getCellEditor().stopCellEditing();
         }
         ((TaskQueueTableModel) dataModel).setRowCount(0);
         taskId = INIT_TASK_ID;
@@ -195,6 +194,10 @@ public final class TaskQueueTable extends JTable implements ServerListener {
     }
 
     public void removeRow(int rowIdx) {
+        if (isEditing()) {
+            // abort editing before removing the row
+            getCellEditor().stopCellEditing();
+        }
         taskIdSet.remove((int) dataModel.getValueAt(rowIdx, COLUMN_TASK_ID_IDX));
         ((TaskQueueTableModel) dataModel).removeRow(rowIdx);
     }
@@ -231,6 +234,10 @@ public final class TaskQueueTable extends JTable implements ServerListener {
      * </ul>
      */
     public void resetAllTaskStates() {
+        if (isEditing()) {
+            // abort editing before reseting the states
+            getCellEditor().stopCellEditing();
+        }
         ((TaskQueueTableModel) dataModel).resetTaskStates();
     }
 
@@ -470,7 +477,7 @@ public final class TaskQueueTable extends JTable implements ServerListener {
          */
         final InputVerifier verifier;
         /**
-         * Initial ID before editing process begun.
+         * Initial ID before the editing process has begun.
          */
         String oldTaskId;
 
@@ -514,10 +521,13 @@ public final class TaskQueueTable extends JTable implements ServerListener {
                     taskIdSet.add(Integer.parseInt(value));
                     taskIdSet.remove(Integer.parseInt(oldTaskId));
                 } catch (final NumberFormatException ex) {
-                    return false;
+                    cancelCellEditing();
                 }
+            } else {
+                // Don't accept the value and leave the cell editor.
+                cancelCellEditing();
             }
-            return isValid;
+            return true;
         }
     }
 

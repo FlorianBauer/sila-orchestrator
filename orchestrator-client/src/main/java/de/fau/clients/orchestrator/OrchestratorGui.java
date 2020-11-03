@@ -1069,10 +1069,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         removeTaskFromQueueBtn.setEnabled(false);
         removeTaskFromQueueMenuItem.setEnabled(false);
         execRowEntryMenuItem.setEnabled(false);
-        if (taskQueueTable.isEditing()) {
-            // enforce to stop editing before removing the row
-            taskQueueTable.getCellEditor().stopCellEditing();
-        }
         taskQueueTable.removeRow(selectedRowIdx);
         presenterScrollPane.setViewportView(null);
     }//GEN-LAST:event_removeTaskFromQueue
