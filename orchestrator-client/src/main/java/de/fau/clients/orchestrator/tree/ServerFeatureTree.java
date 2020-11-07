@@ -12,6 +12,7 @@ import java.util.UUID;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
@@ -43,6 +44,7 @@ public final class ServerFeatureTree extends JTree implements Presentable, Serve
         this.setDropTarget(null);
         this.setEnabled(false);
         this.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 0));
+        ToolTipManager.sharedInstance().registerComponent(this);
     }
 
     /**
