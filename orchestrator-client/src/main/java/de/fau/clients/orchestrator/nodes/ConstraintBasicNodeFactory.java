@@ -88,7 +88,7 @@ class ConstraintBasicNodeFactory {
             case DATE:
                 return createConstrainedDateType(constraints, LocalDate.now());
             case INTEGER:
-                return createConstrainedIntegerTypeFromJson(constraints, null);
+                return createConstrainedIntegerType(constraints, 0);
             case REAL:
                 return createConstrainedRealTypeFromJson(constraints, null);
             case STRING:
@@ -144,8 +144,15 @@ class ConstraintBasicNodeFactory {
                     return BasicNodeFactory.createErrorType(type, ex.getMessage());
                 }
                 return createConstrainedDateType(constraints, dateVal);
-            case INTEGER:
-                return createConstrainedIntegerTypeFromJson(constraints, jsonNode.get("value"));
+            case INTEGER: {
+                final int intVal;
+                try {
+                    intVal = Integer.parseInt(jsonNode.get("value").asText());
+                } catch (final Exception ex) {
+                    return BasicNodeFactory.createErrorType(type, ex.getMessage());
+                }
+                return createConstrainedIntegerType(constraints, intVal);
+            }
             case REAL:
                 return createConstrainedRealTypeFromJson(constraints, jsonNode.get("value"));
             case STRING:
@@ -339,9 +346,16 @@ class ConstraintBasicNodeFactory {
         return new ConstraintBasicNode(BasicType.DATE, comp, supp, constraints);
     }
 
-    protected static ConstraintBasicNode createConstrainedIntegerTypeFromJson(
+    /**
+     * Creates a <code>ConstraintBasicNode</code> of the type <code>BasicType.INTEGER</code>.
+     *
+     * @param constraints The applied integer constraints.
+     * @param intValue The integer to initialize the node with.
+     * @return The initialized, constrained BasicNode representing a integer value.
+     */
+    protected static ConstraintBasicNode createConstrainedIntegerType(
             @NonNull final Constraints constraints,
-            final JsonNode jsonNode
+            int intValue
     ) {
         final JComponent comp;
         final Supplier<String> supp;
@@ -349,19 +363,22 @@ class ConstraintBasicNodeFactory {
             final List<String> numberSet = constraints.getSet().getValue();
             final JComboBox<String> numberComboBox = new JComboBox<>(numberSet.toArray(new String[0]));
             numberComboBox.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
-            if (jsonNode != null) {
-                numberComboBox.setSelectedItem(jsonNode.asText());
+            int selectionIdx = 0;
+            for (int i = 0; i < numberSet.size(); i++) {
+                if (numberSet.get(i).equals(Integer.toString(intValue))) {
+                    selectionIdx = i;
+                    break;
+                }
             }
-            supp = () -> (Integer.valueOf(numberComboBox.getSelectedItem().toString()).toString());
+            numberComboBox.setSelectedIndex(selectionIdx);
+            supp = () -> (numberComboBox.getSelectedItem().toString());
             comp = numberComboBox;
         } else {
             final SpinnerModel model = ConstraintSpinnerModelFactory
                     .createRangeConstrainedIntModel(constraints);
             final JSpinner numericSpinner = new JSpinner(model);
             numericSpinner.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
-            if (jsonNode != null) {
-                numericSpinner.setValue(jsonNode.asInt());
-            }
+            numericSpinner.setValue(intValue);
             final String conditionDesc;
             if (constraints.getUnit() != null) {
                 conditionDesc = constraints.getUnit().getLabel();
@@ -390,8 +407,8 @@ class ConstraintBasicNodeFactory {
                     conditionDesc = INVALID_CONSTRAINT;
                 }
             }
-
             final Box hBox = Box.createHorizontalBox();
+            hBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             hBox.add(numericSpinner);
             hBox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
             hBox.add(new JLabel(conditionDesc));

@@ -405,4 +405,82 @@ public class ConstraintBasicNodeFactoryTest {
         act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
         assertEquals("≥ 2019-01-01 ∧ ≤ 2020-12-24", ((JLabel) act.getComponent().getComponent(2)).getText());
     }
+
+    @Test
+    public void createConstrainedIntegerType() {
+        int intValue = 4711;
+        try {
+            ConstraintBasicNodeFactory.createConstrainedIntegerType(null, intValue);
+            fail("NullPointerException was expected but not thrown.");
+        } catch (NullPointerException ex) {
+        } catch (Exception ex) {
+            fail("Only a NullPointerException was expected.");
+        }
+
+        Constraints con = new Constraints();
+        ConstraintBasicNode act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
+        assertEquals(BasicType.INTEGER, act.getType());
+        assertEquals("4711", act.getValue());
+        assertNotNull(act.getConstaint());
+        assertEquals(Box.class, act.getComponent().getClass());
+        assertEquals(JSpinner.class, act.getComponent().getComponent(0).getClass());
+        assertEquals("4711", ((JSpinner) act.getComponent().getComponent(0)).getValue().toString());
+        assertEquals(JLabel.class, act.getComponent().getComponent(2).getClass());
+        assertEquals("Invalid Constraint", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        Constraints.Set conSet = new Constraints.Set();
+        List<String> list = conSet.getValue();
+        list.add("10");
+        list.add("20");
+        list.add("30");
+        con.setSet(conSet);
+        act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
+        assertEquals("10", act.getValue());
+        assertEquals(JComboBox.class, act.getComponent().getClass());
+        assertEquals(3, ((JComboBox) act.getComponent()).getItemCount());
+        assertEquals(0, ((JComboBox) act.getComponent()).getSelectedIndex());
+        assertEquals("10", ((JComboBox) act.getComponent()).getSelectedItem().toString());
+
+        intValue = 30;
+        act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
+        assertEquals("30", act.getValue());
+        assertEquals(3, ((JComboBox) act.getComponent()).getItemCount());
+        assertEquals(2, ((JComboBox) act.getComponent()).getSelectedIndex());
+        assertEquals("30", ((JComboBox) act.getComponent()).getSelectedItem().toString());
+
+        con = new Constraints();
+        con.setMaximalExclusive("256");
+        act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
+        assertEquals("< 256", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con = new Constraints();
+        con.setMaximalInclusive("255");
+        act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
+        assertEquals("≤ 255", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con = new Constraints();
+        con.setMinimalExclusive("64");
+        act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
+        assertEquals("> 64", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con = new Constraints();
+        con.setMinimalInclusive("128");
+        act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
+        assertEquals("≥ 128", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con.setMaximalInclusive("4096");
+        act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
+        assertEquals("≥ 128 ∧ ≤ 4096", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con = new Constraints();
+        con.setMinimalInclusive("256");
+        con.setMaximalInclusive("64");
+        try {
+            ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
+            fail("IllegalArgumentException was expected but not thrown.");
+        } catch (IllegalArgumentException ex) {
+        } catch (Exception ex) {
+            fail("Only a IllegalArgumentException was expected.");
+        }
+    }
 }
