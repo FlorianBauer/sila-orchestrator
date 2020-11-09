@@ -86,7 +86,7 @@ class ConstraintBasicNodeFactory {
                         + "'BasicNodeFactory.createBooleanType(boolValue, false);' for a "
                         + "non-editable bool node.");
             case DATE:
-                return createConstrainedDateTypeFromJson(constraints, null);
+                return createConstrainedDateType(constraints, LocalDate.now());
             case INTEGER:
                 return createConstrainedIntegerTypeFromJson(constraints, null);
             case REAL:
@@ -137,7 +137,13 @@ class ConstraintBasicNodeFactory {
                         + "'BasicNodeFactory.createBooleanType(boolValue, false);' for a "
                         + "non-editable bool node.");
             case DATE:
-                return createConstrainedDateTypeFromJson(constraints, jsonNode.get("value"));
+                final LocalDate dateVal;
+                try {
+                    dateVal = DateTimeParser.parseIsoDate(jsonNode.get("value").asText());
+                } catch (final Exception ex) {
+                    return BasicNodeFactory.createErrorType(type, ex.getMessage());
+                }
+                return createConstrainedDateType(constraints, dateVal);
             case INTEGER:
                 return createConstrainedIntegerTypeFromJson(constraints, jsonNode.get("value"));
             case REAL:
@@ -256,20 +262,32 @@ class ConstraintBasicNodeFactory {
         return new ConstraintBasicNode(BasicType.BINARY, errorLabel, () -> (""), constraints);
     }
 
-    protected static ConstraintBasicNode createConstrainedDateTypeFromJson(
+    /**
+     * Creates a <code>ConstraintBasicNode</code> of the type <code>BasicType.DATE</code>.
+     *
+     * @param constraints The applied date constraints.
+     * @param dateValue The date to initialize the node with.
+     * @return The initialized, constrained BasicNode representing a date value.
+     */
+    protected static ConstraintBasicNode createConstrainedDateType(
             @NonNull final Constraints constraints,
-            final JsonNode jsonNode
+            @NonNull final LocalDate dateValue
     ) {
         final JComponent comp;
         final Supplier<String> supp;
         if (constraints.getSet() != null) {
             final List<String> dateSet = constraints.getSet().getValue();
             final LocalDate[] dates = new LocalDate[dateSet.size()];
+            int selectionIdx = 0;
             for (int i = 0; i < dateSet.size(); i++) {
                 dates[i] = DateTimeParser.parseIsoDate(dateSet.get(i));
+                if (dates[i].equals(dateValue)) {
+                    selectionIdx = i;
+                }
             }
             final JComboBox<LocalDate> dateComboBox = new JComboBox<>(dates);
             dateComboBox.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
+            dateComboBox.setSelectedIndex(selectionIdx);
             supp = () -> {
                 return dateComboBox.getSelectedItem().toString();
             };
@@ -304,17 +322,8 @@ class ConstraintBasicNodeFactory {
                 conditionDesc = INVALID_CONSTRAINT;
             }
 
-            LocalDate initDate = LocalDate.now();
-            if (jsonNode != null) {
-                try {
-                    initDate = DateTimeParser.parseIsoDate(jsonNode.asText());
-                } catch (final Exception ex) {
-                    // do nothing
-                }
-            }
-
             final JSpinner dateSpinner = new JSpinner(ConstraintSpinnerModelFactory
-                    .createRangeConstrainedDateModel(initDate, constraints));
+                    .createRangeConstrainedDateModel(dateValue, constraints));
             dateSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             dateSpinner.setEditor(new LocalDateSpinnerEditor(dateSpinner));
             supp = () -> {
@@ -327,7 +336,6 @@ class ConstraintBasicNodeFactory {
             hBox.add(new JLabel(conditionDesc));
             comp = hBox;
         }
-
         return new ConstraintBasicNode(BasicType.DATE, comp, supp, constraints);
     }
 

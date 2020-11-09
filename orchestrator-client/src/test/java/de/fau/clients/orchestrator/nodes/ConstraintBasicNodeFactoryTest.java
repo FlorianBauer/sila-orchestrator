@@ -7,12 +7,16 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Base64;
+import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.Box;
+import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JViewport;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -323,5 +327,82 @@ public class ConstraintBasicNodeFactoryTest {
         } catch (Exception ex) {
             fail("Only a IllegalArgumentException was expected.");
         }
+    }
+
+    @Test
+    public void createConstrainedDateType() {
+        Constraints con = new Constraints();
+        LocalDate dateValue = LocalDate.of(2020, 11, 9);
+
+        try {
+            ConstraintBasicNodeFactory.createConstrainedDateType(null, dateValue);
+            fail("NullPointerException was expected but not thrown.");
+        } catch (NullPointerException ex) {
+        } catch (Exception ex) {
+            fail("Only a NullPointerException was expected.");
+        }
+
+        try {
+            ConstraintBasicNodeFactory.createConstrainedDateType(con, null);
+            fail("NullPointerException was expected but not thrown.");
+        } catch (NullPointerException ex) {
+        } catch (Exception ex) {
+            fail("Only a NullPointerException was expected.");
+        }
+
+        ConstraintBasicNode act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
+        assertEquals(BasicType.DATE, act.getType());
+        assertEquals("2020-11-09", act.getValue());
+        assertNotNull(act.getConstaint());
+        assertEquals(Box.class, act.getComponent().getClass());
+        assertEquals(JSpinner.class, act.getComponent().getComponent(0).getClass());
+        assertEquals("2020-11-09", ((JSpinner) act.getComponent().getComponent(0)).getValue().toString());
+        assertEquals(JLabel.class, act.getComponent().getComponent(2).getClass());
+        assertEquals("Invalid Constraint", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        Constraints.Set conSet = new Constraints.Set();
+        List<String> list = conSet.getValue();
+        list.add("2020-12-01");
+        list.add("2020-12-02");
+        list.add("2020-12-03");
+        list.add("2020-12-04");
+        con.setSet(conSet);
+        act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
+        assertEquals("2020-12-01", act.getValue());
+        assertEquals(JComboBox.class, act.getComponent().getClass());
+        assertEquals(4, ((JComboBox) act.getComponent()).getItemCount());
+        assertEquals(0, ((JComboBox) act.getComponent()).getSelectedIndex());
+        assertEquals("2020-12-01", ((JComboBox) act.getComponent()).getSelectedItem().toString());
+
+        dateValue = LocalDate.of(2020, 12, 3);
+        act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
+        assertEquals("2020-12-03", act.getValue());
+        assertEquals(4, ((JComboBox) act.getComponent()).getItemCount());
+        assertEquals(2, ((JComboBox) act.getComponent()).getSelectedIndex());
+        assertEquals("2020-12-03", ((JComboBox) act.getComponent()).getSelectedItem().toString());
+
+        con = new Constraints();
+        con.setMaximalExclusive("2020-12-24");
+        act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
+        assertEquals("< 2020-12-24", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con = new Constraints();
+        con.setMaximalInclusive("2020-12-24");
+        act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
+        assertEquals("≤ 2020-12-24", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con = new Constraints();
+        con.setMinimalExclusive("2018-01-01");
+        act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
+        assertEquals("> 2018-01-01", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con = new Constraints();
+        con.setMinimalInclusive("2019-01-01");
+        act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
+        assertEquals("≥ 2019-01-01", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con.setMaximalInclusive("2020-12-24");
+        act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
+        assertEquals("≥ 2019-01-01 ∧ ≤ 2020-12-24", ((JLabel) act.getComponent().getComponent(2)).getText());
     }
 }
