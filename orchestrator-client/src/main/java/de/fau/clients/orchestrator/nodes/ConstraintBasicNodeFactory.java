@@ -113,7 +113,7 @@ class ConstraintBasicNodeFactory {
         }
 
         switch (type) {
-            case ANY:
+            case ANY: {
                 final DataTypeType dtt;
                 final byte[] payload;
                 try {
@@ -123,7 +123,8 @@ class ConstraintBasicNodeFactory {
                     return createErrorType(type, ex.getMessage());
                 }
                 return createConstrainedAnyType(constraints, dtt, payload);
-            case BINARY:
+            }
+            case BINARY: {
                 final byte[] binaryVal;
                 try {
                     binaryVal = jsonNode.get("value").binaryValue();
@@ -131,12 +132,13 @@ class ConstraintBasicNodeFactory {
                     return BasicNodeFactory.createErrorType(type, ex.getMessage());
                 }
                 return createConstrainedBinaryType(constraints, binaryVal);
+            }
             case BOOLEAN:
                 // Whoever is trying to constrain a boolean even more deserves a special exception message.
                 throw new IllegalArgumentException("Booleans can not be constrained. Try using "
                         + "'BasicNodeFactory.createBooleanType(boolValue, false);' for a "
                         + "non-editable bool node.");
-            case DATE:
+            case DATE: {
                 final LocalDate dateVal;
                 try {
                     dateVal = DateTimeParser.parseIsoDate(jsonNode.get("value").asText());
@@ -144,6 +146,7 @@ class ConstraintBasicNodeFactory {
                     return BasicNodeFactory.createErrorType(type, ex.getMessage());
                 }
                 return createConstrainedDateType(constraints, dateVal);
+            }
             case INTEGER: {
                 final int intVal;
                 try {
