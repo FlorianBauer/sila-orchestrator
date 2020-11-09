@@ -104,7 +104,7 @@ public class ConstraintSpinnerModelFactoryTest {
             Constraints con = new Constraints();
             con.setMaximalInclusive("5.5");
             con.setMinimalInclusive("2.2");
-            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(con);
+            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(0, con);
             assertEquals(2.2, (double) sm.getValue(), DELTA);
             assertEquals(2.3, (double) sm.getNextValue(), DELTA);
             assertEquals(null, sm.getPreviousValue());
@@ -118,7 +118,7 @@ public class ConstraintSpinnerModelFactoryTest {
             Constraints con = new Constraints();
             con.setMaximalInclusive("-2.2");
             con.setMinimalInclusive("-5.5");
-            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(con);
+            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(0, con);
             assertEquals(-2.2, (double) sm.getValue(), DELTA);
             assertEquals(null, sm.getNextValue());
             assertEquals(-2.3, (double) sm.getPreviousValue(), DELTA);
@@ -132,7 +132,7 @@ public class ConstraintSpinnerModelFactoryTest {
             Constraints con = new Constraints();
             con.setMaximalExclusive("5.5");
             con.setMinimalExclusive("2.2");
-            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(con);
+            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(0, con);
             assertEquals(2.201, (double) sm.getValue(), DELTA);
             assertEquals(2.301, (double) sm.getNextValue(), DELTA);
             assertEquals(null, sm.getPreviousValue());
@@ -144,9 +144,18 @@ public class ConstraintSpinnerModelFactoryTest {
 
         {
             Constraints con = new Constraints();
+            con.setMaximalExclusive("5.5");
+            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(7, con);
+            assertEquals(5.499, (double) sm.getValue(), DELTA);
+            assertEquals(null, sm.getNextValue());
+            assertEquals(5.399, (double) sm.getPreviousValue(), DELTA);
+        }
+
+        {
+            Constraints con = new Constraints();
             con.setMaximalExclusive("-2.2");
             con.setMinimalExclusive("-5.5");
-            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(con);
+            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(0, con);
             assertEquals(-2.201, (double) sm.getValue(), DELTA);
             assertEquals(null, sm.getNextValue());
             assertEquals(-2.301, (double) sm.getPreviousValue(), DELTA);
@@ -161,7 +170,7 @@ public class ConstraintSpinnerModelFactoryTest {
             con.setMaximalInclusive("-5.5");
             con.setMinimalInclusive("-2.2");
             try {
-                ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(con);
+                ConstraintSpinnerModelFactory.createRangeConstrainedRealModel(0, con);
                 fail("IllegalArgumentException was expected but not thrown.");
             } catch (IllegalArgumentException ex) {
             } catch (Exception ex) {

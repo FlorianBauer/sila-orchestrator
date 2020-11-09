@@ -86,11 +86,14 @@ class ConstraintSpinnerModelFactory {
      * <li><code>getMaximalInclusive()</code></li>
      * </ul>
      *
+     * @param initVal The value to initialize the model with.
      * @param constraints The SiLA-Constraints element defining the value limits.
      * @return The spinner-model for a <code>JSpinner</code>-component.
      */
-    public static SpinnerModel createRangeConstrainedRealModel(final Constraints constraints) {
-        double initVal = 0.0;
+    public static SpinnerModel createRangeConstrainedRealModel(
+            double initVal,
+            final Constraints constraints
+    ) {
         Double min = null;
         Double max = null;
         if (constraints.getMinimalExclusive() != null) {

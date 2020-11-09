@@ -29,6 +29,8 @@ import sila_java.library.core.models.Constraints;
 
 public class ConstraintBasicNodeFactoryTest {
 
+    private static final double DELTA = 0.000001;
+
     @Test
     void create() {
         try {
@@ -477,6 +479,96 @@ public class ConstraintBasicNodeFactoryTest {
         con.setMaximalInclusive("64");
         try {
             ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
+            fail("IllegalArgumentException was expected but not thrown.");
+        } catch (IllegalArgumentException ex) {
+        } catch (Exception ex) {
+            fail("Only a IllegalArgumentException was expected.");
+        }
+    }
+
+    @Test
+    public void createConstrainedRealType() {
+        double realValue = 3.141592653589793;
+
+        try {
+            ConstraintBasicNodeFactory.createConstrainedRealType(null, realValue);
+            fail("NullPointerException was expected but not thrown.");
+        } catch (NullPointerException ex) {
+        } catch (Exception ex) {
+            fail("Only a NullPointerException was expected.");
+        }
+
+        Constraints con = new Constraints();
+        ConstraintBasicNode act = ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
+        assertEquals(BasicType.REAL, act.getType());
+        assertEquals("3.141592653589793", act.getValue());
+        assertNotNull(act.getConstaint());
+        assertEquals(Box.class, act.getComponent().getClass());
+        assertEquals(JSpinner.class, act.getComponent().getComponent(0).getClass());
+        assertEquals("3.141592653589793", ((JSpinner) act.getComponent().getComponent(0)).getValue().toString());
+        assertEquals(JLabel.class, act.getComponent().getComponent(2).getClass());
+        assertEquals("Invalid Constraint", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        Constraints.Set conSet = new Constraints.Set();
+        List<String> list = conSet.getValue();
+        list.add("0.1");
+        list.add("0.2");
+        list.add("0.3");
+        con.setSet(conSet);
+        act = ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
+        assertEquals("0.1", act.getValue());
+        assertEquals(JComboBox.class, act.getComponent().getClass());
+        assertEquals(3, ((JComboBox) act.getComponent()).getItemCount());
+        assertEquals(0, ((JComboBox) act.getComponent()).getSelectedIndex());
+        assertEquals("0.1", ((JComboBox) act.getComponent()).getSelectedItem().toString());
+
+        realValue = 0.3;
+        act = ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
+        assertEquals("0.3", act.getValue());
+        assertEquals(3, ((JComboBox) act.getComponent()).getItemCount());
+        assertEquals(2, ((JComboBox) act.getComponent()).getSelectedIndex());
+        assertEquals("0.3", ((JComboBox) act.getComponent()).getSelectedItem().toString());
+
+        con = new Constraints();
+        con.setMinimalExclusive("0.0");
+        realValue = 0.0;
+        act = ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
+        assertEquals("> 0.0", ((JLabel) act.getComponent().getComponent(2)).getText());
+        assertEquals(0.001, Double.parseDouble(((JSpinner) act.getComponent().getComponent(0)).getValue().toString()), DELTA);
+        assertEquals(0.101, Double.parseDouble(((JSpinner) act.getComponent().getComponent(0)).getNextValue().toString()), DELTA);
+
+        con = new Constraints();
+        con.setMaximalExclusive("2.2");
+        realValue = 2.3;
+        act = ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
+        assertEquals("< 2.2", ((JLabel) act.getComponent().getComponent(2)).getText());
+        assertEquals(2.199, Double.parseDouble(((JSpinner) act.getComponent().getComponent(0)).getValue().toString()), DELTA);
+        assertEquals(2.099, Double.parseDouble(((JSpinner) act.getComponent().getComponent(0)).getPreviousValue().toString()), DELTA);
+
+        con = new Constraints();
+        con.setMaximalInclusive("255.2");
+        act = ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
+        assertEquals("≤ 255.2", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con = new Constraints();
+        con.setMinimalExclusive("64.3");
+        act = ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
+        assertEquals("> 64.3", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con = new Constraints();
+        con.setMinimalInclusive("128.4");
+        act = ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
+        assertEquals("≥ 128.4", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con.setMaximalInclusive("4096.5");
+        act = ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
+        assertEquals("≥ 128.4 ∧ ≤ 4096.5", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con = new Constraints();
+        con.setMinimalInclusive("256.6");
+        con.setMaximalInclusive("64.7");
+        try {
+            ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
             fail("IllegalArgumentException was expected but not thrown.");
         } catch (IllegalArgumentException ex) {
         } catch (Exception ex) {

@@ -90,7 +90,7 @@ class ConstraintBasicNodeFactory {
             case INTEGER:
                 return createConstrainedIntegerType(constraints, 0);
             case REAL:
-                return createConstrainedRealTypeFromJson(constraints, null);
+                return createConstrainedRealType(constraints, 0.0);
             case STRING:
                 return createConstrainedStringTypeFromJson(constraints, null, featCtx);
             case TIME:
@@ -156,8 +156,15 @@ class ConstraintBasicNodeFactory {
                 }
                 return createConstrainedIntegerType(constraints, intVal);
             }
-            case REAL:
-                return createConstrainedRealTypeFromJson(constraints, jsonNode.get("value"));
+            case REAL: {
+                final double realVal;
+                try {
+                    realVal = Double.parseDouble(jsonNode.get("value").asText());
+                } catch (final Exception ex) {
+                    return BasicNodeFactory.createErrorType(type, ex.getMessage());
+                }
+                return createConstrainedRealType(constraints, realVal);
+            }
             case STRING:
                 return createConstrainedStringTypeFromJson(constraints, jsonNode.get("value"), featCtx);
             case TIME:
@@ -422,9 +429,16 @@ class ConstraintBasicNodeFactory {
         return new ConstraintBasicNode(BasicType.INTEGER, comp, supp, constraints);
     }
 
-    protected static ConstraintBasicNode createConstrainedRealTypeFromJson(
+    /**
+     * Creates a <code>ConstraintBasicNode</code> of the type <code>BasicType.REAL</code>.
+     *
+     * @param constraints The applied floating point constraints.
+     * @param intValue The double value to initialize the node with.
+     * @return The initialized, constrained BasicNode representing a double value.
+     */
+    protected static ConstraintBasicNode createConstrainedRealType(
             @NonNull final Constraints constraints,
-            final JsonNode jsonNode
+            double realValue
     ) {
         final JComponent comp;
         final Supplier<String> supp;
@@ -432,19 +446,21 @@ class ConstraintBasicNodeFactory {
             final List<String> numberSet = constraints.getSet().getValue();
             final JComboBox<String> numberComboBox = new JComboBox<>(numberSet.toArray(new String[0]));
             numberComboBox.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
-            if (jsonNode != null) {
-                numberComboBox.setSelectedItem(jsonNode.asText());
+            int selectionIdx = 0;
+            for (int i = 0; i < numberSet.size(); i++) {
+                if (numberSet.get(i).equals(Double.toString(realValue))) {
+                    selectionIdx = i;
+                    break;
+                }
             }
-            supp = () -> (Double.valueOf(numberComboBox.getSelectedItem().toString()).toString());
+            numberComboBox.setSelectedIndex(selectionIdx);
+            supp = () -> (numberComboBox.getSelectedItem().toString());
             comp = numberComboBox;
         } else {
             final SpinnerModel model = ConstraintSpinnerModelFactory
-                    .createRangeConstrainedRealModel(constraints);
+                    .createRangeConstrainedRealModel(realValue, constraints);
             final JSpinner numericSpinner = new JSpinner(model);
             numericSpinner.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
-            if (jsonNode != null) {
-                numericSpinner.setValue(jsonNode.asDouble());
-            }
             final String conditionDesc;
             if (constraints.getUnit() != null) {
                 conditionDesc = constraints.getUnit().getLabel();
@@ -473,8 +489,8 @@ class ConstraintBasicNodeFactory {
                     conditionDesc = INVALID_CONSTRAINT;
                 }
             }
-
             final Box hBox = Box.createHorizontalBox();
+            hBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             hBox.add(numericSpinner);
             hBox.add(Box.createHorizontalStrut(HORIZONTAL_STRUT));
             hBox.add(new JLabel(conditionDesc));
