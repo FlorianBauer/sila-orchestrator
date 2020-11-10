@@ -1,5 +1,6 @@
 package de.fau.clients.orchestrator.nodes;
 
+import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.ImagePanel;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -8,6 +9,8 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.OffsetTime;
+import java.time.ZoneOffset;
 import java.util.Base64;
 import java.util.List;
 import javax.imageio.ImageIO;
@@ -588,5 +591,108 @@ public class ConstraintBasicNodeFactoryTest {
         } catch (Exception ex) {
             fail("Only a IllegalArgumentException was expected.");
         }
+    }
+
+    @Test
+    public void createConstrainedTimeType() {
+        OffsetTime timeValue = OffsetTime.of(11, 55, 0, 0, ZoneOffset.UTC);
+
+        try {
+            ConstraintBasicNodeFactory.createConstrainedTimeType(null, timeValue);
+            fail("NullPointerException was expected but not thrown.");
+        } catch (NullPointerException ex) {
+        } catch (Exception ex) {
+            fail("Only a NullPointerException was expected.");
+        }
+
+        Constraints con = new Constraints();
+        ConstraintBasicNode act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
+        assertEquals(BasicType.TIME, act.getType());
+        assertEquals("11:55Z", act.getValue());
+        assertNotNull(act.getConstaint());
+        assertEquals(Box.class, act.getComponent().getClass());
+        assertEquals(JSpinner.class, act.getComponent().getComponent(0).getClass());
+        OffsetTime exp = timeValue.withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+        assertEquals(exp.toString(), ((JSpinner) act.getComponent().getComponent(0)).getValue().toString());
+        assertEquals(JLabel.class, act.getComponent().getComponent(2).getClass());
+        assertEquals("Invalid Constraint", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        Constraints.Set conSet = new Constraints.Set();
+        List<String> list = conSet.getValue();
+        list.add("12:01:15Z");
+        list.add("12:02:30Z");
+        list.add("12:03:45Z");
+        list.add("12:04:00Z");
+        con.setSet(conSet);
+        act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
+        assertEquals("12:01:15Z", act.getValue());
+        assertEquals(JComboBox.class, act.getComponent().getClass());
+        assertEquals(4, ((JComboBox) act.getComponent()).getItemCount());
+        assertEquals(0, ((JComboBox) act.getComponent()).getSelectedIndex());
+        exp = OffsetTime.of(12, 01, 15, 0, ZoneOffset.UTC).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+        assertEquals(exp.toString(), ((JComboBox) act.getComponent()).getSelectedItem().toString());
+
+        timeValue = OffsetTime.of(12, 03, 45, 0, ZoneOffset.UTC);
+        act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
+        assertEquals("12:03:45Z", act.getValue());
+        assertEquals(2, ((JComboBox) act.getComponent()).getSelectedIndex());
+        exp = timeValue.withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+        assertEquals(exp.toString(), ((JComboBox) act.getComponent()).getSelectedItem().toString());
+
+        conSet = new Constraints.Set();
+        list = conSet.getValue();
+        list.add("12:01:15Z");
+        list.add("-= invlaid =-");
+        list.add("12:03:45Z");
+        con.setSet(conSet);
+        act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
+        assertEquals("12:03:45Z", act.getValue());
+        assertEquals(JComboBox.class, act.getComponent().getClass());
+        assertEquals(2, ((JComboBox) act.getComponent()).getItemCount());
+        assertEquals(1, ((JComboBox) act.getComponent()).getSelectedIndex());
+
+        con = new Constraints();
+        con.setMinimalExclusive("08:00:00Z");
+        timeValue = OffsetTime.of(05, 03, 45, 0, ZoneOffset.UTC);
+        act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
+        exp = OffsetTime.of(8, 0, 0, 0, ZoneOffset.UTC).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+        assertEquals("> " + exp.toLocalTime().toString(), ((JLabel) act.getComponent().getComponent(2)).getText());
+        exp = OffsetTime.of(8, 0, 1, 0, ZoneOffset.UTC).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+        assertEquals(exp, (OffsetTime) ((JSpinner) act.getComponent().getComponent(0)).getValue());
+        exp = OffsetTime.of(8, 1, 1, 0, ZoneOffset.UTC).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+        assertEquals(exp, (OffsetTime) ((JSpinner) act.getComponent().getComponent(0)).getNextValue());
+
+        con = new Constraints();
+        con.setMaximalExclusive("20:00:00Z");
+        timeValue = OffsetTime.of(22, 03, 45, 0, ZoneOffset.UTC);
+        act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
+        exp = OffsetTime.of(20, 0, 0, 0, ZoneOffset.UTC).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+        assertEquals("< " + exp.toLocalTime().toString(), ((JLabel) act.getComponent().getComponent(2)).getText());
+        exp = OffsetTime.of(19, 59, 59, 0, ZoneOffset.UTC).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+        assertEquals(exp, (OffsetTime) ((JSpinner) act.getComponent().getComponent(0)).getValue());
+        exp = OffsetTime.of(19, 58, 59, 0, ZoneOffset.UTC).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+        assertEquals(exp, (OffsetTime) ((JSpinner) act.getComponent().getComponent(0)).getPreviousValue());
+
+        con = new Constraints();
+        con.setMaximalInclusive("22:30:00+02");
+        timeValue = OffsetTime.of(20, 30, 0, 0, ZoneOffset.UTC);
+        act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
+        exp = timeValue.withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+        assertEquals("≤ " + exp.toLocalTime().toString(), ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con = new Constraints();
+        con.setMinimalInclusive("08:15:00-01");
+        timeValue = OffsetTime.of(9, 15, 0, 0, ZoneOffset.UTC);
+        act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
+        String exp1 = timeValue.withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET).toLocalTime().toString();
+        assertEquals("≥ " + exp1, ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con.setMaximalInclusive("23:15:00+03");
+        act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
+        String exp2 = OffsetTime.of(20, 15, 0, 0, ZoneOffset.UTC)
+                .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET)
+                .toLocalTime()
+                .toString();
+        assertEquals("≥ " + exp1 + " ∧ ≤ " + exp2, ((JLabel) act.getComponent().getComponent(2)).getText());
     }
 }

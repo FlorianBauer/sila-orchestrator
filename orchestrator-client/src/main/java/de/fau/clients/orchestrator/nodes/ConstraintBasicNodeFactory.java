@@ -28,6 +28,7 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
+import java.util.Vector;
 import java.util.function.Supplier;
 import javax.imageio.ImageIO;
 import javax.swing.Box;
@@ -94,7 +95,7 @@ class ConstraintBasicNodeFactory {
             case STRING:
                 return createConstrainedStringTypeFromJson(constraints, null, featCtx);
             case TIME:
-                return createConstrainedTimeTypeFromJson(constraints, null);
+                return createConstrainedTimeType(constraints, OffsetTime.now());
             case TIMESTAMP:
                 return createConstrainedTimestampeTypeFromJson(constraints, null);
             default:
@@ -167,8 +168,15 @@ class ConstraintBasicNodeFactory {
             }
             case STRING:
                 return createConstrainedStringTypeFromJson(constraints, jsonNode.get("value"), featCtx);
-            case TIME:
-                return createConstrainedTimeTypeFromJson(constraints, jsonNode.get("value"));
+            case TIME: {
+                final OffsetTime timeVal;
+                try {
+                    timeVal = DateTimeParser.parseIsoTime(jsonNode.get("value").asText());
+                } catch (final Exception ex) {
+                    return BasicNodeFactory.createErrorType(type, ex.getMessage());
+                }
+                return createConstrainedTimeType(constraints, timeVal);
+            }
             case TIMESTAMP:
                 return createConstrainedTimestampeTypeFromJson(constraints, jsonNode.get("value"));
             default:
@@ -685,25 +693,42 @@ class ConstraintBasicNodeFactory {
         return new ConstraintBasicNode(BasicType.STRING, hBox, () -> (editorPane.getText()), constraints);
     }
 
-    protected static ConstraintBasicNode createConstrainedTimeTypeFromJson(
+    /**
+     * Creates a <code>ConstraintBasicNode</code> of the type <code>BasicType.TIME</code>.
+     *
+     * @param constraints The applied time constraints.
+     * @param timeValue The time to initialize the node with.
+     * @return The initialized, constrained BasicNode representing a time value.
+     */
+    protected static ConstraintBasicNode createConstrainedTimeType(
             @NonNull final Constraints constraints,
-            final JsonNode jsonNode
+            @NonNull final OffsetTime timeValue
     ) {
         final JComponent comp;
         final Supplier<String> supp;
         if (constraints.getSet() != null) {
             final List<String> timeSet = constraints.getSet().getValue();
-            final OffsetTime[] times = new OffsetTime[timeSet.size()];
-            for (int i = 0; i < timeSet.size(); i++) {
+            final Vector<OffsetTime> times = new Vector<OffsetTime>(timeSet.size());
+            int selectionIdx = 0;
+            int j = 0;
+            for (final String timeEntry : timeSet) {
+                final OffsetTime time;
                 try {
-                    times[i] = DateTimeParser.parseIsoTime(timeSet.get(i))
+                    time = DateTimeParser.parseIsoTime(timeEntry)
                             .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
                 } catch (final Exception ex) {
                     // skip invalid entries
+                    continue;
                 }
+                times.add(time);
+                if (time.isEqual(timeValue)) {
+                    selectionIdx = j;
+                }
+                j++;
             }
             final JComboBox<OffsetTime> timeComboBox = new JComboBox<>(times);
             timeComboBox.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
+            timeComboBox.setSelectedIndex(selectionIdx);
             supp = () -> {
                 return ((OffsetTime) timeComboBox.getSelectedItem())
                         .withOffsetSameInstant(ZoneOffset.UTC)
@@ -740,15 +765,9 @@ class ConstraintBasicNodeFactory {
                 conditionDescr = INVALID_CONSTRAINT;
             }
 
-            OffsetTime initTime = OffsetTime.now().truncatedTo(ChronoUnit.SECONDS);
-            if (jsonNode != null) {
-                try {
-                    initTime = DateTimeParser.parseIsoTime(jsonNode.asText())
-                            .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
-                } catch (final Exception ex) {
-                    // do nothing and use the current time instead
-                }
-            }
+            final OffsetTime initTime = timeValue
+                    .truncatedTo(ChronoUnit.SECONDS)
+                    .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
             final JSpinner timeSpinner = new JSpinner();
             timeSpinner.setModel(ConstraintSpinnerModelFactory
                     .createRangeConstrainedTimeModel(initTime, constraints));
@@ -759,7 +778,6 @@ class ConstraintBasicNodeFactory {
                         .withOffsetSameInstant(ZoneOffset.UTC)
                         .toString();
             };
-
             final Box hBox = Box.createHorizontalBox();
             hBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             hBox.add(timeSpinner);
