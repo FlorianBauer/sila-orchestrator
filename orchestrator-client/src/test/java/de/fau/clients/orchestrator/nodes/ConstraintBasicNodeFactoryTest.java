@@ -451,6 +451,20 @@ public class ConstraintBasicNodeFactoryTest {
         assertEquals("30", ((JComboBox) act.getComponent()).getSelectedItem().toString());
 
         con = new Constraints();
+        con.setMinimalExclusive("0");
+        intValue = 0;
+        act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
+        assertEquals("1", ((JSpinner) act.getComponent().getComponent(0)).getValue().toString());
+        assertEquals("2", ((JSpinner) act.getComponent().getComponent(0)).getNextValue().toString());
+
+        con = new Constraints();
+        con.setMaximalExclusive("5");
+        intValue = 7;
+        act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
+        assertEquals("4", ((JSpinner) act.getComponent().getComponent(0)).getValue().toString());
+        assertEquals("3", ((JSpinner) act.getComponent().getComponent(0)).getPreviousValue().toString());
+
+        con = new Constraints();
         con.setMaximalExclusive("256");
         act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
         assertEquals("< 256", ((JLabel) act.getComponent().getComponent(2)).getText());

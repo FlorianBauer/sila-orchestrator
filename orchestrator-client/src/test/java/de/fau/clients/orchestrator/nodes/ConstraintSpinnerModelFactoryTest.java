@@ -20,7 +20,7 @@ public class ConstraintSpinnerModelFactoryTest {
             Constraints con = new Constraints();
             con.setMaximalInclusive("5");
             con.setMinimalInclusive("2");
-            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(con);
+            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(0, con);
             assertEquals(2, sm.getValue());
             assertEquals(3, sm.getNextValue());
             assertEquals(null, sm.getPreviousValue());
@@ -34,7 +34,7 @@ public class ConstraintSpinnerModelFactoryTest {
             Constraints con = new Constraints();
             con.setMaximalInclusive("-2");
             con.setMinimalInclusive("-5");
-            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(con);
+            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(0, con);
             assertEquals(-2, sm.getValue());
             assertEquals(null, sm.getNextValue());
             assertEquals(-3, sm.getPreviousValue());
@@ -48,7 +48,7 @@ public class ConstraintSpinnerModelFactoryTest {
             Constraints con = new Constraints();
             con.setMaximalExclusive("6");
             con.setMinimalExclusive("2");
-            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(con);
+            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(0, con);
             assertEquals(3, sm.getValue());
             assertEquals(4, sm.getNextValue());
             assertEquals(null, sm.getPreviousValue());
@@ -60,9 +60,18 @@ public class ConstraintSpinnerModelFactoryTest {
 
         {
             Constraints con = new Constraints();
+            con.setMaximalExclusive("6");
+            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(7, con);
+            assertEquals(5, sm.getValue());
+            assertEquals(null, sm.getNextValue());
+            assertEquals(4, sm.getPreviousValue());
+        }
+
+        {
+            Constraints con = new Constraints();
             con.setMaximalExclusive("-2");
             con.setMinimalExclusive("-6");
-            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(con);
+            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(0, con);
             assertEquals(-3, sm.getValue());
             assertEquals(null, sm.getNextValue());
             assertEquals(-4, sm.getPreviousValue());
@@ -76,7 +85,7 @@ public class ConstraintSpinnerModelFactoryTest {
             Constraints con = new Constraints();
             con.setMaximalInclusive("5");
             con.setMinimalInclusive("2");
-            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(con);
+            SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(0, con);
             sm.setValue(8);
             assertEquals(8, sm.getValue());
             assertEquals(null, sm.getNextValue());
@@ -88,7 +97,7 @@ public class ConstraintSpinnerModelFactoryTest {
             con.setMaximalInclusive("2");
             con.setMinimalInclusive("5");
             try {
-                ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(con);
+                ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(0, con);
                 fail("IllegalArgumentException was expected but not thrown.");
             } catch (IllegalArgumentException ex) {
             } catch (Exception ex) {

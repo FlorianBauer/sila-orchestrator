@@ -385,10 +385,9 @@ class ConstraintBasicNodeFactory {
             comp = numberComboBox;
         } else {
             final SpinnerModel model = ConstraintSpinnerModelFactory
-                    .createRangeConstrainedIntModel(constraints);
+                    .createRangeConstrainedIntModel(intValue, constraints);
             final JSpinner numericSpinner = new JSpinner(model);
             numericSpinner.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
-            numericSpinner.setValue(intValue);
             final String conditionDesc;
             if (constraints.getUnit() != null) {
                 conditionDesc = constraints.getUnit().getLabel();
