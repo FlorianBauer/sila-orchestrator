@@ -27,7 +27,7 @@ import sila_java.library.core.models.ListType;
 final class ListNode extends SilaNode {
 
     /**
-     * Look-up table for data-types defined by the corresponding SiLA-Feature.
+     * Context to look-up data-types defined by the corresponding SiLA-Feature.
      */
     private final FeatureContext featCtx;
     /**
@@ -127,8 +127,15 @@ final class ListNode extends SilaNode {
             final JsonNode jsonNode,
             boolean isEditable
     ) {
-        final SilaNode prototype = NodeFactory.createFromDataType(featCtx, type.getDataType());
-        final ListNode listNode = new ListNode(featCtx, prototype, isEditable);
+        final ListNode listNode;
+        if (!isEditable) {
+            // No prototype needed when the list is not editable.
+            listNode = new ListNode(featCtx, null, isEditable);
+        } else {
+            listNode = new ListNode(featCtx,
+                    NodeFactory.createFromDataType(featCtx, type.getDataType()),
+                    isEditable);
+        }
         final Iterator<JsonNode> iter = jsonNode.elements();
         while (iter.hasNext()) {
             listNode.nodeList.add(NodeFactory.createFromJson(
