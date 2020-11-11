@@ -1,6 +1,11 @@
 package de.fau.clients.orchestrator.nodes;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import de.fau.clients.orchestrator.ctx.FeatureContext;
 import static de.fau.clients.orchestrator.nodes.BasicNodeFactory.createErrorType;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
@@ -47,6 +52,8 @@ import lombok.NonNull;
 import sila_java.library.core.models.BasicType;
 import sila_java.library.core.models.Constraints;
 import sila_java.library.core.models.DataTypeType;
+import sila_java.library.core.sila.mapping.feature.MalformedSiLAFeature;
+import sila_java.library.core.sila.mapping.grpc.ProtoMapper;
 
 /**
  * A Factory for <code>ConstraintBasicNode</code>s.
@@ -103,7 +110,7 @@ class ConstraintBasicNodeFactory {
         }
     }
 
-    protected static BasicNode createFromJson(
+    protected static SilaNode createFromJson(
             final FeatureContext featCtx,
             @NonNull final BasicType type,
             @NonNull final Constraints constraints,
@@ -120,16 +127,16 @@ class ConstraintBasicNodeFactory {
                 try {
                     dtt = XmlUtils.parseXmlDataType(jsonNode.get("type").asText());
                     payload = jsonNode.get("payload").binaryValue();
-                } catch (final IOException ex) {
+                } catch (final Exception ex) {
                     return createErrorType(type, ex.getMessage());
                 }
-                return createConstrainedAnyType(constraints, dtt, payload);
+                return createConstrainedAnyType(featCtx, constraints, dtt, payload);
             }
             case BINARY: {
                 final byte[] binaryVal;
                 try {
                     binaryVal = jsonNode.get("value").binaryValue();
-                } catch (final IOException ex) {
+                } catch (final Exception ex) {
                     return BasicNodeFactory.createErrorType(type, ex.getMessage());
                 }
                 return createConstrainedBinaryType(constraints, binaryVal);
@@ -184,7 +191,8 @@ class ConstraintBasicNodeFactory {
         }
     }
 
-    protected static BasicNode createConstrainedAnyType(
+    protected static SilaNode createConstrainedAnyType(
+            final FeatureContext featCtx,
             @NonNull final Constraints constraints,
             @NonNull final DataTypeType dtt,
             @NonNull final byte[] payload
@@ -195,28 +203,34 @@ class ConstraintBasicNodeFactory {
             if (dtt.getBasic() != null) {
                 for (final DataTypeType allowedType : list) {
                     if (dtt.getBasic().compareTo(allowedType.getBasic()) == 0) {
-                        return BasicNodeFactory.createAnyType(dtt, payload, false);
+                        return BasicNodeFactory.createAnyType(featCtx, dtt, payload, false);
                     }
                 }
             } else if (dtt.getConstrained() != null) {
-                return createConstrainedAnyType(dtt.getConstrained().getConstraints(), dtt, payload);
+                return createConstrainedAnyType(featCtx, dtt.getConstrained().getConstraints(), dtt, payload);
             } else if (dtt.getList() != null) {
                 // TODO: implement allowed type check
-                return BasicNodeFactory.createAnyType(dtt, payload, false);
+                return BasicNodeFactory.createAnyType(featCtx, dtt, payload, false);
             } else if (dtt.getStructure() != null) {
                 // TODO: implement allowed type check
-                return BasicNodeFactory.createAnyType(dtt, payload, false);
+                return BasicNodeFactory.createAnyType(featCtx, dtt, payload, false);
             }
-        } else if (constraints.getMaximalExclusive() != null
-                || constraints.getMaximalInclusive() != null
-                || constraints.getMinimalExclusive() != null
-                || constraints.getMinimalInclusive() != null) {
-            // Only basic types can have these constraints.
-            return BasicNodeFactory.createAnyType(dtt.getConstrained().getDataType(), payload, false);
-        } else if (constraints.getUnit() != null) {
-            // Only INTEGER and REAL types can have these constraints.
-            // TODO: Implement function which put the unit label besides the BasicType.
-            return BasicNodeFactory.createAnyType(dtt.getConstrained().getDataType(), payload, false);
+        } else {
+            final DynamicMessage dynMsg;
+            try {
+                dynMsg = DynamicMessage.parseFrom(ProtoMapper.dataTypeToDescriptor(dtt), payload);
+            } catch (final MalformedSiLAFeature | InvalidProtocolBufferException ex) {
+                return createErrorType(BasicType.ANY, ex.getMessage());
+            }
+
+            final ObjectMapper jsonMapper = new ObjectMapper();
+            final JsonNode jsonNode;
+            try {
+                jsonNode = jsonMapper.readTree(JsonFormat.printer().print(dynMsg));
+            } catch (final InvalidProtocolBufferException | JsonProcessingException ex) {
+                return createErrorType(BasicType.ANY, ex.getMessage());
+            }
+            return NodeFactory.createFromJson(featCtx, dtt, jsonNode, false);
         }
         return BasicNodeFactory.createErrorType(BasicType.ANY, "Type not allowed.");
     }

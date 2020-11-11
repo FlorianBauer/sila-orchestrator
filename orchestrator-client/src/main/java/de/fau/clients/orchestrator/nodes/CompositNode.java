@@ -26,7 +26,7 @@ final class CompositNode extends SilaNode {
     private final List<SilaNode> children;
 
     private CompositNode(
-            @NonNull final FeatureContext featCtx,
+            final FeatureContext featCtx,
             @NonNull final List<SiLAElement> elements
     ) {
         this.featCtx = featCtx;
@@ -35,7 +35,7 @@ final class CompositNode extends SilaNode {
     }
 
     protected final static CompositNode create(
-            @NonNull final FeatureContext featCtx,
+            final FeatureContext featCtx,
             @NonNull final List<SiLAElement> elements
     ) {
         final CompositNode node = new CompositNode(featCtx, elements);
@@ -46,7 +46,7 @@ final class CompositNode extends SilaNode {
     }
 
     protected final static CompositNode createFromJson(
-            @NonNull final FeatureContext featCtx,
+            final FeatureContext featCtx,
             @NonNull final List<SiLAElement> elements,
             @NonNull final JsonNode jsonNode,
             boolean isEditable

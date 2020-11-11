@@ -82,14 +82,14 @@ public final class NodeFactory {
     }
 
     public final static SilaNode createFromJson(
-            @NonNull final FeatureContext featCtx,
+            final FeatureContext featCtx,
             @NonNull final DataTypeType type,
             @NonNull final JsonNode jsonNode,
             boolean isEditable
     ) {
         if (type.getBasic() != null) {
             // basic type
-            return BasicNodeFactory.createFromJson(type.getBasic(), jsonNode.get("value"), isEditable);
+            return BasicNodeFactory.createFromJson(type.getBasic(), jsonNode, isEditable);
         } else {
             // derived type
             if (type.getConstrained() != null) {

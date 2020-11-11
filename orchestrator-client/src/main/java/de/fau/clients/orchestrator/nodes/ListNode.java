@@ -66,7 +66,7 @@ final class ListNode extends SilaNode {
     private Constraints constraints;
 
     private ListNode(
-            @NonNull final FeatureContext featCtx,
+            final FeatureContext featCtx,
             final SilaNode prototype,
             boolean isEditable
     ) {
@@ -77,7 +77,7 @@ final class ListNode extends SilaNode {
     }
 
     private ListNode(
-            @NonNull final FeatureContext featCtx,
+            final FeatureContext featCtx,
             final SilaNode prototype,
             final Constraints constraints
     ) {
@@ -89,7 +89,7 @@ final class ListNode extends SilaNode {
     }
 
     protected static ListNode create(
-            @NonNull final FeatureContext featCtx,
+            final FeatureContext featCtx,
             @NonNull final ListType type
     ) {
         final SilaNode prototype = NodeFactory.createFromDataType(featCtx, type.getDataType());
@@ -99,7 +99,7 @@ final class ListNode extends SilaNode {
     }
 
     protected static ListNode createWithConstraint(
-            @NonNull final FeatureContext featCtx,
+            final FeatureContext featCtx,
             @NonNull final ListType type,
             final Constraints con,
             final JsonNode jsonNode
@@ -122,7 +122,7 @@ final class ListNode extends SilaNode {
     }
 
     protected static ListNode createFromJson(
-            @NonNull final FeatureContext featCtx,
+            final FeatureContext featCtx,
             @NonNull final ListType type,
             final JsonNode jsonNode,
             boolean isEditable
@@ -136,7 +136,14 @@ final class ListNode extends SilaNode {
                     NodeFactory.createFromDataType(featCtx, type.getDataType()),
                     isEditable);
         }
-        final Iterator<JsonNode> iter = jsonNode.elements();
+
+        final Iterator<JsonNode> iter;
+        if (jsonNode.has("value")) {
+            iter = jsonNode.get("value").elements();
+        } else {
+            iter = jsonNode.elements();
+        }
+
         while (iter.hasNext()) {
             listNode.nodeList.add(NodeFactory.createFromJson(
                     featCtx,

@@ -1,10 +1,13 @@
 package de.fau.clients.orchestrator.nodes;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
+import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.utils.DateTimeParser;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
 import de.fau.clients.orchestrator.utils.LocalDateSpinnerModel;
@@ -15,7 +18,6 @@ import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerModel;
 import de.fau.clients.orchestrator.utils.ValidatorUtils;
 import de.fau.clients.orchestrator.utils.XmlUtils;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -103,7 +105,7 @@ final class BasicNodeFactory {
      * user or not.
      * @return The initialized basic node.
      */
-    protected static BasicNode createFromJson(
+    protected static SilaNode createFromJson(
             @NonNull final BasicType type,
             @NonNull final JsonNode jsonNode,
             boolean isEditable
@@ -115,33 +117,33 @@ final class BasicNodeFactory {
                 try {
                     dtt = XmlUtils.parseXmlDataType(jsonNode.get("type").asText());
                     payload = jsonNode.get("payload").binaryValue();
-                } catch (final IOException ex) {
+                } catch (final Exception ex) {
                     return createErrorType(type, ex.getMessage());
                 }
-                return createAnyType(dtt, payload, isEditable);
+                return createAnyType(null, dtt, payload, isEditable);
             case BINARY: {
                 try {
-                    return createBinaryType(jsonNode.binaryValue(), isEditable);
-                } catch (final IOException ex) {
+                    return createBinaryType(jsonNode.get("value").binaryValue(), isEditable);
+                } catch (final Exception ex) {
                     return createErrorType(type, ex.getMessage());
                 }
             }
             case BOOLEAN:
-                return createBooleanType(jsonNode.asBoolean(), isEditable);
+                return createBooleanType(jsonNode.get("value").asBoolean(), isEditable);
             case DATE:
-                final LocalDate initDate = DateTimeParser.parseIsoDate(jsonNode.asText());
+                final LocalDate initDate = DateTimeParser.parseIsoDate(jsonNode.get("value").asText());
                 return createDateType(initDate, isEditable);
             case INTEGER:
-                return createIntegerType(jsonNode.asLong(), isEditable);
+                return createIntegerType(jsonNode.get("value").asLong(), isEditable);
             case REAL:
-                return createRealType(jsonNode.asDouble(), isEditable);
+                return createRealType(jsonNode.get("value").asDouble(), isEditable);
             case STRING:
-                return createStringType(jsonNode.asText(), isEditable);
+                return createStringType(jsonNode.get("value").asText(), isEditable);
             case TIME:
-                final OffsetTime initTime = DateTimeParser.parseIsoTime(jsonNode.asText());
+                final OffsetTime initTime = DateTimeParser.parseIsoTime(jsonNode.get("value").asText());
                 return createTimeType(initTime, isEditable);
             case TIMESTAMP:
-                final OffsetDateTime initTimesamp = DateTimeParser.parseIsoDateTime(jsonNode.asText());
+                final OffsetDateTime initTimesamp = DateTimeParser.parseIsoDateTime(jsonNode.get("value").asText());
                 return createTimestampType(initTimesamp, isEditable);
             default:
                 throw new IllegalArgumentException("Not a supported BasicType.");
@@ -156,12 +158,9 @@ final class BasicNodeFactory {
      * @param isEditable Determines wether the data in the resulting node can be modified by the
      * user or not.
      * @return The initialized basic node.
-     *
-     * @note Only Any-types holding a BasicType can be handled properly. Support for complex and
-     * nested Any-types is postponed due to its complexity and its rare usage in real-world
-     * scenarios. (2020-11-03 florian.bauer.dev@gmail.com)
      */
-    protected static BasicNode createAnyType(
+    protected static SilaNode createAnyType(
+            final FeatureContext featCtx,
             @NonNull final DataTypeType dtt,
             @NonNull final byte[] payload,
             boolean isEditable
@@ -257,21 +256,21 @@ final class BasicNodeFactory {
                     return createErrorType(basicType, "Unknown BasicType in 'Any'-type.");
             }
         } else {
-            final Descriptors.Descriptor desc;
             final DynamicMessage dynMsg;
             try {
-                desc = ProtoMapper.dataTypeToDescriptor(dtt);
-                dynMsg = DynamicMessage.parseFrom(desc, payload);
+                dynMsg = DynamicMessage.parseFrom(ProtoMapper.dataTypeToDescriptor(dtt), payload);
             } catch (final MalformedSiLAFeature | InvalidProtocolBufferException ex) {
                 return createErrorType(BasicType.ANY, ex.getMessage());
             }
-            // TODO: Complex Any-types require to be build-up in a recursive fashion. This means 
-            // they need a dedicated bulid function for every available type they can contain 
-            // similiar to the 'createFromJason()' functions, only dealing with DynamicMessages 
-            // instead of JSON. At this point, it is not worth the effort. Therefore the result 
-            // is shown as string within an error message. (2020-11-02 florian.bauer.dev@gmail.com)
-            return createErrorType(BasicType.ANY, "Not implemented, but here is the result so far: '"
-                    + dynMsg.toString() + "'.");
+
+            final ObjectMapper jsonMapper = new ObjectMapper();
+            final JsonNode jsonNode;
+            try {
+                jsonNode = jsonMapper.readTree(JsonFormat.printer().print(dynMsg));
+                return NodeFactory.createFromJson(featCtx, dtt, jsonNode, isEditable);
+            } catch (final InvalidProtocolBufferException | JsonProcessingException ex) {
+                return createErrorType(BasicType.ANY, ex.getMessage());
+            }
         }
     }
 
