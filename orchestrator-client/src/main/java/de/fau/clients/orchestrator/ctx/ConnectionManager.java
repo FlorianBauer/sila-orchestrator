@@ -32,7 +32,9 @@ public class ConnectionManager implements AutoCloseable {
         serverManager.addServer(host, port);
         for (final Server server : serverManager.getServers().values()) {
             if (server.getHost().equals(host) && server.getPort() == port) {
-                return server.getConfiguration().getUuid();
+                final UUID serverUuid = server.getConfiguration().getUuid();
+                serverMap.put(serverUuid, new ServerContext(this, server));
+                return serverUuid;
             }
         }
         return null;
