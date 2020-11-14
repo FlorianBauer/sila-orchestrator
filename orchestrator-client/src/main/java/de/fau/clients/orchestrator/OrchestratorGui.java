@@ -23,7 +23,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -1089,7 +1090,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_saveFileActionPerformed
 
     private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
-        fileSaveAsChooser.setSelectedFile(new File(LocalDate.now().toString() + ".silo"));
+        final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu-MM-dd_HH.mm");
+        fileSaveAsChooser.setSelectedFile(new File(LocalDateTime.now().format(dtf) + ".silo"));
         int retVal = fileSaveAsChooser.showSaveDialog(this);
         if (retVal == JFileChooser.APPROVE_OPTION) {
             final Path outPath = Paths.get(fileSaveAsChooser.getSelectedFile().getAbsolutePath());
