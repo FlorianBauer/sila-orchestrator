@@ -49,29 +49,29 @@ class ConstraintSpinnerModelFactory {
      * @return The spinner-model for a <code>JSpinner</code>-component.
      */
     public static SpinnerModel createRangeConstrainedIntModel(
-            int initVal,
+            long initVal,
             final Constraints constraints
     ) {
-        Integer min = null;
-        Integer max = null;
+        Long min = null;
+        Long max = null;
         String conStr = constraints.getMinimalExclusive();
         if (conStr != null) {
-            min = Integer.parseInt(conStr) + 1;
+            min = Long.parseLong(conStr) + 1;
             initVal = Math.max(min, initVal);
         }
         conStr = constraints.getMinimalInclusive();
         if (conStr != null) {
-            min = Integer.parseInt(conStr);
+            min = Long.parseLong(conStr);
             initVal = Math.max(min, initVal);
         }
 
         conStr = constraints.getMaximalExclusive();
         if (conStr != null) {
-            max = Integer.parseInt(conStr) - 1;
+            max = Long.parseLong(conStr) - 1;
         }
         conStr = constraints.getMaximalInclusive();
         if (conStr != null) {
-            max = Integer.parseInt(conStr);
+            max = Long.parseLong(conStr);
         }
         initVal = (max != null && max < initVal) ? max : initVal;
         return new SpinnerNumberModel((Number) initVal, min, max, 1);

@@ -21,13 +21,13 @@ public class ConstraintSpinnerModelFactoryTest {
             con.setMaximalInclusive("5");
             con.setMinimalInclusive("2");
             SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(0, con);
-            assertEquals(2, sm.getValue());
-            assertEquals(3, sm.getNextValue());
+            assertEquals(2l, sm.getValue());
+            assertEquals(3l, sm.getNextValue());
             assertEquals(null, sm.getPreviousValue());
-            sm.setValue(5);
-            assertEquals(5, sm.getValue());
+            sm.setValue(5l);
+            assertEquals(5l, sm.getValue());
             assertEquals(null, sm.getNextValue());
-            assertEquals(4, sm.getPreviousValue());
+            assertEquals(4l, sm.getPreviousValue());
         }
 
         {
@@ -35,12 +35,12 @@ public class ConstraintSpinnerModelFactoryTest {
             con.setMaximalInclusive("-2");
             con.setMinimalInclusive("-5");
             SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(0, con);
-            assertEquals(-2, sm.getValue());
+            assertEquals(-2l, sm.getValue());
             assertEquals(null, sm.getNextValue());
-            assertEquals(-3, sm.getPreviousValue());
-            sm.setValue(-5);
-            assertEquals(-5, sm.getValue());
-            assertEquals(-4, sm.getNextValue());
+            assertEquals(-3l, sm.getPreviousValue());
+            sm.setValue(-5l);
+            assertEquals(-5l, sm.getValue());
+            assertEquals(-4l, sm.getNextValue());
             assertEquals(null, sm.getPreviousValue());
         }
 
@@ -49,22 +49,22 @@ public class ConstraintSpinnerModelFactoryTest {
             con.setMaximalExclusive("6");
             con.setMinimalExclusive("2");
             SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(0, con);
-            assertEquals(3, sm.getValue());
-            assertEquals(4, sm.getNextValue());
+            assertEquals(3l, sm.getValue());
+            assertEquals(4l, sm.getNextValue());
             assertEquals(null, sm.getPreviousValue());
-            sm.setValue(5);
-            assertEquals(5, sm.getValue());
+            sm.setValue(5l);
+            assertEquals(5l, sm.getValue());
             assertEquals(null, sm.getNextValue());
-            assertEquals(4, sm.getPreviousValue());
+            assertEquals(4l, sm.getPreviousValue());
         }
 
         {
             Constraints con = new Constraints();
             con.setMaximalExclusive("6");
             SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(7, con);
-            assertEquals(5, sm.getValue());
+            assertEquals(5l, sm.getValue());
             assertEquals(null, sm.getNextValue());
-            assertEquals(4, sm.getPreviousValue());
+            assertEquals(4l, sm.getPreviousValue());
         }
 
         {
@@ -72,12 +72,12 @@ public class ConstraintSpinnerModelFactoryTest {
             con.setMaximalExclusive("-2");
             con.setMinimalExclusive("-6");
             SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(0, con);
-            assertEquals(-3, sm.getValue());
+            assertEquals(-3l, sm.getValue());
             assertEquals(null, sm.getNextValue());
-            assertEquals(-4, sm.getPreviousValue());
-            sm.setValue(-5);
-            assertEquals(-5, sm.getValue());
-            assertEquals(-4, sm.getNextValue());
+            assertEquals(-4l, sm.getPreviousValue());
+            sm.setValue(-5l);
+            assertEquals(-5l, sm.getValue());
+            assertEquals(-4l, sm.getNextValue());
             assertEquals(null, sm.getPreviousValue());
         }
 
@@ -86,8 +86,8 @@ public class ConstraintSpinnerModelFactoryTest {
             con.setMaximalInclusive("5");
             con.setMinimalInclusive("2");
             SpinnerModel sm = ConstraintSpinnerModelFactory.createRangeConstrainedIntModel(0, con);
-            sm.setValue(8);
-            assertEquals(8, sm.getValue());
+            sm.setValue(8l);
+            assertEquals(8l, sm.getValue());
             assertEquals(null, sm.getNextValue());
             assertEquals(null, sm.getPreviousValue());
         }
