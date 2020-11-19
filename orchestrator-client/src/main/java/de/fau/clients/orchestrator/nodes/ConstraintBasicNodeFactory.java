@@ -16,6 +16,7 @@ import de.fau.clients.orchestrator.utils.LocalDateSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor.FormatterType;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
+import de.fau.clients.orchestrator.utils.SilaBasicTypeUtils;
 import de.fau.clients.orchestrator.utils.ValidatorUtils;
 import de.fau.clients.orchestrator.utils.XmlUtils;
 import java.awt.event.FocusAdapter;
@@ -147,11 +148,9 @@ class ConstraintBasicNodeFactory {
                         + "'BasicNodeFactory.createBooleanType(boolValue, false);' for a "
                         + "non-editable bool node.");
             case DATE: {
-                final LocalDate dateVal;
-                try {
-                    dateVal = DateTimeParser.parseIsoDate(jsonNode.get("value").asText());
-                } catch (final Exception ex) {
-                    return BasicNodeFactory.createErrorType(type, ex.getMessage());
+                final LocalDate dateVal = SilaBasicTypeUtils.dateFromJsonNode(jsonNode);
+                if (dateVal == null) {
+                    return BasicNodeFactory.createErrorType(type, "Date value is 'null'.");
                 }
                 return createConstrainedDateType(constraints, dateVal);
             }
@@ -176,15 +175,18 @@ class ConstraintBasicNodeFactory {
             case STRING:
                 return createConstrainedStringTypeFromJson(constraints, jsonNode.get("value"), featCtx);
             case TIME: {
-                final OffsetTime timeVal;
-                try {
-                    timeVal = DateTimeParser.parseIsoTime(jsonNode.get("value").asText());
-                } catch (final Exception ex) {
-                    return BasicNodeFactory.createErrorType(type, ex.getMessage());
+                final OffsetTime timeVal = SilaBasicTypeUtils.timeFromJsonNode(jsonNode);
+                if (timeVal == null) {
+                    return BasicNodeFactory.createErrorType(type, "Time value is 'null'.");
                 }
                 return createConstrainedTimeType(constraints, timeVal);
             }
             case TIMESTAMP:
+                final OffsetDateTime timestampVal = SilaBasicTypeUtils.timestampFromJsonNode(jsonNode);
+                if (timestampVal == null) {
+                    return BasicNodeFactory.createErrorType(type, "Timestamp value is 'null'.");
+                }
+                // FIXME: Replace function with not (yet) implemented 'createConstrainedTimestampeType()' (2020-11-19 florian.bauer.dev@gmail.com). 
                 return createConstrainedTimestampeTypeFromJson(constraints, jsonNode.get("value"));
             default:
                 throw new IllegalArgumentException("Not a valid BasicType.");
@@ -298,7 +300,7 @@ class ConstraintBasicNodeFactory {
             }
         }
         final JLabel errorLabel = new JLabel("Error: " + errorMsg);
-        return new ConstraintBasicNode(BasicType.BINARY, errorLabel, () -> (""), constraints);
+        return new ConstraintBasicNode(BasicType.BINARY, errorLabel, () -> ("".getBytes()), constraints);
     }
 
     /**
@@ -313,7 +315,7 @@ class ConstraintBasicNodeFactory {
             @NonNull final LocalDate dateValue
     ) {
         final JComponent comp;
-        final Supplier<String> supp;
+        final Supplier<LocalDate> supp;
         if (constraints.getSet() != null) {
             final List<String> dateSet = constraints.getSet().getValue();
             final LocalDate[] dates = new LocalDate[dateSet.size()];
@@ -328,7 +330,7 @@ class ConstraintBasicNodeFactory {
             dateComboBox.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             dateComboBox.setSelectedIndex(selectionIdx);
             supp = () -> {
-                return dateComboBox.getSelectedItem().toString();
+                return DateTimeParser.parseIsoDate(dateComboBox.getSelectedItem().toString());
             };
             comp = dateComboBox;
         } else {
@@ -366,7 +368,7 @@ class ConstraintBasicNodeFactory {
             dateSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             dateSpinner.setEditor(new LocalDateSpinnerEditor(dateSpinner));
             supp = () -> {
-                return dateSpinner.getValue().toString();
+                return DateTimeParser.parseIsoDate(dateSpinner.getValue().toString());
             };
             final Box hBox = Box.createHorizontalBox();
             hBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
@@ -387,23 +389,23 @@ class ConstraintBasicNodeFactory {
      */
     protected static ConstraintBasicNode createConstrainedIntegerType(
             @NonNull final Constraints constraints,
-            int intValue
+            long intValue
     ) {
         final JComponent comp;
-        final Supplier<String> supp;
+        final Supplier<Long> supp;
         if (constraints.getSet() != null) {
             final List<String> numberSet = constraints.getSet().getValue();
             final JComboBox<String> numberComboBox = new JComboBox<>(numberSet.toArray(new String[0]));
             numberComboBox.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
             int selectionIdx = 0;
             for (int i = 0; i < numberSet.size(); i++) {
-                if (numberSet.get(i).equals(Integer.toString(intValue))) {
+                if (numberSet.get(i).equals(Long.toString(intValue))) {
                     selectionIdx = i;
                     break;
                 }
             }
             numberComboBox.setSelectedIndex(selectionIdx);
-            supp = () -> (numberComboBox.getSelectedItem().toString());
+            supp = () -> (Long.parseLong(numberComboBox.getSelectedItem().toString()));
             comp = numberComboBox;
         } else {
             final SpinnerModel model = ConstraintSpinnerModelFactory
@@ -445,7 +447,7 @@ class ConstraintBasicNodeFactory {
             hBox.add(new JLabel(conditionDesc));
             hBox.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
             comp = hBox;
-            supp = () -> (numericSpinner.getValue().toString());
+            supp = () -> ((long) numericSpinner.getValue());
         }
         return new ConstraintBasicNode(BasicType.INTEGER, comp, supp, constraints);
     }
@@ -462,7 +464,7 @@ class ConstraintBasicNodeFactory {
             double realValue
     ) {
         final JComponent comp;
-        final Supplier<String> supp;
+        final Supplier<Double> supp;
         if (constraints.getSet() != null) {
             final List<String> numberSet = constraints.getSet().getValue();
             final JComboBox<String> numberComboBox = new JComboBox<>(numberSet.toArray(new String[0]));
@@ -475,7 +477,7 @@ class ConstraintBasicNodeFactory {
                 }
             }
             numberComboBox.setSelectedIndex(selectionIdx);
-            supp = () -> (numberComboBox.getSelectedItem().toString());
+            supp = () -> (Double.parseDouble(numberComboBox.getSelectedItem().toString()));
             comp = numberComboBox;
         } else {
             final SpinnerModel model = ConstraintSpinnerModelFactory
@@ -517,7 +519,7 @@ class ConstraintBasicNodeFactory {
             hBox.add(new JLabel(conditionDesc));
             hBox.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
             comp = hBox;
-            supp = () -> (numericSpinner.getValue().toString());
+            supp = () -> ((double) numericSpinner.getValue());
         }
         return new ConstraintBasicNode(BasicType.REAL, comp, supp, constraints);
     }
@@ -537,6 +539,7 @@ class ConstraintBasicNodeFactory {
                 comboBox.addItem(item);
             }
             comp = comboBox;
+            // FIXME: Select item entry from jsonNode as default. (2020-11-19 florian.bauer.dev@gmail.com)
             supp = () -> ((String) comboBox.getSelectedItem());
         } else {
             if (constraints.getSchema() != null) {
@@ -719,7 +722,7 @@ class ConstraintBasicNodeFactory {
             @NonNull final OffsetTime timeValue
     ) {
         final JComponent comp;
-        final Supplier<String> supp;
+        final Supplier<OffsetTime> supp;
         if (constraints.getSet() != null) {
             final List<String> timeSet = constraints.getSet().getValue();
             final Vector<OffsetTime> times = new Vector<OffsetTime>(timeSet.size());
@@ -745,8 +748,7 @@ class ConstraintBasicNodeFactory {
             timeComboBox.setSelectedIndex(selectionIdx);
             supp = () -> {
                 return ((OffsetTime) timeComboBox.getSelectedItem())
-                        .withOffsetSameInstant(ZoneOffset.UTC)
-                        .toString();
+                        .withOffsetSameInstant(ZoneOffset.UTC);
             };
             comp = timeComboBox;
         } else {
@@ -789,8 +791,7 @@ class ConstraintBasicNodeFactory {
             timeSpinner.setEditor(new OffsetTimeSpinnerEditor(timeSpinner));
             supp = () -> {
                 return ((OffsetTime) timeSpinner.getValue())
-                        .withOffsetSameInstant(ZoneOffset.UTC)
-                        .toString();
+                        .withOffsetSameInstant(ZoneOffset.UTC);
             };
             final Box hBox = Box.createHorizontalBox();
             hBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
@@ -807,7 +808,7 @@ class ConstraintBasicNodeFactory {
             final JsonNode jsonNode
     ) {
         final JComponent comp;
-        final Supplier<String> supp;
+        final Supplier<OffsetDateTime> supp;
         if (constraints.getSet() != null) {
             final List<String> timeSet = constraints.getSet().getValue();
             final OffsetDateTime[] times = new OffsetDateTime[timeSet.size()];
@@ -823,8 +824,7 @@ class ConstraintBasicNodeFactory {
             timestampComboBox.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
             supp = () -> {
                 return ((OffsetDateTime) timestampComboBox.getSelectedItem())
-                        .withOffsetSameInstant(ZoneOffset.UTC)
-                        .toString();
+                        .withOffsetSameInstant(ZoneOffset.UTC);
             };
             comp = timestampComboBox;
         } else {
@@ -877,7 +877,7 @@ class ConstraintBasicNodeFactory {
                     timestampSpinner,
                     FormatterType.OFFSET_TIMESTAMP));
             supp = () -> {
-                return timestampSpinner.getValue().toString();
+                return (OffsetDateTime) timestampSpinner.getValue();
             };
 
             final Box hBox = Box.createHorizontalBox();
@@ -911,11 +911,7 @@ class ConstraintBasicNodeFactory {
         scrollPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setMaximumSize(MaxDim.TEXT_FIELD_MULTI_LINE.getDim());
-        final Supplier<String> supp = () -> {
-            return Base64.getEncoder().encodeToString(editorPane
-                    .getText()
-                    .getBytes(StandardCharsets.UTF_8));
-        };
+        final Supplier<byte[]> supp = () -> (editorPane.getText().getBytes(StandardCharsets.UTF_8));
         return new ConstraintBasicNode(BasicType.BINARY, editorPane, supp, constraints);
     }
 
@@ -963,11 +959,7 @@ class ConstraintBasicNodeFactory {
         // validate after import
         validationLabel.setEnabled(validator.get());
 
-        final Supplier<String> supp = () -> {
-            return Base64.getEncoder().encodeToString(editorPane
-                    .getText()
-                    .getBytes(StandardCharsets.UTF_8));
-        };
+        final Supplier<byte[]> supp = () -> (editorPane.getText().getBytes(StandardCharsets.UTF_8));
         return new ConstraintBasicNode(BasicType.BINARY, hBox, supp, constraints);
     }
 
@@ -988,12 +980,12 @@ class ConstraintBasicNodeFactory {
         } catch (final IOException ex) {
             return new ConstraintBasicNode(BasicType.BINARY,
                     new JLabel("Error: " + ex.getMessage()),
-                    () -> (""),
+                    () -> ("".getBytes()),
                     constraints);
         }
 
         final ImagePanel imgPanel = new ImagePanel(img);
-        final Supplier<String> supp = () -> {
+        final Supplier<byte[]> supp = () -> {
             final ByteArrayOutputStream os = new ByteArrayOutputStream();
             final boolean hasWriter;
             try {
@@ -1002,12 +994,12 @@ class ConstraintBasicNodeFactory {
                         Base64.getEncoder().wrap(os));
                 os.close();
             } catch (final Exception ex) {
-                return "";
+                return "".getBytes();
             }
             if (hasWriter) {
-                return os.toString(StandardCharsets.UTF_8);
+                return os.toByteArray();
             } else {
-                return "";
+                return "".getBytes();
             }
         };
         return new ConstraintBasicNode(BasicType.BINARY, imgPanel, supp, constraints);

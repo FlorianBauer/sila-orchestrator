@@ -21,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JViewport;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -55,7 +56,7 @@ public class ConstraintBasicNodeFactoryTest {
 
         BasicNode act = ConstraintBasicNodeFactory.create(null, BasicType.BINARY, con);
         assertEquals(BasicType.BINARY, act.getType());
-        assertEquals("", act.getValue());
+        assertArrayEquals("".getBytes(), (byte[]) act.getValue());
         assertEquals(JEditorPane.class, act.getComponent().getClass());
     }
 
@@ -78,13 +79,13 @@ public class ConstraintBasicNodeFactoryTest {
             fail("Only a NullPointer was expected.");
         }
 
-        byte[] binaryVal = "Lorem ipsum".getBytes();
+        byte[] binaryVal = "Lorem ipsum".getBytes(StandardCharsets.UTF_8);
         ConstraintBasicNode act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
         assertEquals(true, act.isEditable);
         assertNotNull(act.toJson());
+        assertArrayEquals(binaryVal, (byte[]) act.getValue());
         String exp = Base64.getEncoder().encodeToString(binaryVal);
-        assertEquals(exp, act.getValue());
         assertEquals("{\"value\":\"" + exp + "\"}", act.toJsonString());
         assertEquals(JEditorPane.class, act.getComponent().getClass());
         assertEquals("Lorem ipsum", ((JEditorPane) act.getComponent()).getText());
@@ -95,8 +96,8 @@ public class ConstraintBasicNodeFactoryTest {
         assertEquals(BasicType.BINARY, act.getType());
         assertEquals(true, act.isEditable);
         assertNotNull(act.toJson());
+        assertArrayEquals(binaryVal, (byte[]) act.getValue());
         exp = Base64.getEncoder().encodeToString(binaryVal);
-        assertEquals(exp, act.getValue());
         assertEquals("{\"value\":\"" + exp + "\"}", act.toJsonString());
         assertEquals(JEditorPane.class, act.getComponent().getClass());
         assertEquals(unwantedStr, ((JEditorPane) act.getComponent()).getText());
@@ -105,7 +106,7 @@ public class ConstraintBasicNodeFactoryTest {
         binaryVal = new byte[]{(byte) 0xFF};
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertEquals("", act.getValue());
+        assertArrayEquals("".getBytes(), (byte[]) act.getValue());
         assertEquals("{\"value\":\"\"}", act.toJsonString());
         assertEquals(JLabel.class, act.getComponent().getClass());
         assertTrue(((JLabel) act.getComponent()).getText().startsWith("Error: Unsupported"));
@@ -114,7 +115,7 @@ public class ConstraintBasicNodeFactoryTest {
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
         assertNotNull(act.toJson());
-        assertEquals("", act.getValue());
+        assertArrayEquals("".getBytes(), (byte[]) act.getValue());
         assertEquals(JLabel.class, act.getComponent().getClass());
         assertTrue(((JLabel) act.getComponent()).getText().startsWith("Error: Unsupported"));
 
@@ -123,21 +124,21 @@ public class ConstraintBasicNodeFactoryTest {
         binaryVal = "12345".getBytes();
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertNotEquals("", act.getValue());
+        assertArrayEquals(binaryVal, (byte[]) act.getValue());
         assertEquals(JEditorPane.class, act.getComponent().getClass());
 
         // Wrong length.
         binaryVal = "1234".getBytes();
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertEquals("", act.getValue());
+        assertArrayEquals("".getBytes(), (byte[]) act.getValue());
         assertEquals(JLabel.class, act.getComponent().getClass());
         assertTrue(((JLabel) act.getComponent()).getText().startsWith("Error: Wrong binary length (len != 5 bytes)."));
 
         binaryVal = "123456".getBytes();
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertEquals("", act.getValue());
+        assertArrayEquals("".getBytes(), (byte[]) act.getValue());
         assertEquals(JLabel.class, act.getComponent().getClass());
         assertTrue(((JLabel) act.getComponent()).getText().startsWith("Error: Wrong binary length (len != 5 bytes)."));
 
@@ -147,20 +148,20 @@ public class ConstraintBasicNodeFactoryTest {
         binaryVal = "1234567".getBytes();
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertNotEquals("", act.getValue());
+        assertArrayEquals(binaryVal, (byte[]) act.getValue());
         assertEquals(JEditorPane.class, act.getComponent().getClass());
 
         binaryVal = "12345678".getBytes();
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertNotEquals("", act.getValue());
+        assertArrayEquals(binaryVal, (byte[]) act.getValue());
         assertEquals(JEditorPane.class, act.getComponent().getClass());
 
         // Wrong minimal length
         binaryVal = "123456".getBytes();
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertEquals("", act.getValue());
+        assertArrayEquals("".getBytes(), (byte[]) act.getValue());
         assertEquals(JLabel.class, act.getComponent().getClass());
         assertTrue(((JLabel) act.getComponent()).getText().startsWith("Error: Wrong binary length (len < 7 bytes)."));
 
@@ -168,7 +169,7 @@ public class ConstraintBasicNodeFactoryTest {
         binaryVal = "1234567890".getBytes();
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertEquals("", act.getValue());
+        assertArrayEquals("".getBytes(), (byte[]) act.getValue());
         assertEquals(JLabel.class, act.getComponent().getClass());
         assertTrue(((JLabel) act.getComponent()).getText().startsWith("Error: Wrong binary length (len > 9 bytes)."));
 
@@ -180,7 +181,7 @@ public class ConstraintBasicNodeFactoryTest {
         binaryVal = "Lorem ipsum".getBytes();
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertEquals(Base64.getEncoder().encodeToString(binaryVal), act.getValue());
+        assertArrayEquals(binaryVal, (byte[]) act.getValue());
         assertEquals(JEditorPane.class, act.getComponent().getClass());
         assertEquals("Lorem ipsum", ((JEditorPane) act.getComponent()).getText());
 
@@ -195,7 +196,7 @@ public class ConstraintBasicNodeFactoryTest {
         binaryVal = xmlText.getBytes();
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertNotEquals("", act.getValue());
+        assertArrayEquals(binaryVal, (byte[]) act.getValue());
         assertEquals(Box.class, act.getComponent().getClass());
 
         cType.setType("application");
@@ -205,8 +206,7 @@ public class ConstraintBasicNodeFactoryTest {
         binaryVal = xmlText.getBytes();
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertEquals(Base64.getEncoder().encodeToString(binaryVal), act.getValue());
-        assertNotEquals("", act.getValue());
+        assertArrayEquals(binaryVal, (byte[]) act.getValue());
         assertEquals(Box.class, act.getComponent().getClass());
 
         cType.setType("image");
@@ -227,7 +227,7 @@ public class ConstraintBasicNodeFactoryTest {
         assertNotEquals(0, binaryVal.length);
         act = ConstraintBasicNodeFactory.createConstrainedBinaryType(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertNotEquals("", act.getValue());
+        assertNotEquals(0, ((byte[]) act.getValue()).length);
         assertEquals(ImagePanel.class, act.getComponent().getClass());
     }
 
@@ -241,7 +241,7 @@ public class ConstraintBasicNodeFactoryTest {
         ConstraintBasicNode act = ConstraintBasicNodeFactory.createXmlNodeFromBinary(new Constraints(), binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
         assertEquals(true, act.isEditable);
-        assertEquals(Base64.getEncoder().encodeToString(binaryVal), act.getValue());
+        assertArrayEquals(binaryVal, (byte[]) act.getValue());
         assertEquals(Box.class, act.getComponent().getClass());
         assertEquals(JEditorPane.class, ((JViewport) ((JScrollPane) act.getComponent().getComponent(0)).getComponent(0)).getComponent(0).getClass());
         assertEquals(xmlText, ((JEditorPane) ((JViewport) ((JScrollPane) act.getComponent().getComponent(0)).getComponent(0)).getComponent(0)).getText());
@@ -270,7 +270,7 @@ public class ConstraintBasicNodeFactoryTest {
         assertNotEquals(0, binaryVal.length);
         ConstraintBasicNode act = ConstraintBasicNodeFactory.createImageNodeFromBinary(con, binaryVal);
         assertEquals(BasicType.BINARY, act.getType());
-        assertTrue(Base64.getEncoder().encodeToString(binaryVal).startsWith(act.getValue()));
+//        assertArrayEquals(binaryVal, ((byte[]) act.getValue()));
         assertEquals(ImagePanel.class, act.getComponent().getClass());
     }
 
@@ -357,7 +357,7 @@ public class ConstraintBasicNodeFactoryTest {
 
         ConstraintBasicNode act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
         assertEquals(BasicType.DATE, act.getType());
-        assertEquals("2020-11-09", act.getValue());
+        assertEquals(dateValue, act.getValue());
         assertNotNull(act.getConstaint());
         assertEquals(Box.class, act.getComponent().getClass());
         assertEquals(JSpinner.class, act.getComponent().getComponent(0).getClass());
@@ -373,7 +373,7 @@ public class ConstraintBasicNodeFactoryTest {
         list.add("2020-12-04");
         con.setSet(conSet);
         act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
-        assertEquals("2020-12-01", act.getValue());
+        assertEquals(DateTimeParser.parseIsoDate("2020-12-01"), act.getValue());
         assertEquals(JComboBox.class, act.getComponent().getClass());
         assertEquals(4, ((JComboBox) act.getComponent()).getItemCount());
         assertEquals(0, ((JComboBox) act.getComponent()).getSelectedIndex());
@@ -381,7 +381,7 @@ public class ConstraintBasicNodeFactoryTest {
 
         dateValue = LocalDate.of(2020, 12, 3);
         act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
-        assertEquals("2020-12-03", act.getValue());
+        assertEquals(dateValue, act.getValue());
         assertEquals(4, ((JComboBox) act.getComponent()).getItemCount());
         assertEquals(2, ((JComboBox) act.getComponent()).getSelectedIndex());
         assertEquals("2020-12-03", ((JComboBox) act.getComponent()).getSelectedItem().toString());
@@ -413,7 +413,7 @@ public class ConstraintBasicNodeFactoryTest {
 
     @Test
     public void createConstrainedIntegerType() {
-        int intValue = 4711;
+        long intValue = 4711;
         try {
             ConstraintBasicNodeFactory.createConstrainedIntegerType(null, intValue);
             fail("NullPointerException was expected but not thrown.");
@@ -425,7 +425,7 @@ public class ConstraintBasicNodeFactoryTest {
         Constraints con = new Constraints();
         ConstraintBasicNode act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
         assertEquals(BasicType.INTEGER, act.getType());
-        assertEquals("4711", act.getValue());
+        assertEquals(4711l, act.getValue());
         assertNotNull(act.getConstaint());
         assertEquals(Box.class, act.getComponent().getClass());
         assertEquals(JSpinner.class, act.getComponent().getComponent(0).getClass());
@@ -440,7 +440,7 @@ public class ConstraintBasicNodeFactoryTest {
         list.add("30");
         con.setSet(conSet);
         act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
-        assertEquals("10", act.getValue());
+        assertEquals(10l, act.getValue());
         assertEquals(JComboBox.class, act.getComponent().getClass());
         assertEquals(3, ((JComboBox) act.getComponent()).getItemCount());
         assertEquals(0, ((JComboBox) act.getComponent()).getSelectedIndex());
@@ -448,21 +448,21 @@ public class ConstraintBasicNodeFactoryTest {
 
         intValue = 30;
         act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
-        assertEquals("30", act.getValue());
+        assertEquals(30l, act.getValue());
         assertEquals(3, ((JComboBox) act.getComponent()).getItemCount());
         assertEquals(2, ((JComboBox) act.getComponent()).getSelectedIndex());
         assertEquals("30", ((JComboBox) act.getComponent()).getSelectedItem().toString());
 
         con = new Constraints();
         con.setMinimalExclusive("0");
-        intValue = 0;
+        intValue = 0l;
         act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
         assertEquals("1", ((JSpinner) act.getComponent().getComponent(0)).getValue().toString());
         assertEquals("2", ((JSpinner) act.getComponent().getComponent(0)).getNextValue().toString());
 
         con = new Constraints();
         con.setMaximalExclusive("5");
-        intValue = 7;
+        intValue = 7l;
         act = ConstraintBasicNodeFactory.createConstrainedIntegerType(con, intValue);
         assertEquals("4", ((JSpinner) act.getComponent().getComponent(0)).getValue().toString());
         assertEquals("3", ((JSpinner) act.getComponent().getComponent(0)).getPreviousValue().toString());
@@ -518,7 +518,7 @@ public class ConstraintBasicNodeFactoryTest {
         Constraints con = new Constraints();
         ConstraintBasicNode act = ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
         assertEquals(BasicType.REAL, act.getType());
-        assertEquals("3.141592653589793", act.getValue());
+        assertEquals(realValue, (double) act.getValue(), DELTA);
         assertNotNull(act.getConstaint());
         assertEquals(Box.class, act.getComponent().getClass());
         assertEquals(JSpinner.class, act.getComponent().getComponent(0).getClass());
@@ -533,7 +533,7 @@ public class ConstraintBasicNodeFactoryTest {
         list.add("0.3");
         con.setSet(conSet);
         act = ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
-        assertEquals("0.1", act.getValue());
+        assertEquals(0.1, act.getValue());
         assertEquals(JComboBox.class, act.getComponent().getClass());
         assertEquals(3, ((JComboBox) act.getComponent()).getItemCount());
         assertEquals(0, ((JComboBox) act.getComponent()).getSelectedIndex());
@@ -541,7 +541,7 @@ public class ConstraintBasicNodeFactoryTest {
 
         realValue = 0.3;
         act = ConstraintBasicNodeFactory.createConstrainedRealType(con, realValue);
-        assertEquals("0.3", act.getValue());
+        assertEquals(0.3, act.getValue());
         assertEquals(3, ((JComboBox) act.getComponent()).getItemCount());
         assertEquals(2, ((JComboBox) act.getComponent()).getSelectedIndex());
         assertEquals("0.3", ((JComboBox) act.getComponent()).getSelectedItem().toString());
@@ -608,7 +608,7 @@ public class ConstraintBasicNodeFactoryTest {
         Constraints con = new Constraints();
         ConstraintBasicNode act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
         assertEquals(BasicType.TIME, act.getType());
-        assertEquals("11:55Z", act.getValue());
+        assertEquals(timeValue, act.getValue());
         assertNotNull(act.getConstaint());
         assertEquals(Box.class, act.getComponent().getClass());
         assertEquals(JSpinner.class, act.getComponent().getComponent(0).getClass());
@@ -625,7 +625,7 @@ public class ConstraintBasicNodeFactoryTest {
         list.add("12:04:00Z");
         con.setSet(conSet);
         act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
-        assertEquals("12:01:15Z", act.getValue());
+        assertEquals(DateTimeParser.parseIsoTime("12:01:15Z").withOffsetSameInstant(ZoneOffset.UTC), act.getValue());
         assertEquals(JComboBox.class, act.getComponent().getClass());
         assertEquals(4, ((JComboBox) act.getComponent()).getItemCount());
         assertEquals(0, ((JComboBox) act.getComponent()).getSelectedIndex());
@@ -634,7 +634,7 @@ public class ConstraintBasicNodeFactoryTest {
 
         timeValue = OffsetTime.of(12, 03, 45, 0, ZoneOffset.UTC);
         act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
-        assertEquals("12:03:45Z", act.getValue());
+        assertEquals(timeValue, act.getValue());
         assertEquals(2, ((JComboBox) act.getComponent()).getSelectedIndex());
         exp = timeValue.withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
         assertEquals(exp.toString(), ((JComboBox) act.getComponent()).getSelectedItem().toString());
@@ -646,7 +646,7 @@ public class ConstraintBasicNodeFactoryTest {
         list.add("12:03:45Z");
         con.setSet(conSet);
         act = ConstraintBasicNodeFactory.createConstrainedTimeType(con, timeValue);
-        assertEquals("12:03:45Z", act.getValue());
+        assertEquals(DateTimeParser.parseIsoTime("12:03:45Z").withOffsetSameInstant(ZoneOffset.UTC), act.getValue());
         assertEquals(JComboBox.class, act.getComponent().getClass());
         assertEquals(2, ((JComboBox) act.getComponent()).getItemCount());
         assertEquals(1, ((JComboBox) act.getComponent()).getSelectedIndex());

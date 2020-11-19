@@ -1,6 +1,13 @@
 package de.fau.clients.orchestrator.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import de.fau.clients.orchestrator.utils.SilaBasicTypeUtils;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZoneOffset;
+import java.util.Base64;
 import java.util.function.Supplier;
 import javax.swing.JComponent;
 import lombok.NonNull;
@@ -17,13 +24,13 @@ class BasicNode extends SilaNode {
 
     protected final BasicType type;
     protected final JComponent component;
-    protected final Supplier<String> valueSupplier;
+    protected final Supplier<? extends Object> valueSupplier;
     protected final boolean isEditable;
 
     protected BasicNode(
             @NonNull final BasicType type,
             @NonNull final JComponent component,
-            @NonNull final Supplier<String> valueSupplier,
+            @NonNull final Supplier<? extends Object> valueSupplier,
             boolean isEditable
     ) {
         this.type = type;
@@ -46,7 +53,45 @@ class BasicNode extends SilaNode {
 
     @Override
     public JsonNode toJson() {
-        return jsonMapper.createObjectNode().put("value", valueSupplier.get());
+        switch (type) {
+            case ANY:
+            // The 'Any'-type should have been resolved into a concrete type.
+            case BOOLEAN:
+            case INTEGER:
+            case REAL:
+            case STRING:
+                return jsonMapper.createObjectNode().put(SilaBasicTypeUtils.FIELD_VALUE,
+                        valueSupplier.get().toString());
+            case BINARY:
+                final byte[] initVal = (byte[]) valueSupplier.get();
+                if (initVal == null) {
+                    return null;
+                }
+                final String payload = Base64.getEncoder().encodeToString(initVal);
+                return jsonMapper.createObjectNode().put(SilaBasicTypeUtils.FIELD_VALUE, payload);
+            case DATE:
+                final LocalDate initDate = (LocalDate) valueSupplier.get();
+                if (initDate == null) {
+                    return null;
+                }
+                return SilaBasicTypeUtils.dateAsJsonNode(OffsetDateTime.of(initDate, LocalTime.MIN, ZoneOffset.UTC));
+            case TIME: {
+                final OffsetTime initTime = (OffsetTime) valueSupplier.get();
+                if (initTime == null) {
+                    return null;
+                }
+                return SilaBasicTypeUtils.timeAsJsonNode(initTime);
+            }
+            case TIMESTAMP: {
+                final OffsetDateTime initTimestamp = (OffsetDateTime) valueSupplier.get();
+                if (initTimestamp == null) {
+                    return null;
+                }
+                return SilaBasicTypeUtils.timestampAsJsonNode(initTimestamp);
+            }
+            default:
+                throw new IllegalArgumentException("Not a supported BasicType.");
+        }
     }
 
     @Override
@@ -59,7 +104,7 @@ class BasicNode extends SilaNode {
         return this.type;
     }
 
-    protected String getValue() {
+    protected Object getValue() {
         return this.valueSupplier.get();
     }
 }

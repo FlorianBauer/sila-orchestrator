@@ -16,6 +16,7 @@ import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerEditor.FormatterTy
 import de.fau.clients.orchestrator.utils.OffsetDateTimeSpinnerModel;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerEditor;
 import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerModel;
+import de.fau.clients.orchestrator.utils.SilaBasicTypeUtils;
 import de.fau.clients.orchestrator.utils.ValidatorUtils;
 import de.fau.clients.orchestrator.utils.XmlUtils;
 import java.math.BigInteger;
@@ -27,7 +28,6 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.Base64;
 import java.util.function.Supplier;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -39,6 +39,7 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import sila2.org.silastandard.SiLAFramework;
 import sila_java.library.core.models.BasicType;
 import sila_java.library.core.models.DataTypeType;
@@ -50,6 +51,7 @@ import sila_java.library.core.sila.mapping.grpc.ProtoMapper;
  *
  * @see BasicNode
  */
+@Slf4j
 final class BasicNodeFactory {
 
     /**
@@ -130,21 +132,33 @@ final class BasicNodeFactory {
             }
             case BOOLEAN:
                 return createBooleanType(jsonNode.get("value").asBoolean(), isEditable);
-            case DATE:
-                final LocalDate initDate = DateTimeParser.parseIsoDate(jsonNode.get("value").asText());
+            case DATE: {
+                final LocalDate initDate = SilaBasicTypeUtils.dateFromJsonNode(jsonNode);
+                if (initDate == null) {
+                    return createErrorType(type, "Date value is 'null'.");
+                }
                 return createDateType(initDate, isEditable);
+            }
             case INTEGER:
                 return createIntegerType(jsonNode.get("value").asLong(), isEditable);
             case REAL:
                 return createRealType(jsonNode.get("value").asDouble(), isEditable);
             case STRING:
                 return createStringType(jsonNode.get("value").asText(), isEditable);
-            case TIME:
-                final OffsetTime initTime = DateTimeParser.parseIsoTime(jsonNode.get("value").asText());
+            case TIME: {
+                final OffsetTime initTime = SilaBasicTypeUtils.timeFromJsonNode(jsonNode);
+                if (initTime == null) {
+                    return createErrorType(type, "Time value is 'null'.");
+                }
                 return createTimeType(initTime, isEditable);
-            case TIMESTAMP:
-                final OffsetDateTime initTimesamp = DateTimeParser.parseIsoDateTime(jsonNode.get("value").asText());
-                return createTimestampType(initTimesamp, isEditable);
+            }
+            case TIMESTAMP: {
+                final OffsetDateTime initTimestamp = SilaBasicTypeUtils.timestampFromJsonNode(jsonNode);
+                if (initTimestamp == null) {
+                    return createErrorType(type, "Timestamp value is 'null'.");
+                }
+                return createTimestampType(initTimestamp, isEditable);
+            }
             default:
                 throw new IllegalArgumentException("Not a supported BasicType.");
         }
@@ -288,7 +302,7 @@ final class BasicNodeFactory {
             boolean isEditable
     ) {
         final JComponent comp;
-        final Supplier<String> supp;
+        final Supplier<byte[]> supp;
         String binaryReprStr;
         final boolean isUtf8 = ValidatorUtils.isValidUtf8(byteValue);
         if (isUtf8) {
@@ -301,11 +315,7 @@ final class BasicNodeFactory {
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             scrollPane.setMaximumSize(MaxDim.TEXT_FIELD_MULTI_LINE.getDim());
             comp = scrollPane;
-            supp = () -> {
-                return Base64.getEncoder().encodeToString(editorPane
-                        .getText()
-                        .getBytes(StandardCharsets.UTF_8));
-            };
+            supp = () -> (editorPane.getText().getBytes(StandardCharsets.UTF_8));
         } else {
             try {
                 final MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -320,7 +330,7 @@ final class BasicNodeFactory {
             textField.setEnabled(false);
             textField.setText(binaryReprStr);
             comp = textField;
-            supp = () -> (Base64.getEncoder().encodeToString(byteValue));
+            supp = () -> (byteValue);
             isEditable = false;
         }
         return new BasicNode(BasicType.BINARY, comp, supp, isEditable);
@@ -337,7 +347,7 @@ final class BasicNodeFactory {
         final JCheckBox checkBox = new JCheckBox();
         checkBox.setEnabled(isEditable);
         checkBox.setSelected(boolValue);
-        final Supplier<String> supp = () -> (checkBox.isSelected() ? "true" : "false");
+        final Supplier<Boolean> supp = () -> (checkBox.isSelected());
         return new BasicNode(BasicType.BOOLEAN, checkBox, supp, isEditable);
     }
 
@@ -357,16 +367,17 @@ final class BasicNodeFactory {
             dateSpinner.setModel(new LocalDateSpinnerModel(dateValue, null, null, null));
             dateSpinner.setEditor(new LocalDateSpinnerEditor(dateSpinner));
             dateSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
-            final Supplier<String> supp = () -> {
-                return dateValue.toString();
-            };
+            final Supplier<LocalDate> supp = () -> (dateValue);
             return new BasicNode(BasicType.DATE, dateSpinner, supp, isEditable);
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             strField.setText(dateValue.toString());
-            return new BasicNode(BasicType.DATE, strField, () -> (strField.getText()), isEditable);
+            return new BasicNode(BasicType.DATE,
+                    strField,
+                    () -> (DateTimeParser.parseIsoDate(strField.getText())),
+                    isEditable);
         }
     }
 
@@ -383,13 +394,16 @@ final class BasicNodeFactory {
             final JSpinner spinner = new JSpinner(model);
             spinner.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
             model.setValue(intValue);
-            return new BasicNode(BasicType.INTEGER, spinner, () -> (spinner.getValue().toString()), isEditable);
+            return new BasicNode(BasicType.INTEGER, spinner, () -> (spinner.getValue()), isEditable);
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
             strField.setText(Long.toString(intValue));
-            return new BasicNode(BasicType.INTEGER, strField, () -> (strField.getText()), isEditable);
+            return new BasicNode(BasicType.INTEGER,
+                    strField,
+                    () -> (Long.parseLong(strField.getText())),
+                    isEditable);
         }
     }
 
@@ -405,13 +419,16 @@ final class BasicNodeFactory {
             final SpinnerModel model = new SpinnerNumberModel(realValue, null, null, REAL_STEP_SIZE);
             final JSpinner spinner = new JSpinner(model);
             spinner.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
-            return new BasicNode(BasicType.REAL, spinner, () -> (spinner.getValue().toString()), isEditable);
+            return new BasicNode(BasicType.REAL, spinner, () -> (spinner.getValue()), isEditable);
         } else {
             final JTextField strField = new JTextField();
             strField.setEditable(false);
             strField.setMaximumSize(MaxDim.NUMERIC_SPINNER.getDim());
             strField.setText(Double.toString(realValue));
-            return new BasicNode(BasicType.REAL, strField, () -> (strField.getText()), isEditable);
+            return new BasicNode(BasicType.REAL,
+                    strField,
+                    () -> (Double.parseDouble(strField.getText())),
+                    isEditable);
         }
     }
 
@@ -450,10 +467,8 @@ final class BasicNodeFactory {
             timeSpinner.setModel(new OffsetTimeSpinnerModel(initTime, null, null, null));
             timeSpinner.setEditor(new OffsetTimeSpinnerEditor(timeSpinner));
             timeSpinner.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
-            final Supplier<String> supp = () -> {
-                return ((OffsetTime) timeSpinner.getValue())
-                        .withOffsetSameInstant(ZoneOffset.UTC)
-                        .toString();
+            final Supplier<OffsetTime> supp = () -> {
+                return ((OffsetTime) timeSpinner.getValue()).withOffsetSameInstant(ZoneOffset.UTC);
             };
             return new BasicNode(BasicType.TIME, timeSpinner, supp, isEditable);
         } else {
@@ -461,9 +476,7 @@ final class BasicNodeFactory {
             strField.setEditable(false);
             strField.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
             strField.setText(initTime.toLocalTime().toString());
-            final Supplier<String> supp = () -> {
-                return initTime.withOffsetSameInstant(ZoneOffset.UTC).toString();
-            };
+            final Supplier<OffsetTime> supp = () -> (initTime.withOffsetSameInstant(ZoneOffset.UTC));
             return new BasicNode(BasicType.TIME, strField, supp, isEditable);
         }
     }
@@ -488,10 +501,9 @@ final class BasicNodeFactory {
                     timestampSpinner,
                     FormatterType.OFFSET_TIMESTAMP));
             timestampSpinner.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
-            final Supplier<String> supp = () -> {
+            final Supplier<OffsetDateTime> supp = () -> {
                 return ((OffsetDateTime) timestampSpinner.getValue())
-                        .withOffsetSameInstant(ZoneOffset.UTC)
-                        .toString();
+                        .withOffsetSameInstant(ZoneOffset.UTC);
             };
             return new BasicNode(BasicType.TIMESTAMP, timestampSpinner, supp, isEditable);
         } else {
@@ -499,8 +511,8 @@ final class BasicNodeFactory {
             strField.setEditable(false);
             strField.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
             strField.setText(initDateTime.toString());
-            final Supplier<String> supp = () -> {
-                return initDateTime.withOffsetSameInstant(ZoneOffset.UTC).toString();
+            final Supplier<OffsetDateTime> supp = () -> {
+                return initDateTime.withOffsetSameInstant(ZoneOffset.UTC);
             };
             return new BasicNode(BasicType.TIMESTAMP, strField, supp, isEditable);
         }

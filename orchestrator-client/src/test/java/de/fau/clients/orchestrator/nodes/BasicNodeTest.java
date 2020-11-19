@@ -65,8 +65,8 @@ public class BasicNodeTest {
         actual = booleanNode.toJsonString();
         assertEquals("{\"value\":\"false\"}", actual);
         actual = dateNode.toJsonString();
-        // e.g. {"value":"2020-06-04"}
-        assertTrue(actual.matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}\"\\}"), actual);
+        assertTrue(actual.matches("\\{\"day\":\\d{1,2},\"month\":\\d{1,2},\"year\":\\d{4},"
+                + "?\"timezone\":\\{\"hours\":0}\\}"), actual);
         actual = integerNode.toJsonString();
         assertEquals("{\"value\":\"0\"}", actual);
         actual = realNode.toJsonString();
@@ -74,11 +74,12 @@ public class BasicNodeTest {
         actual = stringNode.toJsonString();
         assertEquals("{\"value\":\"\"}", actual);
         actual = timeNode.toJsonString();
-        // e.g. {"value":"20:15:00.000Z"}
-        assertTrue(actual.matches("\\{\"value\":\"\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z\"\\}"), actual);
+        assertTrue(actual.matches("\\{\"second\":\\d{1,2},\"minute\":\\d{1,2},\"hour\":\\d{1,2},"
+                + "?\"timezone\":\\{\"hours\":0}\\}"), actual);
         actual = timestampNode.toJsonString();
-        // e.g. {"value":"2020-06-04T20:15:00.000Z"}
-        assertTrue(actual.matches("\\{\"value\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z\"\\}"), actual);
+        assertTrue(actual.matches("\\{\"second\":\\d{1,2},\"minute\":\\d{1,2},\"hour\":\\d{1,2},"
+                + "\"day\":\\d{1,2},\"month\":\\d{1,2},\"year\":\\d{4},"
+                + "?\"timezone\":\\{\"hours\":0}\\}"), actual);
     }
 
     @Test

@@ -24,7 +24,7 @@ public class ConstraintBasicNode extends BasicNode {
     protected ConstraintBasicNode(
             @NonNull final BasicType type,
             @NonNull final JComponent component,
-            @NonNull final Supplier<String> valueSupplier,
+            @NonNull final Supplier<? extends Object> valueSupplier,
             @NonNull final Constraints constraints
     ) {
         super(type, component, valueSupplier, true);
@@ -36,7 +36,7 @@ public class ConstraintBasicNode extends BasicNode {
             @NonNull final FeatureContext featCtx,
             @NonNull final BasicType type,
             @NonNull final JComponent component,
-            @NonNull final Supplier<String> valueSupplier,
+            @NonNull final Supplier<? extends Object> valueSupplier,
             @NonNull final Constraints constraints
     ) {
         super(type, component, valueSupplier, true);
