@@ -9,8 +9,10 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
 import javax.imageio.ImageIO;
@@ -706,6 +708,107 @@ public class ConstraintBasicNodeFactoryTest {
                 .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET)
                 .toLocalTime()
                 .toString();
+        assertEquals("≥ " + exp1 + " ∧ ≤ " + exp2, ((JLabel) act.getComponent().getComponent(2)).getText());
+    }
+
+    @Test
+    public void createConstrainedTimestampType() {
+        OffsetDateTime timestampValue = OffsetDateTime.of(2020, 12, 11, 10, 9, 8, 0, ZoneOffset.UTC);
+
+        try {
+            ConstraintBasicNodeFactory.createConstrainedTimestampType(null, timestampValue);
+            fail("NullPointerException was expected but not thrown.");
+        } catch (NullPointerException ex) {
+        } catch (Exception ex) {
+            fail("Only a NullPointerException was expected.");
+        }
+
+        Constraints con = new Constraints();
+        ConstraintBasicNode act = ConstraintBasicNodeFactory.createConstrainedTimestampType(con, timestampValue);
+        assertEquals(BasicType.TIMESTAMP, act.getType());
+        assertEquals(timestampValue, act.getValue());
+        assertNotNull(act.getConstaint());
+        assertEquals(Box.class, act.getComponent().getClass());
+        assertEquals(JSpinner.class, act.getComponent().getComponent(0).getClass());
+        OffsetDateTime exp = timestampValue.withOffsetSameInstant(ZoneOffset.UTC);
+        assertEquals(exp.toString(), ((JSpinner) act.getComponent().getComponent(0)).getValue().toString());
+        assertEquals(JLabel.class, act.getComponent().getComponent(2).getClass());
+        assertEquals("Invalid Constraint", ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        Constraints.Set conSet = new Constraints.Set();
+        List<String> list = conSet.getValue();
+        list.add("2020-12-11T10:09:00Z");
+        list.add("2020-12-11T10:08:00Z");
+        list.add("2020-12-11T10:07:32.123Z");
+        list.add("2020-12-11T10:06:00Z");
+        con.setSet(conSet);
+        act = ConstraintBasicNodeFactory.createConstrainedTimestampType(con, timestampValue);
+        exp = DateTimeParser.parseIsoDateTime("2020-12-11T10:09:00Z");
+        assertEquals(exp, act.getValue());
+        assertEquals(JComboBox.class, act.getComponent().getClass());
+        assertEquals(4, ((JComboBox) act.getComponent()).getItemCount());
+        assertEquals(0, ((JComboBox) act.getComponent()).getSelectedIndex());
+        assertEquals(exp.toString(), ((JComboBox) act.getComponent()).getSelectedItem().toString());
+
+        timestampValue = OffsetDateTime.of(2020, 12, 11, 10, 7, 32, 123456789, ZoneOffset.UTC);
+        act = ConstraintBasicNodeFactory.createConstrainedTimestampType(con, timestampValue);
+        exp = timestampValue.truncatedTo(ChronoUnit.MILLIS);
+        assertEquals(exp, act.getValue());
+        assertEquals(2, ((JComboBox) act.getComponent()).getSelectedIndex());
+        assertEquals(exp.toString(), ((JComboBox) act.getComponent()).getSelectedItem().toString());
+
+        conSet = new Constraints.Set();
+        list = conSet.getValue();
+        list.add("2020-12-11T10:08:00Z");
+        list.add("-= invlaid =-");
+        list.add("2020-12-11T10:06:00Z");
+        con.setSet(conSet);
+        timestampValue = DateTimeParser.parseIsoDateTime("2020-12-11T10:06:00Z");
+        act = ConstraintBasicNodeFactory.createConstrainedTimestampType(con, timestampValue);
+        assertEquals(timestampValue, act.getValue());
+        assertEquals(JComboBox.class, act.getComponent().getClass());
+        assertEquals(2, ((JComboBox) act.getComponent()).getItemCount());
+        assertEquals(1, ((JComboBox) act.getComponent()).getSelectedIndex());
+
+        con = new Constraints();
+        con.setMinimalExclusive("2020-12-11T00:08:00Z");
+        timestampValue = OffsetDateTime.of(2020, 12, 10, 05, 03, 45, 0, ZoneOffset.UTC);
+        act = ConstraintBasicNodeFactory.createConstrainedTimestampType(con, timestampValue);
+        exp = DateTimeParser.parseIsoDateTime("2020-12-11T00:08:00Z");
+        assertEquals("> " + exp.toString(), ((JLabel) act.getComponent().getComponent(2)).getText());
+        exp = DateTimeParser.parseIsoDateTime("2020-12-11T00:08:01Z");
+        assertEquals(exp, (OffsetDateTime) ((JSpinner) act.getComponent().getComponent(0)).getValue());
+        exp = DateTimeParser.parseIsoDateTime("2020-12-12T00:08:01Z");
+        assertEquals(exp, (OffsetDateTime) ((JSpinner) act.getComponent().getComponent(0)).getNextValue());
+
+        con = new Constraints();
+        con.setMaximalExclusive("2020-12-22T20:00:00Z");
+        timestampValue = OffsetDateTime.of(2022, 12, 22, 23, 03, 45, 0, ZoneOffset.UTC);
+        act = ConstraintBasicNodeFactory.createConstrainedTimestampType(con, timestampValue);
+        exp = OffsetDateTime.of(2020, 12, 22, 20, 0, 0, 0, ZoneOffset.UTC);
+        assertEquals("< " + exp.toString(), ((JLabel) act.getComponent().getComponent(2)).getText());
+        exp = OffsetDateTime.of(2020, 12, 22, 19, 59, 59, 0, ZoneOffset.UTC);
+        assertEquals(exp, (OffsetDateTime) act.getValue());
+        assertEquals(exp, (OffsetDateTime) ((JSpinner) act.getComponent().getComponent(0)).getValue());
+        exp = OffsetDateTime.of(2020, 12, 21, 19, 59, 59, 0, ZoneOffset.UTC);
+        assertEquals(exp, (OffsetDateTime) ((JSpinner) act.getComponent().getComponent(0)).getPreviousValue());
+
+        con = new Constraints();
+        con.setMaximalInclusive("2020-12-22T22:30:00+02");
+        timestampValue = OffsetDateTime.of(2020, 12, 22, 20, 30, 0, 0, ZoneOffset.UTC);
+        act = ConstraintBasicNodeFactory.createConstrainedTimestampType(con, timestampValue);
+        assertEquals("≤ " + timestampValue.toString(), ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con = new Constraints();
+        con.setMinimalInclusive("2020-12-22T08:15:00-01");
+        timestampValue = OffsetDateTime.of(2020, 12, 22, 9, 15, 0, 0, ZoneOffset.UTC);
+        act = ConstraintBasicNodeFactory.createConstrainedTimestampType(con, timestampValue);
+        String exp1 = timestampValue.toString();
+        assertEquals("≥ " + exp1, ((JLabel) act.getComponent().getComponent(2)).getText());
+
+        con.setMaximalInclusive("2020-12-22T23:15:00+03");
+        act = ConstraintBasicNodeFactory.createConstrainedTimestampType(con, timestampValue);
+        String exp2 = OffsetDateTime.of(2020, 12, 22, 20, 15, 0, 0, ZoneOffset.UTC).toString();
         assertEquals("≥ " + exp1 + " ∧ ≤ " + exp2, ((JLabel) act.getComponent().getComponent(2)).getText());
     }
 }

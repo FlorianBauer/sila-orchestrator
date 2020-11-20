@@ -105,7 +105,7 @@ class ConstraintBasicNodeFactory {
             case TIME:
                 return createConstrainedTimeType(constraints, OffsetTime.now());
             case TIMESTAMP:
-                return createConstrainedTimestampeTypeFromJson(constraints, null);
+                return createConstrainedTimestampType(constraints, OffsetDateTime.now());
             default:
                 throw new IllegalArgumentException("Not a valid BasicType.");
         }
@@ -186,8 +186,7 @@ class ConstraintBasicNodeFactory {
                 if (timestampVal == null) {
                     return BasicNodeFactory.createErrorType(type, "Timestamp value is 'null'.");
                 }
-                // FIXME: Replace function with not (yet) implemented 'createConstrainedTimestampeType()' (2020-11-19 florian.bauer.dev@gmail.com). 
-                return createConstrainedTimestampeTypeFromJson(constraints, jsonNode.get("value"));
+                return createConstrainedTimestampType(constraints, timestampVal);
             default:
                 throw new IllegalArgumentException("Not a valid BasicType.");
         }
@@ -807,25 +806,42 @@ class ConstraintBasicNodeFactory {
         return new ConstraintBasicNode(BasicType.TIME, comp, supp, constraints);
     }
 
-    protected static ConstraintBasicNode createConstrainedTimestampeTypeFromJson(
+    /**
+     * Creates a <code>ConstraintBasicNode</code> of the type <code>BasicType.TIMESTAMP</code>.
+     *
+     * @param constraints The applied time constraints.
+     * @param initValue The timestamp to initialize the node with.
+     * @return The initialized, constrained BasicNode representing a timestamp value.
+     */
+    protected static ConstraintBasicNode createConstrainedTimestampType(
             @NonNull final Constraints constraints,
-            final JsonNode jsonNode
+            @NonNull final OffsetDateTime initDateTime
     ) {
+        final OffsetDateTime initVal = initDateTime
+                .withOffsetSameInstant(ZoneOffset.UTC)
+                .truncatedTo(ChronoUnit.MILLIS);
         final JComponent comp;
         final Supplier<OffsetDateTime> supp;
         if (constraints.getSet() != null) {
-            final List<String> timeSet = constraints.getSet().getValue();
-            final OffsetDateTime[] times = new OffsetDateTime[timeSet.size()];
-            for (int i = 0; i < timeSet.size(); i++) {
-                try {
-                    times[i] = DateTimeParser.parseIsoDateTime(timeSet.get(i))
-                            .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
-                } catch (final Exception ex) {
+            final List<String> timestampSet = constraints.getSet().getValue();
+            final Vector<OffsetDateTime> timestamps = new Vector<>(timestampSet.size());
+            int selectionIdx = 0;
+            int j = 0;
+            for (final String timestampEntry : timestampSet) {
+                final OffsetDateTime ts = DateTimeParser.parseIsoDateTime(timestampEntry);
+                if (ts == null) {
                     // skip invalid entries
+                    continue;
                 }
+                timestamps.add(ts);
+                if (ts.isEqual(initVal)) {
+                    selectionIdx = j;
+                }
+                j++;
             }
-            final JComboBox<OffsetDateTime> timestampComboBox = new JComboBox<>(times);
+            final JComboBox<OffsetDateTime> timestampComboBox = new JComboBox<>(timestamps);
             timestampComboBox.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
+            timestampComboBox.setSelectedIndex(selectionIdx);
             supp = () -> {
                 return ((OffsetDateTime) timestampComboBox.getSelectedItem())
                         .withOffsetSameInstant(ZoneOffset.UTC);
@@ -835,22 +851,22 @@ class ConstraintBasicNodeFactory {
             String minBounds = null;
             if (constraints.getMinimalExclusive() != null) {
                 minBounds = GREATER_THAN + DateTimeParser.parseIsoDateTime(constraints
-                        .getMinimalExclusive()).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET)
+                        .getMinimalExclusive()).withOffsetSameInstant(ZoneOffset.UTC)
                         .toString();
             } else if (constraints.getMinimalInclusive() != null) {
                 minBounds = GREATER_OR_EQUAL + DateTimeParser.parseIsoDateTime(constraints
-                        .getMinimalInclusive()).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET)
+                        .getMinimalInclusive()).withOffsetSameInstant(ZoneOffset.UTC)
                         .toString();
             }
 
             String maxBounds = null;
             if (constraints.getMaximalExclusive() != null) {
                 maxBounds = LESS_THAN + DateTimeParser.parseIsoDateTime(constraints
-                        .getMaximalExclusive()).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET)
+                        .getMaximalExclusive()).withOffsetSameInstant(ZoneOffset.UTC)
                         .toString();
             } else if (constraints.getMaximalInclusive() != null) {
                 maxBounds = LESS_OR_EQUAL + DateTimeParser.parseIsoDateTime(constraints
-                        .getMaximalInclusive()).withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET)
+                        .getMaximalInclusive()).withOffsetSameInstant(ZoneOffset.UTC)
                         .toString();
             }
 
@@ -865,23 +881,16 @@ class ConstraintBasicNodeFactory {
                 conditionDescr = INVALID_CONSTRAINT;
             }
 
-            OffsetDateTime initDateTime = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-            if (jsonNode != null) {
-                try {
-                    initDateTime = DateTimeParser.parseIsoDateTime(jsonNode.asText());
-                } catch (final Exception ex) {
-                    // do nothing and use the current time instead
-                }
-            }
             final JSpinner timestampSpinner = new JSpinner();
             timestampSpinner.setModel(ConstraintSpinnerModelFactory
-                    .createRangeConstrainedDateTimeModel(initDateTime, constraints));
+                    .createRangeConstrainedDateTimeModel(initVal, constraints));
             timestampSpinner.setMaximumSize(MaxDim.TIMESTAMP_SPINNER.getDim());
             timestampSpinner.setEditor(new OffsetDateTimeSpinnerEditor(
                     timestampSpinner,
                     FormatterType.OFFSET_TIMESTAMP));
             supp = () -> {
-                return (OffsetDateTime) timestampSpinner.getValue();
+                return ((OffsetDateTime) timestampSpinner.getValue())
+                        .withOffsetSameInstant(ZoneOffset.UTC);
             };
 
             final Box hBox = Box.createHorizontalBox();
