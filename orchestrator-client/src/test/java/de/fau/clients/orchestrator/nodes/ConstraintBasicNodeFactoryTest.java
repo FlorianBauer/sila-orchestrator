@@ -386,6 +386,19 @@ public class ConstraintBasicNodeFactoryTest {
         assertEquals(2, ((JComboBox) act.getComponent()).getSelectedIndex());
         assertEquals("2020-12-03", ((JComboBox) act.getComponent()).getSelectedItem().toString());
 
+        conSet = new Constraints.Set();
+        list = conSet.getValue();
+        list.add("2020-12-11");
+        list.add("-= invlaid =-");
+        list.add("2020-12-13");
+        con.setSet(conSet);
+        dateValue = LocalDate.of(2020, 12, 13);
+        act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);
+        assertEquals(dateValue, act.getValue());
+        assertEquals(2, ((JComboBox) act.getComponent()).getItemCount());
+        assertEquals(1, ((JComboBox) act.getComponent()).getSelectedIndex());
+        assertEquals("2020-12-13", ((JComboBox) act.getComponent()).getSelectedItem().toString());
+
         con = new Constraints();
         con.setMaximalExclusive("2020-12-24");
         act = ConstraintBasicNodeFactory.createConstrainedDateType(con, dateValue);

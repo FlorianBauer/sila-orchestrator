@@ -318,13 +318,20 @@ class ConstraintBasicNodeFactory {
         final Supplier<LocalDate> supp;
         if (constraints.getSet() != null) {
             final List<String> dateSet = constraints.getSet().getValue();
-            final LocalDate[] dates = new LocalDate[dateSet.size()];
+            final Vector<LocalDate> dates = new Vector<>(dateSet.size());
             int selectionIdx = 0;
-            for (int i = 0; i < dateSet.size(); i++) {
-                dates[i] = DateTimeParser.parseIsoDate(dateSet.get(i));
-                if (dates[i].equals(dateValue)) {
-                    selectionIdx = i;
+            int j = 0;
+            for (final String dateEntry : dateSet) {
+                final LocalDate date = DateTimeParser.parseIsoDate(dateEntry);
+                if (date == null) {
+                    // skip invalid entries
+                    continue;
                 }
+                dates.add(date);
+                if (date.isEqual(dateValue)) {
+                    selectionIdx = j;
+                }
+                j++;
             }
             final JComboBox<LocalDate> dateComboBox = new JComboBox<>(dates);
             dateComboBox.setMaximumSize(MaxDim.DATE_TIME_SPINNER.getDim());
