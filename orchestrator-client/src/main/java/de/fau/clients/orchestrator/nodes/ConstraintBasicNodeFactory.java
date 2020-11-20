@@ -732,15 +732,12 @@ class ConstraintBasicNodeFactory {
         final Supplier<OffsetTime> supp;
         if (constraints.getSet() != null) {
             final List<String> timeSet = constraints.getSet().getValue();
-            final Vector<OffsetTime> times = new Vector<OffsetTime>(timeSet.size());
+            final Vector<OffsetTime> times = new Vector<>(timeSet.size());
             int selectionIdx = 0;
             int j = 0;
             for (final String timeEntry : timeSet) {
-                final OffsetTime time;
-                try {
-                    time = DateTimeParser.parseIsoTime(timeEntry)
-                            .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
-                } catch (final Exception ex) {
+                final OffsetTime time = DateTimeParser.parseIsoTime(timeEntry);
+                if (time == null) {
                     // skip invalid entries
                     continue;
                 }
