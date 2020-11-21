@@ -541,11 +541,24 @@ class ConstraintBasicNodeFactory {
         if (conSet != null) {
             final JComboBox<String> comboBox = new JComboBox<>();
             comboBox.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
-            for (final String item : conSet.getValue()) {
-                comboBox.addItem(item);
+            if (jsonNode != null) {
+                final String initValue = jsonNode.asText();
+                int selectionIdx = 0;
+                int j = 0;
+                for (final String item : conSet.getValue()) {
+                    comboBox.addItem(item);
+                    if (initValue.equals(item)) {
+                        selectionIdx = j;
+                    }
+                    j++;
+                }
+                comboBox.setSelectedIndex(selectionIdx);
+            } else {
+                for (final String item : conSet.getValue()) {
+                    comboBox.addItem(item);
+                }
             }
             comp = comboBox;
-            // FIXME: Select item entry from jsonNode as default. (2020-11-19 florian.bauer.dev@gmail.com)
             supp = () -> ((String) comboBox.getSelectedItem());
         } else {
             if (constraints.getSchema() != null) {
