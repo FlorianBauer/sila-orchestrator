@@ -5,6 +5,7 @@
         <groupId>org.sila-standard</groupId>
         <artifactId>sila_java</artifactId>
         <version>0.0.3-SNAPSHOT</version>
+        <relativePath>./extern/sila_java</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
