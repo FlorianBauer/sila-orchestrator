@@ -95,9 +95,9 @@ public class CommandTask extends QueueTask {
 
         final FeatureContext featCtx = serverCtx.getFeatureCtx(commandModel.getFeatureId());
         if (featCtx != null) {
-            final CommandContext cmdCtx = featCtx.getCommandCtx(commandModel.getCommandId());
-            if (cmdCtx != null) {
-                this.cmdCtx = cmdCtx;
+            final CommandContext tmpCmdCtx = featCtx.getCommandCtx(commandModel.getCommandId());
+            if (tmpCmdCtx != null) {
+                this.cmdCtx = tmpCmdCtx;
                 return true;
             }
         }
@@ -255,14 +255,14 @@ public class CommandTask extends QueueTask {
     }
 
     /**
-     * Changes the UUID and the server instance of this task. The UUID gets changed in the model
-     * even if no valid server instance for the command could not be found.
+     * Changes the server instance of this task by the given UUID. The UUID gets changed in the
+     * model even if no valid server instance for the command could be found.
      *
      * @param serverUuid The server UUID to change.
      * @return <code>true</code> if the server change was successful and the server instance is
      * currently online, otherwise <code>false</code>.
      */
-    public boolean changeServer(final UUID serverUuid) {
+    public boolean changeServerByUuid(final UUID serverUuid) {
         commandModel.setServerUuid(serverUuid);
         final ServerContext serverCtx = manager.getServerCtx(serverUuid);
         isCommandValid = tryToSetServerInstance(serverCtx);
@@ -270,6 +270,15 @@ public class CommandTask extends QueueTask {
             return serverCtx.isOnline();
         }
         return isCommandValid;
+    }
+
+    /**
+     * Changes the server instance of this task by the context.
+     *
+     * @param serverCtx The server context to change this task to.
+     */
+    public void changeServerByCtx(final ServerContext serverCtx) {
+        isCommandValid = tryToSetServerInstance(serverCtx);
     }
 
     /**

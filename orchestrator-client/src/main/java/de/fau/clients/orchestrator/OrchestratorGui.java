@@ -795,7 +795,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 removeTaskFromQueue(evt);
             }
         });
-        connectionManager.addServerListener(taskQueueTable);
+        connectionManager.addConnectionListener(taskQueueTable);
     }
 
     private void initServerTree() {

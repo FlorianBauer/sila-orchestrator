@@ -1,5 +1,7 @@
 package de.fau.clients.orchestrator.queue;
 
+import de.fau.clients.orchestrator.ctx.ConnectionListener;
+import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.dnd.TaskImportTransferHandler;
 import de.fau.clients.orchestrator.tasks.CommandTask;
 import de.fau.clients.orchestrator.tasks.ConnectionStatus;
@@ -35,15 +37,13 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import lombok.extern.slf4j.Slf4j;
-import sila_java.library.manager.ServerListener;
-import sila_java.library.manager.models.Server;
 
 /**
  * Table component responsible for managing queue-tasks with all their properties.
  */
 @Slf4j
 @SuppressWarnings("serial")
-public final class TaskQueueTable extends JTable implements ServerListener {
+public final class TaskQueueTable extends JTable implements ConnectionListener {
 
     public static final int COLUMN_TASK_ID_IDX = 0;
     public static final int COLUMN_CONNECTION_STATUS_IDX = 1;
@@ -398,7 +398,7 @@ public final class TaskQueueTable extends JTable implements ServerListener {
             }
             final CommandTask task = (CommandTask) taskObj;
             final UUID serverUuid = (UUID) uuidComboBox.getSelectedItem();
-            boolean wasChangeSuccess = task.changeServer(serverUuid);
+            boolean wasChangeSuccess = task.changeServerByUuid(serverUuid);
             if (wasChangeSuccess) {
                 dataModel.setValueAt(ConnectionStatus.ONLINE.getIcon(),
                         editingRow,
@@ -440,20 +440,22 @@ public final class TaskQueueTable extends JTable implements ServerListener {
     }
 
     /**
-     * Listener for server status (online/offline) which changes the symbols in the queue table
-     * accordingly.
+     * Function to update the connection symbols in the queue table according to the changed server
+     * state (online/offline).
      *
-     * @param uuid The UUID of the changing server.
-     * @param server The changing server instance.
+     * @param serverCtx The changed server context.
      */
-    @Override
-    public void onServerChange(UUID uuid, Server server) {
+    private void updateConnectionStateOfQueueEntries(final ServerContext serverCtx) {
         for (int i = 0; i < getRowCount(); i++) {
             final Object obj = dataModel.getValueAt(i, COLUMN_SERVER_UUID_IDX);
+
             if (obj instanceof UUID) {
                 UUID taskUuid = (UUID) obj;
-                if (taskUuid.compareTo(uuid) == 0) {
-                    if (server.getStatus() == Server.Status.ONLINE) {
+                if (taskUuid.compareTo(serverCtx.getServerUuid()) == 0) {
+                    if (serverCtx.isOnline()) {
+                        final CommandTask task = (CommandTask) dataModel.getValueAt(i,
+                                COLUMN_TASK_INSTANCE_IDX);
+                        task.changeServerByCtx(serverCtx);
                         dataModel.setValueAt(ConnectionStatus.ONLINE.getIcon(),
                                 i,
                                 COLUMN_CONNECTION_STATUS_IDX);
@@ -465,6 +467,16 @@ public final class TaskQueueTable extends JTable implements ServerListener {
                 }
             }
         }
+    }
+
+    /**
+     * Listener function which gets invoked when the server connection state gets changed.
+     *
+     * @param serverCtx The changed server context.
+     */
+    @Override
+    public void onServerConnectionChanged(final ServerContext serverCtx) {
+        updateConnectionStateOfQueueEntries(serverCtx);
     }
 
     /**
