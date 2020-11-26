@@ -32,6 +32,7 @@ public enum IconProvider {
     QUEUE_EXEC_START(new ImageIcon(IconProvider.class.getResource("/icons/queue-exec-start.png"))),
     QUEUE_EXEC_START_16PX(new ImageIcon(IconProvider.class.getResource("/icons/queue-exec-start-16px.png"))),
     QUEUE_EXEC_STOP(new ImageIcon(IconProvider.class.getResource("/icons/queue-exec-stop.png"))),
+    QUEUE_EXPORT(new ImageIcon(IconProvider.class.getResource("/icons/queue-export.png"))),
     REFRESH(new ImageIcon(IconProvider.class.getResource("/icons/refresh.png"))),
     SERVER_ADD(new ImageIcon(IconProvider.class.getResource("/icons/server-add.png"))),
     SERVER_ADD_16PX(new ImageIcon(IconProvider.class.getResource("/icons/server-add-16px.png"))),
