@@ -393,6 +393,34 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
     }
 
     /**
+     * Exports the entire content of the current task queue table including runtime and state
+     * information as CSV-table.
+     *
+     * @param exportStr The StringBuilder instance to append the queue table contents.
+     */
+    public void exportTableContentsAsCsv(final StringBuilder exportStr) {
+        final char sep = ';'; // use semicolon as separator
+        for (final String title : COLUMN_TITLES) {
+            exportStr.append(title);
+            exportStr.append(sep);
+        }
+        exportStr.append("\n");
+
+        for (int i = 0; i < this.getRowCount(); i++) {
+            for (int j = COLUMN_TASK_ID_IDX; j <= COLUMN_DURATION_IDX; j++) {
+                exportStr.append(dataModel.getValueAt(i, j).toString());
+                exportStr.append(sep);
+            }
+            exportStr.append("\"");
+            exportStr.append(dataModel.getValueAt(i, COLUMN_RESULT_IDX).toString()
+                    .replaceAll("\\s{2,}", " "));  // remove whitespace chains in the result string
+            exportStr.append("\"");
+            exportStr.append(sep);
+            exportStr.append("\n");
+        }
+    }
+
+    /**
      * Changes the server UUID of the given task to the UUID in the corresponding ComboBox of the
      * same row. Invalid UUIDs are allowed and the connection status icon changes accordingly as
      * well as the presenter.

@@ -618,6 +618,20 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         toolBar.add(clearQueueBtn);
 
+        exportQueueBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/queue-export.png"))); // NOI18N
+        exportQueueBtn.setText("Export Queue");
+        exportQueueBtn.setToolTipText("Exports current queue data as *.csv table.");
+        exportQueueBtn.setEnabled(false);
+        exportQueueBtn.setFocusable(false);
+        exportQueueBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        exportQueueBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        exportQueueBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportQueueActionPerformed(evt);
+            }
+        });
+        toolBar.add(exportQueueBtn);
+
         getContentPane().add(toolBar, java.awt.BorderLayout.PAGE_START);
 
         fileMenu.setMnemonic('f');
@@ -709,6 +723,17 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         tasksMenu.add(clearQueueMenuItem);
+
+        exportQueueMenuItem.setMnemonic('x');
+        exportQueueMenuItem.setText("Export Queue");
+        exportQueueMenuItem.setToolTipText("Exports current queue data as *.csv table.");
+        exportQueueMenuItem.setEnabled(false);
+        exportQueueMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportQueueActionPerformed(evt);
+            }
+        });
+        tasksMenu.add(exportQueueMenuItem);
 
         executeAllMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/queue-exec-start-16px.png"))); // NOI18N
         executeAllMenuItem.setMnemonic('e');
@@ -1178,6 +1203,36 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_showOrHideTableColumnBtnActionPerformed
 
+    private void exportQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportQueueActionPerformed
+        final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu-MM-dd_HH.mm");
+        fileSaveAsChooser.setSelectedFile(new File(LocalDateTime.now().format(dtf) + ".csv"));
+        int retVal = fileSaveAsChooser.showSaveDialog(this);
+        if (retVal == JFileChooser.APPROVE_OPTION) {
+            final Path outPath = Paths.get(fileSaveAsChooser.getSelectedFile().getAbsolutePath());
+            int userDesition = JOptionPane.OK_OPTION;
+            if (Files.exists(outPath)) {
+                userDesition = JOptionPane.showConfirmDialog(this,
+                        "File \"" + outPath.getFileName() + "\" already exists in \""
+                        + outPath.getParent() + "\"!\n"
+                        + "Do you want to overwrite the existing file?",
+                        "Overwrite File",
+                        JOptionPane.INFORMATION_MESSAGE,
+                        JOptionPane.YES_NO_CANCEL_OPTION);
+            }
+
+            if (userDesition == JOptionPane.OK_OPTION) {
+                final StringBuilder sb = new StringBuilder();
+                taskQueueTable.exportTableContentsAsCsv(sb);
+                try {
+                    Files.writeString(outPath, sb);
+                    log.info("Exported file " + outPath);
+                } catch (final IOException ex) {
+                    log.error(ex.getMessage());
+                }
+            }
+        }
+    }//GEN-LAST:event_exportQueueActionPerformed
+
     /**
      * Enables all the GUI controls which actions can be applied on entries in the task queue. This
      * function is to enable user interaction after the task queue was set to a valid state (e.g.
@@ -1188,6 +1243,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
         executeAllMenuItem.setEnabled(true);
         clearQueueMenuItem.setEnabled(true);
         clearQueueBtn.setEnabled(true);
+        exportQueueMenuItem.setEnabled(true);
+        exportQueueBtn.setEnabled(true);
         saveFileBtn.setEnabled(true);
         saveMenuItem.setEnabled(true);
         saveAsMenuItem.setEnabled(true);
@@ -1203,6 +1260,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
         executeAllMenuItem.setEnabled(false);
         clearQueueMenuItem.setEnabled(false);
         clearQueueBtn.setEnabled(false);
+        exportQueueMenuItem.setEnabled(false);
+        exportQueueBtn.setEnabled(false);
         saveFileBtn.setEnabled(false);
         saveMenuItem.setEnabled(false);
         saveAsMenuItem.setEnabled(false);
@@ -1347,6 +1406,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JButton executeAllBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem executeAllMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JButton exportQueueBtn = new javax.swing.JButton();
+    private final javax.swing.JMenuItem exportQueueMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenu fileMenu = new javax.swing.JMenu();
     private final javax.swing.JFileChooser fileOpenChooser = new javax.swing.JFileChooser();
     private final javax.swing.JFileChooser fileSaveAsChooser = new javax.swing.JFileChooser();
