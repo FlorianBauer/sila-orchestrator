@@ -33,6 +33,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -104,10 +105,12 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         this.setDragEnabled(false);
         this.setDropMode(DropMode.INSERT_ROWS);
         tch = new TableColumnHider(columnModel, COLUMN_TITLES);
-        columnModel.getColumn(COLUMN_CONNECTION_STATUS_IDX).setMaxWidth(48);
-        columnModel.getColumn(COLUMN_STATE_IDX).setMaxWidth(48);
         columnModel.getColumn(COLUMN_START_TIME_IDX).setPreferredWidth(170);
         columnModel.getColumn(COLUMN_END_TIME_IDX).setPreferredWidth(170);
+
+        final TableColumn connectionStatusColumn = columnModel.getColumn(COLUMN_CONNECTION_STATUS_IDX);
+        connectionStatusColumn.setMaxWidth(48);
+        connectionStatusColumn.setCellRenderer(new ConnectionStatusCellRenderer());
 
         final TableColumn taskIdColumn = columnModel.getColumn(COLUMN_TASK_ID_IDX);
         taskIdColumn.setPreferredWidth(48);
@@ -120,6 +123,10 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         uuidComboBox.addActionListener(evt -> {
             changeTaskUuidActionPerformed();
         });
+
+        final TableColumn taskStateColumn = columnModel.getColumn(COLUMN_STATE_IDX);
+        taskStateColumn.setMaxWidth(48);
+        taskStateColumn.setCellRenderer(new TaskStateCellRenderer());
 
         final TableColumn resultColumn = columnModel.getColumn(COLUMN_RESULT_IDX);
         resultColumn.setMaxWidth(64);
@@ -400,11 +407,11 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
             final UUID serverUuid = (UUID) uuidComboBox.getSelectedItem();
             boolean wasChangeSuccess = task.changeServerByUuid(serverUuid);
             if (wasChangeSuccess) {
-                dataModel.setValueAt(ConnectionStatus.ONLINE.getIcon(),
+                dataModel.setValueAt(ConnectionStatus.ONLINE,
                         editingRow,
                         COLUMN_CONNECTION_STATUS_IDX);
             } else {
-                dataModel.setValueAt(ConnectionStatus.OFFLINE.getIcon(),
+                dataModel.setValueAt(ConnectionStatus.OFFLINE,
                         editingRow,
                         COLUMN_CONNECTION_STATUS_IDX);
             }
@@ -456,11 +463,11 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
                         final CommandTask task = (CommandTask) dataModel.getValueAt(i,
                                 COLUMN_TASK_INSTANCE_IDX);
                         task.changeServerByCtx(serverCtx);
-                        dataModel.setValueAt(ConnectionStatus.ONLINE.getIcon(),
+                        dataModel.setValueAt(ConnectionStatus.ONLINE,
                                 i,
                                 COLUMN_CONNECTION_STATUS_IDX);
                     } else {
-                        dataModel.setValueAt(ConnectionStatus.OFFLINE.getIcon(),
+                        dataModel.setValueAt(ConnectionStatus.OFFLINE,
                                 i,
                                 COLUMN_CONNECTION_STATUS_IDX);
                     }
@@ -732,6 +739,42 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
                 return expandBtn;
             }
             return EMPTY_LABEL;
+        }
+    }
+
+    private final class ConnectionStatusCellRenderer extends DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                boolean hasFocus,
+                int row,
+                int col
+        ) {
+            final ConnectionStatus status = (value != null) ? (ConnectionStatus) value : ConnectionStatus.NEUTRAL;
+            this.setIcon(status.getIcon());
+            this.setToolTipText(status.toString());
+            return this;
+        }
+    }
+
+    private final class TaskStateCellRenderer extends DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                boolean hasFocus,
+                int row,
+                int col
+        ) {
+            final TaskState state = (value != null) ? (TaskState) value : TaskState.NEUTRAL;
+            this.setIcon(state.getIcon());
+            this.setToolTipText(state.toString());
+            return this;
         }
     }
 }
