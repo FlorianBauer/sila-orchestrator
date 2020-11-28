@@ -10,10 +10,16 @@ create a automated, continuous workflow between distinct devices.
 
 ### Build the Project
 
+First, clone the repository.
+```bash
+git clone --recurse-submodules https://github.com/FlorianBauer/sila-orchestrator.git
+```
+
 To build this project, JDK 11 or higher and a moderately current Maven installation is required.
 Enter the project directory and use the following command to start the build process:
 
 ```bash
+cd path/to/sila-orchestrator/
 mvn clean install -DskipTests
 ```
 
