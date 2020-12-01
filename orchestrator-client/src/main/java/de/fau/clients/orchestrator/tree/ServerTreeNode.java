@@ -44,7 +44,7 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
 
     public String getServerLabel() {
         final Server server = serverCtx.getServer();
-        return "<html><p>" + server.getConfiguration().getName() + "</p>"
+        return "<html><p><b>" + server.getConfiguration().getName() + "</b></p>"
                 + "<p>UUID: " + server.getConfiguration().getUuid().toString() + "</p>"
                 + "<p>Addr: " + server.getHostAndPort().toString() + "</p>"
                 + "</html>";
