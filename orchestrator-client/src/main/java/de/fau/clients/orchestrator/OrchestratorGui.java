@@ -225,12 +225,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 10);
         addServerDialog.getContentPane().add(serverAddErrorScrollPane, gridBagConstraints);
 
-        serverDialogOkBtn.setMnemonic('o');
-        serverDialogOkBtn.setText("Ok");
-        serverDialogOkBtn.setPreferredSize(new java.awt.Dimension(80, 42));
-        serverDialogOkBtn.addActionListener(new java.awt.event.ActionListener() {
+        serverDialogConnectBtn.setMnemonic('o');
+        serverDialogConnectBtn.setText("Connect");
+        serverDialogConnectBtn.setPreferredSize(new java.awt.Dimension(80, 42));
+        serverDialogConnectBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                serverDialogOkBtnActionPerformed(evt);
+                serverDialogConnectBtnActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -238,7 +238,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 5, 5);
-        addServerDialog.getContentPane().add(serverDialogOkBtn, gridBagConstraints);
+        addServerDialog.getContentPane().add(serverDialogConnectBtn, gridBagConstraints);
 
         serverDialogCancelBtn.setMnemonic('c');
         serverDialogCancelBtn.setText("Cancel");
@@ -903,9 +903,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addServerDialog.dispose();
     }//GEN-LAST:event_serverDialogCancelBtnActionPerformed
 
-    private void serverDialogOkBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverDialogOkBtnActionPerformed
+    private void serverDialogConnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverDialogConnectBtnActionPerformed
         addSpecificServer();
-    }//GEN-LAST:event_serverDialogOkBtnActionPerformed
+    }//GEN-LAST:event_serverDialogConnectBtnActionPerformed
 
     /**
      * Scans the network for available SiLA-Servers which are enabled for discovery. The
@@ -1432,7 +1432,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JLabel serverAddressLabel = new javax.swing.JLabel();
     private final javax.swing.JTextField serverAddressTextField = new javax.swing.JTextField();
     private final javax.swing.JButton serverDialogCancelBtn = new javax.swing.JButton();
-    private final javax.swing.JButton serverDialogOkBtn = new javax.swing.JButton();
+    private final javax.swing.JButton serverDialogConnectBtn = new javax.swing.JButton();
     private final javax.swing.JMenu serverMenu = new javax.swing.JMenu();
     private final javax.swing.JPanel serverPanel = new javax.swing.JPanel();
     private final javax.swing.JFormattedTextField serverPortFormattedTextField = new javax.swing.JFormattedTextField();
