@@ -1168,6 +1168,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
     private void clearQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearQueueActionPerformed
         taskQueueTable.clearTable();
+        outFilePath = null;
+        wasSaved = false;
     }//GEN-LAST:event_clearQueueActionPerformed
 
     private void aboutDialogCloseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutDialogCloseBtnActionPerformed
