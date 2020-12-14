@@ -48,55 +48,66 @@ public final class ServerFeatureTree extends JTree implements Presentable, Serve
     }
 
     /**
-     * Adds the given server list and all its features to the server tree.
+     * Adds the given server and all its features to the server tree. If the server is already in
+     * the tree, no changes are done. The model has to be reloaded after this operation to take
+     * effect in the visual representation. This can be achieved with the following command:
+     * <code>((DefaultTreeModel) myTree.getModel()).reload();</code>
      *
-     * @param serverCtxList The list of servers to add to the tree.
+     * @param serverCtx The server to add to the tree.
      */
-    public void addServersToTree(@NonNull final Collection<ServerContext> serverCtxList) {
+    public void putServerToTree(@NonNull final ServerContext serverCtx) {
         final DefaultTreeModel model = (DefaultTreeModel) this.treeModel;
         final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
 
-        for (final ServerContext serverCtx : serverCtxList) {
-            final UUID serverUuid = serverCtx.getServerUuid();
-            final ServerTreeNode serverNode = new ServerTreeNode(serverCtx);
-            serverMap.put(serverUuid, serverNode);
-            serverNode.setUserObject(new TreeNodeType(serverNode));
-            rootNode.add(serverNode);
+        final UUID serverUuid = serverCtx.getServerUuid();
+        if (serverMap.containsKey(serverUuid)) {
+            return;
+        }
 
-            for (final FeatureContext featCtx : serverCtx.getFeatureCtxList()) {
-                final Feature feature = featCtx.getFeature();
-                final FeatureInfoTreeNode featureNode = new FeatureInfoTreeNode(featCtx);
-                featureNode.setUserObject(new TreeNodeType(feature, featCtx.isCoreFeature()));
-                serverNode.add(featureNode);
+        final ServerTreeNode serverNode = new ServerTreeNode(serverCtx);
+        serverMap.put(serverUuid, serverNode);
+        serverNode.setUserObject(new TreeNodeType(serverNode));
+        rootNode.add(serverNode);
 
-                final Collection<PropertyContext> propCtxList = featCtx.getPropertyCtxList();
-                if (!propCtxList.isEmpty()) {
-                    final DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode("Properties");
-                    featureNode.add(propertyNode);
-                    for (final PropertyContext propCtx : propCtxList) {
-                        final PropertyTreeNode ptn = new PropertyTreeNode(propCtx);
-                        ptn.setUserObject(new TreeNodeType(propCtx.getProperty()));
-                        propertyNode.add(ptn);
-                    }
+        for (final FeatureContext featCtx : serverCtx.getFeatureCtxList()) {
+            final Feature feature = featCtx.getFeature();
+            final FeatureInfoTreeNode featureNode = new FeatureInfoTreeNode(featCtx);
+            featureNode.setUserObject(new TreeNodeType(feature, featCtx.isCoreFeature()));
+            serverNode.add(featureNode);
+
+            final Collection<PropertyContext> propCtxList = featCtx.getPropertyCtxList();
+            if (!propCtxList.isEmpty()) {
+                final DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode("Properties");
+                featureNode.add(propertyNode);
+                for (final PropertyContext propCtx : propCtxList) {
+                    final PropertyTreeNode ptn = new PropertyTreeNode(propCtx);
+                    ptn.setUserObject(new TreeNodeType(propCtx.getProperty()));
+                    propertyNode.add(ptn);
                 }
+            }
 
-                final Collection<CommandContext> cmdCtxList = featCtx.getCommandCtxList();
-                if (!cmdCtxList.isEmpty()) {
-                    final DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
-                    featureNode.add(commandNode);
-                    for (final CommandContext cmdCtx : cmdCtxList) {
-                        final CommandTreeNode ctn = new CommandTreeNode(cmdCtx);
-                        ctn.setUserObject(new TreeNodeType(cmdCtx.getCommand()));
-                        commandNode.add(ctn);
-                    }
+            final Collection<CommandContext> cmdCtxList = featCtx.getCommandCtxList();
+            if (!cmdCtxList.isEmpty()) {
+                final DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
+                featureNode.add(commandNode);
+                for (final CommandContext cmdCtx : cmdCtxList) {
+                    final CommandTreeNode ctn = new CommandTreeNode(cmdCtx);
+                    ctn.setUserObject(new TreeNodeType(cmdCtx.getCommand()));
+                    commandNode.add(ctn);
                 }
             }
         }
-        model.reload();
-        // Expand all nodes in the tree.
-        for (int i = 0; i < this.getRowCount(); i++) {
-            this.expandRow(i);
-        }
+    }
+
+    /**
+     * Removes the given server from the server tree.
+     *
+     * @param serverCtx The context of the server to remove.
+     */
+    public void removeServerFromTree(@NonNull final ServerContext serverCtx) {
+        final ServerTreeNode stn = serverMap.remove(serverCtx.getServerUuid());
+        final DefaultTreeModel model = (DefaultTreeModel) this.treeModel;
+        model.removeNodeFromParent(stn);
     }
 
     /**

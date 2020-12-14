@@ -26,7 +26,7 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.UUID;
 import javax.swing.AbstractAction;
@@ -106,11 +106,17 @@ public class OrchestratorGui extends javax.swing.JFrame {
             return;
         }
 
-        serverFeatureTree.addServersToTree(List.of(connectionManager.getServerCtx(serverUuid)));
-        taskQueueTable.addUuidToSelectionSet(serverUuid);
-        serverAddErrorEditorPane.setText(NO_ERROR_STR);
+        serverFeatureTree.putServerToTree(connectionManager.getServerCtx(serverUuid));
+        ((DefaultTreeModel) serverFeatureTree.getModel()).reload();
         serverFeatureTree.setRootVisible(false);
         serverFeatureTree.setEnabled(true);
+        // Expand all nodes in the tree.
+        for (int i = 0; i < serverFeatureTree.getRowCount(); i++) {
+            serverFeatureTree.expandRow(i);
+        }
+
+        taskQueueTable.addUuidToSelectionSet(serverUuid);
+        serverAddErrorEditorPane.setText(NO_ERROR_STR);
         addServerDialog.setVisible(false);
         addServerDialog.dispose();
     }
@@ -915,32 +921,32 @@ public class OrchestratorGui extends javax.swing.JFrame {
      */
     private void scanNetworkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanNetworkActionPerformed
         scanServerBtn.setEnabled(false);
-        final DefaultTreeModel model = (DefaultTreeModel) serverFeatureTree.getModel();
-        final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
-        rootNode.removeAllChildren();
-        connectionManager.clear();
-
         final Runnable scan = () -> {
             connectionManager.scanNetwork();
             final Collection<ServerContext> serverList = connectionManager.getServerCtxList();
-            final boolean isTreeRootVisible;
-            if (!serverList.isEmpty()) {
-                // hide the "No Server Available" string.
-                isTreeRootVisible = false;
-                serverFeatureTree.addServersToTree(serverList);
-                for (final ServerContext serverCtx : serverList) {
-                    taskQueueTable.addUuidToSelectionSet(serverCtx.getServerUuid());
+            final Iterator<ServerContext> iter = serverList.iterator();
+            while (iter.hasNext()) {
+                final ServerContext ctx = iter.next();
+                if (ctx.isOnline()) {
+                    serverFeatureTree.putServerToTree(ctx);
+                    taskQueueTable.addUuidToSelectionSet(ctx.getServerUuid());
+                } else {
+                    serverFeatureTree.removeServerFromTree(ctx);
+                    iter.remove();
                 }
-            } else {
-                // show the "No Server Available" string.
-                isTreeRootVisible = true;
-                model.reload();
             }
+            // show the "No Server Available" string when the server list is empty
+            final boolean isTreeRootVisible = serverList.isEmpty();
 
             // update components in the GUI thread
             SwingUtilities.invokeLater(() -> {
+                ((DefaultTreeModel) serverFeatureTree.getModel()).reload();
                 serverFeatureTree.setRootVisible(isTreeRootVisible);
                 serverFeatureTree.setEnabled(!isTreeRootVisible);
+                // Expand all nodes in the tree.
+                for (int i = 0; i < serverFeatureTree.getRowCount(); i++) {
+                    serverFeatureTree.expandRow(i);
+                }
                 scanServerBtn.setEnabled(true);
             });
         };
