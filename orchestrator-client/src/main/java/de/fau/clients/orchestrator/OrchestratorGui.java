@@ -37,6 +37,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
@@ -1373,6 +1374,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
         } else if (osName.startsWith("Linux")) {
             laf = "GTK+";
         }
+
+        final ToolTipManager ttmSharedInst = ToolTipManager.sharedInstance();
+        ttmSharedInst.setInitialDelay(300);
+        ttmSharedInst.setDismissDelay(Integer.MAX_VALUE);
 
         try {
             for (final UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {

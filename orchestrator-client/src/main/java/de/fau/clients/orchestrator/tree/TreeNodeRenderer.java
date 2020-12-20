@@ -72,7 +72,7 @@ class TreeNodeRenderer extends DefaultTreeCellRenderer {
         if (desc != null) {
             final String toolTipTxt = (desc.length() < 100)
                     ? desc.strip()
-                    : "<html><p width=\"500\">" + desc + "</p></html>";
+                    : "<html><p width=\"600\">" + desc + "</p></html>";
             this.setToolTipText(toolTipTxt);
         }
 

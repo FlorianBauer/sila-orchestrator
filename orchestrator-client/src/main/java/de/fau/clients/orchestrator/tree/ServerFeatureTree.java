@@ -6,11 +6,15 @@ import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.ctx.PropertyContext;
 import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.dnd.CommandNodeTransferHandler;
+import de.fau.clients.orchestrator.utils.SilaDescriptionToolTip;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.JToolTip;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -163,5 +167,18 @@ public final class ServerFeatureTree extends JTree implements Presentable, Serve
             ftt.setDescription(serverNode.getDescription());
             this.repaint();
         }
+    }
+
+    @Override
+    public JToolTip createToolTip() {
+        return new SilaDescriptionToolTip(this);
+    }
+
+    @Override
+    public Point getToolTipLocation(MouseEvent event) {
+        // adjust the tool-tip location for better visability
+        int x = event.getX();
+        int y = event.getY();
+        return new Point(x - (x % 20) + 30, y - (y % 10) + 20);
     }
 }
