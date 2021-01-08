@@ -81,6 +81,7 @@ public class LocalExecTask extends QueueTask {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
+        log.info("Local exec returned with: " + exitValue);
         taskState = (exitValue == execTaskModel.getExpRetVal())
                 ? TaskState.FINISHED_SUCCESS
                 : TaskState.FINISHED_ERROR;
