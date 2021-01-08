@@ -1,6 +1,7 @@
 package de.fau.clients.orchestrator.tasks;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,9 +40,26 @@ public class LocalExecTaskModel extends TaskModel {
         this.exec = exec.strip();
     }
 
+    /**
+     * Gets the command and argument strings as a list for the usage within the
+     * <code>ProcessBuilder</code>. Sections enclosed in <code>"</code> or <code>'</code>-Symbols
+     * getting escaped.
+     *
+     * @return A List with the command at the first element and the corresponding arguments in the
+     * rest of the list.
+     */
     @JsonIgnore
     public List<String> getExecWithArgsAsList() {
-        return List.of(exec.split(" "));
+        final ArrayList<String> slices = new ArrayList<>();
+        final String[] escParts = exec.split("[\"\']");
+        for (int i = 0; i < escParts.length; i++) {
+            if (i % 2 == 0) {
+                slices.addAll(List.of(escParts[i].split(" ")));
+            } else {
+                slices.add(escParts[i]);
+            }
+        }
+        return slices;
     }
 
     public int getExpRetVal() {
