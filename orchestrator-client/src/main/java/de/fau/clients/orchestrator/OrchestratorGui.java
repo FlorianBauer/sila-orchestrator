@@ -62,7 +62,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private static final Image ICON_IMG = IconProvider.SILA_ORCHESTRATOR_16PX.getIcon().getImage();
     private static final String START_QUEUE_EXEC_LABEL = "Start Execute All";
     private static final String STOP_QUEUE_EXEC_LABEL = "Stop Execute All";
-    private static final String COPYRIGHT_NOTICE = "Copyright © 2020 Florian Bauer";
+    private static final String COPYRIGHT_NOTICE = "Copyright © 2020–2021 Florian Bauer";
     private static final String NO_ERROR_STR = "<No Error>";
     private static ConnectionManager connectionManager;
     private static String silaOrchestratorVersion;
