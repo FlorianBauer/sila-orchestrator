@@ -17,15 +17,26 @@ public class LocalExecTaskModel extends TaskModel {
     }
 
     public LocalExecTaskModel(final String exec) {
-        this.exec = exec;
+        setExec(exec);
     }
 
+    /**
+     * Get the string containing the command and all arguments for execution.
+     *
+     * @return The command and argument string or a empty string if not set.
+     */
     public String getExec() {
         return exec;
     }
 
+    /**
+     * Sets the command and its arguments as string for the execution. Leading and trailing
+     * whitespaces getting removed.
+     *
+     * @param exec The command and argument string.
+     */
     public void setExec(final String exec) {
-        this.exec = exec;
+        this.exec = exec.strip();
     }
 
     @JsonIgnore
