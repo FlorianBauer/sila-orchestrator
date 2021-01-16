@@ -568,8 +568,16 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         toolBar.add(saveFileBtn);
 
-        toolBarSeparator.setSeparatorSize(new java.awt.Dimension(24, 32));
+        filler1.setMaximumSize(new java.awt.Dimension(10, 32767));
+        filler1.setMinimumSize(new java.awt.Dimension(10, 0));
+        filler1.setPreferredSize(new java.awt.Dimension(10, 0));
+        toolBar.add(filler1);
         toolBar.add(toolBarSeparator);
+
+        filler2.setMaximumSize(new java.awt.Dimension(10, 32767));
+        filler2.setMinimumSize(new java.awt.Dimension(10, 0));
+        filler2.setPreferredSize(new java.awt.Dimension(10, 0));
+        toolBar.add(filler2);
 
         addDelayBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/delay-add.png"))); // NOI18N
         addDelayBtn.setText("Add Delay");
@@ -1424,6 +1432,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JMenu fileMenu = new javax.swing.JMenu();
     private final javax.swing.JFileChooser fileOpenChooser = new javax.swing.JFileChooser();
     private final javax.swing.JFileChooser fileSaveAsChooser = new javax.swing.JFileChooser();
+    private final javax.swing.Box.Filler filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 32767));
+    private final javax.swing.Box.Filler filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 32767));
     private final javax.swing.JMenu helpMenu = new javax.swing.JMenu();
     private final javax.swing.JPanel mainPanel = new javax.swing.JPanel();
     private final javax.swing.JSplitPane mainPanelSplitPane = new javax.swing.JSplitPane();
