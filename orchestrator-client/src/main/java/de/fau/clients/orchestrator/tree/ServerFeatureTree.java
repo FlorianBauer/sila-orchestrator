@@ -53,7 +53,7 @@ public final class ServerFeatureTree extends JTree implements Presentable, Serve
 
     /**
      * Adds the given server and all its features to the server tree. If the server is already in
-     * the tree, no changes are done. The model has to be reloaded after this operation to take
+     * the tree, the label gets updated. The model has to be reloaded after this operation to take
      * effect in the visual representation. This can be achieved with the following command:
      * <code>((DefaultTreeModel) myTree.getModel()).reload();</code>
      *
@@ -61,16 +61,20 @@ public final class ServerFeatureTree extends JTree implements Presentable, Serve
      */
     public void putServerToTree(@NonNull final ServerContext serverCtx) {
         final DefaultTreeModel model = (DefaultTreeModel) this.treeModel;
-        final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
-
         final UUID serverUuid = serverCtx.getServerUuid();
         if (serverMap.containsKey(serverUuid)) {
+            // Update server label in case of a name change.
+            final ServerTreeNode stn = serverMap.get(serverUuid);
+            final TreeNodeType tnt = (TreeNodeType) stn.getUserObject();
+            tnt.setDisplayName(stn.getServerLabel());
             return;
         }
 
         final ServerTreeNode serverNode = new ServerTreeNode(serverCtx);
         serverMap.put(serverUuid, serverNode);
         serverNode.setUserObject(new TreeNodeType(serverNode));
+
+        final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
         rootNode.add(serverNode);
 
         for (final FeatureContext featCtx : serverCtx.getFeatureCtxList()) {

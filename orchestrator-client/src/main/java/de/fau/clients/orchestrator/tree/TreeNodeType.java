@@ -45,7 +45,11 @@ class TreeNodeType {
         return symbol;
     }
 
-    public void setTreeRenderSymbol(TreeRenderSymbol symbol) {
+    public void setDisplayName(final String displayName) {
+        this.displayName = displayName;
+    }
+
+    public void setTreeRenderSymbol(final TreeRenderSymbol symbol) {
         this.symbol = symbol;
     }
 
