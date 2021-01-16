@@ -116,14 +116,14 @@ The *Connection* column shows with an online <img src="pictures/task-online.svg"
 
 *Task* holds the command identifier.
 
-The *Server UUID* column holds the Universal Unique IDs of the server instances for each task. The instance of each task can be re-assigned by choosing a entry from the drop-down menu in the cell. This is especially useful when a *.silo-file from an older session is loaded but the UUID of the original server changed in the meantime. Therefore the UUID can be changed to the new instance to let the tasks become online and ready for execution once again.
+The *Server UUID* column holds the Universal Unique IDs of the server instances for each task. The instance of each task can be re-assigned by choosing a entry from the drop-down menu in the cell. This is especially useful when a *.silo-file from an older session is loaded but the UUID of the original server changed in the meantime. Therefore, the UUID can be changed to the new instance to let the tasks become online and ready for execution once again.
 
 The *Policy* column holds the entries for the error handling of each task. The contents can either be `HALT_AFTER_ERROR` or `PROCEED_AFTER_ERROR`. On `HALT_AFTER_ERROR`, the entire queue execution is stopped after the affected task finished with an error. If the value in the cell is set to `PROCEED_AFTER_ERROR`, a queue run is continued even if execution of the task was not successful.
 
 The *State* column signals the current state of each task.
-- <img src="pictures/state-neutral.svg" width="24" height="24"> Neutral: The task is or was not executed (yet).
+- <img src="pictures/state-neutral.svg" width="24" height="24"> Neutral: The task is, or was not executed (yet).
 - <img src="pictures/state-running.svg" width="24" height="24"> Running: The task is currently executed.
-- <img src="pictures/state-finished-success.svg" width="24" height="24"> Finished with success: The task was run successfully.
+- <img src="pictures/state-finished-success.svg" width="24" height="24"> Finished with success: The task ran successfully.
 - <img src="pictures/state-finished-error.svg" width="24" height="24"> Finished with error: The task failed or could not be completed.
 
 The columns *Start Time* as well as *End Time* contain timestamp entries of the beginning and end of the task execution.
