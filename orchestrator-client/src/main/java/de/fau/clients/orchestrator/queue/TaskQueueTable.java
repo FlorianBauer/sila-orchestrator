@@ -661,7 +661,8 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
     private final class ResultCellEditor extends AbstractCellEditor implements TableCellEditor,
             TableCellRenderer {
 
-        private static final int POPUP_WIDTH = 300;
+        private static final int POPUP_WINDOW_WIDTH = 450;
+        private static final int POPUP_WINDOW_HEIGHT = 350;
         private final Dimension buttonDim = new Dimension(60, 24);
         private final JButton expandBtn;
         private final ButtonGroup btnGroup = new ButtonGroup();
@@ -709,7 +710,7 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
 
             editorPopup = new JPopupMenu();
             editorPopup.setAlignmentY(LEFT_ALIGNMENT);
-            editorPopup.setPreferredSize(new Dimension(POPUP_WIDTH, 256));
+            editorPopup.setPreferredSize(new Dimension(POPUP_WINDOW_WIDTH, POPUP_WINDOW_HEIGHT));
             editorPopup.add(btnBox);
             editorPopup.add(scrollPane);
 
@@ -732,7 +733,7 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
                     scrollPane.setViewportView(task.getResultPresenter());
                 }
                 editorPopup.show(expandBtn,
-                        -(POPUP_WIDTH - expandBtn.getWidth()),
+                        -(POPUP_WINDOW_WIDTH - expandBtn.getWidth()),
                         expandBtn.getHeight());
             });
         }
