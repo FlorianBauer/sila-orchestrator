@@ -317,17 +317,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         aboutDialog.getAccessibleContext().setAccessibleParent(this);
 
-        removeTaskFromQueueMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/task-remove-16px.png"))); // NOI18N
-        removeTaskFromQueueMenuItem.setMnemonic('r');
-        removeTaskFromQueueMenuItem.setText("Remove Entry");
-        removeTaskFromQueueMenuItem.setEnabled(false);
-        removeTaskFromQueueMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeTaskFromQueue(evt);
-            }
-        });
-        taskQueuePopupMenu.add(removeTaskFromQueueMenuItem);
-
         execRowEntryMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/execute-16px.png"))); // NOI18N
         execRowEntryMenuItem.setMnemonic('x');
         execRowEntryMenuItem.setText("Execute Entry");
@@ -338,6 +327,17 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         taskQueuePopupMenu.add(execRowEntryMenuItem);
+
+        removeTaskFromQueueMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/task-remove-16px.png"))); // NOI18N
+        removeTaskFromQueueMenuItem.setMnemonic('r');
+        removeTaskFromQueueMenuItem.setText("Remove Entry");
+        removeTaskFromQueueMenuItem.setEnabled(false);
+        removeTaskFromQueueMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeTaskFromQueue(evt);
+            }
+        });
+        taskQueuePopupMenu.add(removeTaskFromQueueMenuItem);
 
         fileSaveAsChooser.setDialogType(javax.swing.JFileChooser.SAVE_DIALOG);
         fileSaveAsChooser.setDialogTitle("Save");
