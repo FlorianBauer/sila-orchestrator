@@ -45,3 +45,10 @@ Usage: java -jar orchestrator-client-exec.jar [args]
  -x <silo file>, --execute <silo file>
 	 Loads and executes the provided silo file.
 ```
+
+
+### Menu Item Installer for Linux
+
+For Ubuntu/Debian based Linux distributions, a menu-item can be created. Simply execute the 
+`add-menuitem.bash` script in the `etc` directory of the project. To uninstall the system entry, run
+the corresponding `remove-menuitem.bash` script.
