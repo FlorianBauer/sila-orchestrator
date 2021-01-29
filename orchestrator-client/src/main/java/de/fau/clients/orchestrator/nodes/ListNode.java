@@ -94,7 +94,7 @@ final class ListNode extends SilaNode {
     ) {
         final SilaNode prototype = NodeFactory.createFromDataType(featCtx, type.getDataType());
         final ListNode listNode = new ListNode(featCtx, prototype, true);
-        listNode.buildNode();
+        listNode.buildNode(false);
         return listNode;
     }
 
@@ -106,7 +106,9 @@ final class ListNode extends SilaNode {
     ) {
         final SilaNode prototype = NodeFactory.createFromDataType(featCtx, type.getDataType());
         final ListNode listNode = new ListNode(featCtx, prototype, con);
+        boolean isCreatedEmpty = true;
         if (jsonNode != null) {
+            isCreatedEmpty = false;
             final boolean isEditable = listNode.isEditable;
             final Iterator<JsonNode> iter = jsonNode.elements();
             while (iter.hasNext()) {
@@ -117,7 +119,7 @@ final class ListNode extends SilaNode {
                         isEditable));
             }
         }
-        listNode.buildNode();
+        listNode.buildNode(isCreatedEmpty);
         return listNode;
     }
 
@@ -137,21 +139,25 @@ final class ListNode extends SilaNode {
                     isEditable);
         }
 
-        final Iterator<JsonNode> iter;
-        if (jsonNode.has("value")) {
-            iter = jsonNode.get("value").elements();
-        } else {
-            iter = jsonNode.elements();
-        }
+        boolean isCreatedEmpty = true;
+        if (jsonNode != null) {
+            isCreatedEmpty = false;
+            final Iterator<JsonNode> iter;
+            if (jsonNode.has("value")) {
+                iter = jsonNode.get("value").elements();
+            } else {
+                iter = jsonNode.elements();
+            }
 
-        while (iter.hasNext()) {
-            listNode.nodeList.add(NodeFactory.createFromJson(
-                    featCtx,
-                    type.getDataType(),
-                    iter.next(),
-                    isEditable));
+            while (iter.hasNext()) {
+                listNode.nodeList.add(NodeFactory.createFromJson(
+                        featCtx,
+                        type.getDataType(),
+                        iter.next(),
+                        isEditable));
+            }
         }
-        listNode.buildNode();
+        listNode.buildNode(isCreatedEmpty);
         return listNode;
     }
 
@@ -234,8 +240,10 @@ final class ListNode extends SilaNode {
     /**
      * Builds the Node by filling the list with default items and setting the states of the item
      * add/remove buttons accordingly. This function shall only be called once.
+     *
+     * @param isCreatedEmpty Determines wether this list is created empty or with an default entry.
      */
-    private void buildNode() {
+    private void buildNode(boolean isCreatedEmpty) {
         if (isEditable && prototype != null) {
             if (constraints != null) {
                 if (constraints.getElementCount() != null) {
@@ -254,7 +262,7 @@ final class ListNode extends SilaNode {
                         isRemoveBtnEnabled = (elemSize > minSize);
                     }
                     if (constraints.getMaximalElementCount() != null) {
-                        if (nodeList.isEmpty()) {
+                        if (!isCreatedEmpty && nodeList.isEmpty()) {
                             nodeList.add(prototype.cloneNode());
                         }
                         if (nodeList.size() >= constraints.getMaximalElementCount().intValue()) {
@@ -264,7 +272,7 @@ final class ListNode extends SilaNode {
                     isAddAndRemoveBtnNeeded = true;
                 }
             } else {
-                if (nodeList.isEmpty()) {
+                if (!isCreatedEmpty && nodeList.isEmpty()) {
                     nodeList.add(prototype.cloneNode());
                 }
                 isAddAndRemoveBtnNeeded = true;

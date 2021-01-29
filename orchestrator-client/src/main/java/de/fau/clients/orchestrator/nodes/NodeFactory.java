@@ -42,7 +42,7 @@ public final class NodeFactory {
     }
 
     public final static SilaNode createFromDataType(
-            @NonNull final FeatureContext featCtx,
+            final FeatureContext featCtx,
             @NonNull final DataTypeType type
     ) {
         if (type.getBasic() != null) {
@@ -84,7 +84,7 @@ public final class NodeFactory {
     public final static SilaNode createFromJson(
             final FeatureContext featCtx,
             @NonNull final DataTypeType type,
-            @NonNull final JsonNode jsonNode,
+            final JsonNode jsonNode,
             boolean isEditable
     ) {
         if (type.getBasic() != null) {
