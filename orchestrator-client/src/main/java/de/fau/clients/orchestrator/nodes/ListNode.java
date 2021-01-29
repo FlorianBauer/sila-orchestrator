@@ -235,11 +235,11 @@ final class ListNode extends SilaNode {
                         isRemoveBtnEnabled = (elemSize > minSize);
                     }
                     if (constraints.getMaximalElementCount() != null) {
-                        if (nodeList.size() >= constraints.getMaximalElementCount().intValue()) {
-                            isAddBtnEnabled = false;
-                        }
                         if (nodeList.isEmpty()) {
                             nodeList.add(prototype.cloneNode());
+                        }
+                        if (nodeList.size() >= constraints.getMaximalElementCount().intValue()) {
+                            isAddBtnEnabled = false;
                         }
                     }
                     isAddAndRemoveBtnNeeded = true;
