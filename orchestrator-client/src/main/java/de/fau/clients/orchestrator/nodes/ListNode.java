@@ -281,10 +281,14 @@ final class ListNode extends SilaNode {
                 return;
             }
         }
-        listPanel.remove(nodeList.size() - 1);
-        listPanel.revalidate();
-        listPanel.repaint();
-        nodeList.remove(nodeList.size() - 1);
+
+        final int size = nodeList.size();
+        if (size > 0) {
+            listPanel.remove(size - 1);
+            listPanel.revalidate();
+            listPanel.repaint();
+            nodeList.remove(size - 1);
+        }
 
         if (nodeList.size() <= 0) {
             // nothing to remove anymore
