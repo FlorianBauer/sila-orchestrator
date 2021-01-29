@@ -59,7 +59,7 @@ final class ListNode extends SilaNode {
     /**
      * Determines wether the values hold by the components are adjustable by the user or not.
      */
-    private final boolean isEditable;
+    private boolean isEditable;
     /**
      * Constraint object holding various constraints (e.g. min. and max. list elements).
      */
@@ -101,7 +101,7 @@ final class ListNode extends SilaNode {
     protected static ListNode createWithConstraint(
             final FeatureContext featCtx,
             @NonNull final ListType type,
-            final Constraints con,
+            @NonNull final Constraints con,
             final JsonNode jsonNode
     ) {
         final SilaNode prototype = NodeFactory.createFromDataType(featCtx, type.getDataType());
@@ -214,6 +214,24 @@ final class ListNode extends SilaNode {
     }
 
     /**
+     * Query whether this <code>ListNode</code> is editable or not.
+     *
+     * @return true if items can be added or removed, otherwise false.
+     */
+    public boolean isEditable() {
+        return isEditable;
+    }
+
+    /**
+     * Get the current element count in the list.
+     *
+     * @return The current list size.
+     */
+    public int getListSize() {
+        return nodeList.size();
+    }
+
+    /**
      * Builds the Node by filling the list with default items and setting the states of the item
      * add/remove buttons accordingly. This function shall only be called once.
      */
@@ -221,6 +239,7 @@ final class ListNode extends SilaNode {
         if (isEditable && prototype != null) {
             if (constraints != null) {
                 if (constraints.getElementCount() != null) {
+                    isEditable = false;
                     for (int i = nodeList.size(); i < constraints.getElementCount().intValue(); i++) {
                         nodeList.add(prototype.cloneNode());
                     }
