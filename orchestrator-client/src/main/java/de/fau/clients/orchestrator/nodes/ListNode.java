@@ -250,6 +250,10 @@ final class ListNode extends SilaNode {
                 }
                 isAddAndRemoveBtnNeeded = true;
             }
+
+            if (nodeList.isEmpty()) {
+                isRemoveBtnEnabled = false;
+            }
         }
     }
 
