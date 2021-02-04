@@ -597,7 +597,7 @@ class ConstraintBasicNodeFactory {
                         final int len = strField.getText().length();
                         return (len >= min.intValue() && len <= max.intValue());
                     };
-                    conditionDesc = GREATER_OR_EQUAL + min + AND_SIGN + GREATER_OR_EQUAL + max;
+                    conditionDesc = GREATER_OR_EQUAL + min + AND_SIGN + LESS_OR_EQUAL + max;
                 } else if (min != null) {
                     validator = () -> (strField.getText().length() >= min.intValue());
                     conditionDesc = GREATER_OR_EQUAL + min;
