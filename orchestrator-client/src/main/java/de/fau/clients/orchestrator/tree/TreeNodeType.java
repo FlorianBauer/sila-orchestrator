@@ -9,36 +9,37 @@ import sila_java.library.core.models.Feature.Property;
  */
 class TreeNodeType {
 
+    private static final int MAX_CHARS_PER_LINE = 100;
     private TreeRenderSymbol symbol;
-    private String description = null;
     private String displayName = "";
+    private String description = null;
 
     public TreeNodeType(final ServerTreeNode serverNode) {
-        this.symbol = TreeRenderSymbol.SERVER_ONLINE;
-        description = serverNode.getDescription();
+        symbol = TreeRenderSymbol.SERVER_ONLINE;
         displayName = serverNode.getServerLabel();
+        description = serverNode.getDescription();
     }
 
     public TreeNodeType(final Feature feat, boolean isCoreFeat) {
         if (isCoreFeat) {
-            this.symbol = TreeRenderSymbol.FEATURE_CORE;
+            symbol = TreeRenderSymbol.FEATURE_CORE;
         } else {
-            this.symbol = TreeRenderSymbol.FEATURE;
+            symbol = TreeRenderSymbol.FEATURE;
         }
-        description = feat.getDescription();
         displayName = "<html><b>" + feat.getDisplayName() + "</b></html>";
+        description = formatToolTipText(feat.getDisplayName(), feat.getDescription());
     }
 
     public TreeNodeType(final Command cmd) {
-        this.symbol = TreeRenderSymbol.COMMAND;
-        description = cmd.getDescription();
+        symbol = TreeRenderSymbol.COMMAND;
         displayName = cmd.getDisplayName();
+        description = formatToolTipText(displayName, cmd.getDescription());
     }
 
     public TreeNodeType(final Property prop) {
-        this.symbol = TreeRenderSymbol.PROPERTY;
-        description = prop.getDescription();
+        symbol = TreeRenderSymbol.PROPERTY;
         displayName = prop.getDisplayName();
+        description = formatToolTipText(displayName, prop.getDescription());
     }
 
     public TreeRenderSymbol getTreeRenderSymbol() {
@@ -64,5 +65,22 @@ class TreeNodeType {
     @Override
     public String toString() {
         return displayName;
+    }
+
+    /**
+     * Formats the given text for display in a tool-tip box.
+     *
+     * @param headline The headline of the tool-tip (must not be null).
+     * @param text The description text for the tool-tip.
+     * @return The tool-tip with applied HTML formatting or null if no text was given.
+     */
+    static private String formatToolTipText(final String headline, final String text) {
+        if (text != null) {
+            final String widthStr = (text.length() > MAX_CHARS_PER_LINE) ? " width=\"600\"" : "";
+            return "<html><p" + widthStr + ">"
+                    + "<b>" + headline + "</b><br>"
+                    + text.strip() + "</p></html>";
+        }
+        return null;
     }
 }
