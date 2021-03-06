@@ -684,7 +684,7 @@ class ConstraintBasicNodeFactory {
             conditionDesc = "Xml";
         } else if (schemaType.equalsIgnoreCase("Json")) {
             // TODO: Implement proper JSON schema handling by URL and Inline.
-            validator = () -> (ValidatorUtils.isJsonValid(editorPane.getText()));
+            validator = () -> (false /*ValidatorUtils.isJsonValid(editorPane.getText())*/);
             conditionDesc = "Json";
         } else {
             validator = () -> (false);
