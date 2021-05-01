@@ -48,7 +48,7 @@ Also, the concrete syntax of the command depends on the operating system of the 
 Run a bash-command:
 `/bin/bash -c "sleep 5"`, expected return value `0`.  
 Run a bash-command inside a terminal* (depending on the Linux distro, the terminal application can also be `mate-terminal`, `xfce4-terminal`, `xterm`, etc.):
-``gnome-terminal -- bash -c "echo This bash-command runs on `hostname`.; sleep 5"``, expected return value `255`.
+``gnome-terminal -- bash -c "echo This bash-command runs on `hostname`.; sleep 5"``, expected return value `0`.
 
 **Some examples on Windows:**  
 Open the calculator:
