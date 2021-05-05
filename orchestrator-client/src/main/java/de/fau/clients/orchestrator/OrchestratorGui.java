@@ -1340,6 +1340,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
                         final StringBuilder outMsg = new StringBuilder();
                         final TaskQueueData tcd = TaskQueueData.createFromFile(siloFile, outMsg);
                         if (tcd != null) {
+                            /* The network scan is neccesary since only the UUID is given in 
+                             * the *.silo-file and there is no way to manually connect to an server 
+                             * by the CLI until now. (2021-05-05 florian.bauer.dev@gmail.com)
+                             */
+                            connectionManager.scanNetwork();
                             TaskQueueTable tqt = new TaskQueueTable();
                             tcd.importToTaskQueue(tqt);
                             for (int j = 0; j < tqt.getRowCount(); j++) {
