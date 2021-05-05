@@ -730,7 +730,8 @@ class ConstraintBasicNodeFactory {
     }
 
     /**
-     * Creates a <code>ConstraintBasicNode</code> of the type <code>BasicType.TIME</code>.
+     * Creates a <code>ConstraintBasicNode</code> of the type <code>BasicType.TIME</code>. The
+     * constraining values (e.g. min/max-times) are always displayed in local time.
      *
      * @param constraints The applied time constraints.
      * @param timeValue The time to initialize the node with.
@@ -797,9 +798,7 @@ class ConstraintBasicNodeFactory {
                 conditionDescr = INVALID_CONSTRAINT;
             }
 
-            final OffsetTime initTime = timeValue
-                    .truncatedTo(ChronoUnit.SECONDS)
-                    .withOffsetSameInstant(DateTimeParser.LOCAL_OFFSET);
+            final OffsetTime initTime = timeValue.truncatedTo(ChronoUnit.SECONDS);
             final JSpinner timeSpinner = new JSpinner();
             timeSpinner.setModel(ConstraintSpinnerModelFactory
                     .createRangeConstrainedTimeModel(initTime, constraints));

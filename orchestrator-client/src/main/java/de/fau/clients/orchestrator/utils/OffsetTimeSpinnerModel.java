@@ -1,5 +1,7 @@
 package de.fau.clients.orchestrator.utils;
 
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -14,11 +16,16 @@ import lombok.NonNull;
 @SuppressWarnings("serial")
 public class OffsetTimeSpinnerModel extends AbstractSpinnerModel {
 
+    /**
+     * A base-date and the conversion to an OffsetDateTime is necessary, since the zone-offset may
+     * cause a day-overflow resulting in a false handling of the min/max-bounds.
+     */
+    private static final LocalDate BASE_DATE = LocalDate.of(2000, 1, 1);
     private final ZoneOffset offset;
-    private final OffsetTime start;
-    private final OffsetTime end;
+    private final OffsetDateTime start;
+    private final OffsetDateTime end;
     private final ChronoUnit step;
-    private OffsetTime currentValue;
+    private OffsetDateTime currentValue;
 
     /**
      * Constructor.
@@ -39,17 +46,18 @@ public class OffsetTimeSpinnerModel extends AbstractSpinnerModel {
             final OffsetTime end,
             final ChronoUnit step
     ) {
-        this.currentValue = initValue;
+        // Adding a Date is neccesary to avoid day overflows when converting zone offsets.
+        final OffsetDateTime initOdt = initValue.atDate(BASE_DATE);
+        this.currentValue = initValue.atDate(BASE_DATE);
         this.offset = initValue.getOffset();
-        this.start = (start != null) ? start : OffsetTime.MIN;
-        this.end = (end != null) ? end : OffsetTime.MAX;
+        this.start = (start != null) ? start.atDate(BASE_DATE) : OffsetTime.MIN.atDate(BASE_DATE);
+        this.end = (end != null) ? end.atDate(BASE_DATE) : OffsetTime.MAX.atDate(BASE_DATE);
         this.step = (step != null) ? step : ChronoUnit.MINUTES;
-
-        if (initValue.compareTo(this.start) < 0) {
+        if (initOdt.isBefore(this.start)) {
             this.currentValue = this.start.withOffsetSameInstant(offset);
         }
 
-        if (initValue.compareTo(this.end) > 0) {
+        if (initOdt.isAfter(this.end)) {
             this.currentValue = this.end.withOffsetSameInstant(offset);
         }
     }
@@ -57,7 +65,7 @@ public class OffsetTimeSpinnerModel extends AbstractSpinnerModel {
     @Override
     public void setValue(Object value) {
         if (value != null) {
-            final OffsetTime tmp = (OffsetTime) value;
+            final OffsetDateTime tmp = ((OffsetTime) value).atDate(BASE_DATE).withOffsetSameInstant(offset);
             if (tmp.compareTo(start) >= 0 && tmp.compareTo(end) <= 0) {
                 currentValue = tmp;
             }
@@ -68,26 +76,26 @@ public class OffsetTimeSpinnerModel extends AbstractSpinnerModel {
 
     @Override
     public Object getValue() {
-        return currentValue.withOffsetSameInstant(offset);
+        return currentValue.toOffsetTime();
     }
 
     @Override
     public Object getNextValue() {
-        final OffsetTime next = currentValue.plus(1, step);
+        final OffsetDateTime next = currentValue.plus(1, step);
         if (next.isAfter(end)) {
             return null;
         } else {
-            return next.withOffsetSameInstant(offset);
+            return next.toOffsetTime();
         }
     }
 
     @Override
     public Object getPreviousValue() {
-        final OffsetTime previous = currentValue.minus(1, step);
+        final OffsetDateTime previous = currentValue.minus(1, step);
         if (previous.isBefore(start)) {
             return null;
         } else {
-            return previous.withOffsetSameInstant(offset);
+            return previous.toOffsetTime();
         }
     }
 }
