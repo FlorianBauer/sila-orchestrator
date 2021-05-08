@@ -4,12 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.fau.clients.orchestrator.ctx.FeatureContext;
 import static de.fau.clients.orchestrator.nodes.SilaNode.jsonMapper;
+import de.fau.clients.orchestrator.utils.IconProvider;
+import java.awt.Dimension;
+import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JToggleButton;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.SiLAElement;
@@ -90,15 +94,56 @@ final class CompositNode extends SilaNode {
         if (elemCount >= 2) {
             structBox.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createEtchedBorder(),
-                    BorderFactory.createEmptyBorder(4, 4, 0, 4)));
+                    BorderFactory.createEmptyBorder(0, 4, 0, 4)));
         }
 
         for (int i = 0; i < elemCount; i++) {
             final Box vBox = Box.createVerticalBox();
             vBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             vBox.setAlignmentY(JComponent.TOP_ALIGNMENT);
-            vBox.add(new JLabel(elements.get(i).getDisplayName()));
-            SilaNode node = children.get(i);
+
+            final Box hBox = Box.createHorizontalBox();
+            hBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            hBox.setAlignmentY(JComponent.TOP_ALIGNMENT);
+            hBox.setMinimumSize(new Dimension(10, 20));
+            hBox.setMaximumSize(new Dimension(Short.MAX_VALUE, 20));
+
+            final SiLAElement elem = elements.get(i);
+            final JLabel dispLabel = new JLabel(elem.getDisplayName());
+            dispLabel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            dispLabel.setAlignmentY(JComponent.BOTTOM_ALIGNMENT);
+
+            final JLabel infoLabel = new JLabel("(" + elem.getDescription().strip() + ")");
+            infoLabel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            infoLabel.setAlignmentY(JComponent.BOTTOM_ALIGNMENT);
+            infoLabel.setVisible(false);
+
+            final JToggleButton infoBtn = new JToggleButton(IconProvider.INFO_16PX.getIcon());
+            infoBtn.setMaximumSize(new Dimension(18, 18));
+            infoBtn.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            infoBtn.setAlignmentY(JComponent.BOTTOM_ALIGNMENT);
+            infoBtn.setContentAreaFilled(false);
+            infoBtn.setFocusable(false);
+            infoBtn.setToolTipText("<html><p style=\"font-size:15pt\">"
+                    + elem.getDescription()
+                    + "</p></html>");
+            infoBtn.addItemListener((final ItemEvent evt) -> {
+                if (evt.getStateChange() == ItemEvent.SELECTED) {
+                    infoLabel.setVisible(true);
+                } else if (evt.getStateChange() == ItemEvent.DESELECTED) {
+                    infoLabel.setVisible(false);
+                }
+            });
+
+            hBox.add(dispLabel);
+            hBox.add(Box.createHorizontalStrut(5));
+            hBox.add(infoBtn);
+            hBox.add(Box.createHorizontalStrut(5));
+            hBox.add(infoLabel);
+            hBox.add(Box.createHorizontalGlue());
+            vBox.add(hBox);
+
+            final SilaNode node = children.get(i);
             if (node == null) {
                 continue;
             }
@@ -107,7 +152,7 @@ final class CompositNode extends SilaNode {
             comp.setAlignmentY(JComponent.TOP_ALIGNMENT);
             vBox.add(comp);
             structBox.add(vBox);
-            structBox.add(Box.createVerticalStrut(10));
+            structBox.add(Box.createVerticalStrut(5));
         }
         return structBox;
     }

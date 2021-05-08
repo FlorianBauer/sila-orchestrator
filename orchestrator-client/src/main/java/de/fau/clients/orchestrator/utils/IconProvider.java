@@ -20,6 +20,7 @@ public enum IconProvider {
     EXEC_ADD(new ImageIcon(IconProvider.class.getResource("/icons/exec-add.png"))),
     EXECUTE(new ImageIcon(IconProvider.class.getResource("/icons/execute.png"))),
     EXECUTE_16PX(new ImageIcon(IconProvider.class.getResource("/icons/execute-16px.png"))),
+    INFO_16PX(new ImageIcon(IconProvider.class.getResource("/icons/info-16px.png"))),
     LIST_ADD(new ImageIcon(IconProvider.class.getResource("/icons/list-add.png"))),
     LIST_REMOVE(new ImageIcon(IconProvider.class.getResource("/icons/list-remove.png"))),
     MOVE_DOWN(new ImageIcon(IconProvider.class.getResource("/icons/move-down.png"))),
