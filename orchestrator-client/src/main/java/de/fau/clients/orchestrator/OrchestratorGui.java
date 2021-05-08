@@ -129,6 +129,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         initComponents();
         initTaskQueueTable();
         initServerTree();
+        scanServerBtn.grabFocus();
     }
 
     /**
