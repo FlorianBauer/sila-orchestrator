@@ -80,7 +80,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             + "</p></html>";
     private final TaskQueueTable taskQueueTable = new TaskQueueTable();
     private final ServerFeatureTree serverFeatureTree = new ServerFeatureTree();
-    private boolean isOnExecution = false;
+    private volatile boolean isOnExecution = false;
     private boolean wasSaved = false;
     private Path outFilePath = null;
     private Thread currentlyExecutedTaskThread = null;
