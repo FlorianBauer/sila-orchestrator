@@ -191,7 +191,15 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
             // abort editing before removing the row
             getCellEditor().stopCellEditing();
         }
-        taskIdSet.remove((int) dataModel.getValueAt(rowIdx, COLUMN_TASK_ID_IDX));
+
+        final int taskId;
+        try {
+            taskId = Integer.parseInt(dataModel.getValueAt(rowIdx, COLUMN_TASK_ID_IDX).toString());
+        } catch (final NumberFormatException ex) {
+            System.err.println("Failed to parse task ID. Can not delete entry.");
+            return;
+        }
+        taskIdSet.remove(taskId);
         ((TaskQueueTableModel) dataModel).removeRow(rowIdx);
     }
 
