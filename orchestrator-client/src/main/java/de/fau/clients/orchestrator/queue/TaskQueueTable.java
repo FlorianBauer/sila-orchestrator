@@ -58,7 +58,7 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
 
     public static final JLabel EMPTY_LABEL = new JLabel(" - ");
     private static final int INIT_TASK_ID = 1;
-    private static int taskId = INIT_TASK_ID;
+    private static int genericTaskId = INIT_TASK_ID;
     private final TableColumnHider tch;
     private final JPopupMenu taskQueueHeaderPopupMenu = new JPopupMenu();
     private final JCheckBoxMenuItem[] headerItems = new JCheckBoxMenuItem[COLUMN_TITLES.length];
@@ -182,7 +182,7 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
             getCellEditor().stopCellEditing();
         }
         ((TaskQueueTableModel) dataModel).setRowCount(0);
-        taskId = INIT_TASK_ID;
+        genericTaskId = INIT_TASK_ID;
         taskIdSet.clear();
     }
 
@@ -453,11 +453,11 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
     }
 
     private int generateAndRegisterTaskId() {
-        while (taskIdSet.contains(taskId)) {
-            taskId++;
+        while (taskIdSet.contains(genericTaskId)) {
+            genericTaskId++;
         }
-        taskIdSet.add(taskId);
-        return taskId;
+        taskIdSet.add(genericTaskId);
+        return genericTaskId;
     }
 
     /**
