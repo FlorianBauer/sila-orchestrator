@@ -9,40 +9,26 @@ import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.UUID;
-import javax.swing.AbstractCellEditor;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DropMode;
-import javax.swing.InputVerifier;
-import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Table component responsible for managing queue-tasks with all their properties.
  */
-@Slf4j
 @SuppressWarnings("serial")
 public final class TaskQueueTable extends JTable implements ConnectionListener {
 
@@ -70,7 +56,7 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         "Result"
     };
 
-    private static final JLabel EMPTY_LABEL = new JLabel(" - ");
+    public static final JLabel EMPTY_LABEL = new JLabel(" - ");
     private static final int INIT_TASK_ID = 1;
     private static int taskId = INIT_TASK_ID;
     private final TableColumnHider tch;
@@ -115,7 +101,7 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         final TableColumn taskIdColumn = columnModel.getColumn(COLUMN_TASK_ID_IDX);
         taskIdColumn.setPreferredWidth(48);
         taskIdColumn.setMaxWidth(64);
-        taskIdColumn.setCellEditor(new TaskIdCellEditor(new TaskIdVerifier()));
+        taskIdColumn.setCellEditor(new TaskIdCellEditor(taskIdSet));
 
         final TableColumn uuidColumn = columnModel.getColumn(COLUMN_SERVER_UUID_IDX);
         uuidColumn.setCellRenderer(new UuidCellRenderer());
@@ -131,8 +117,8 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         final TableColumn resultColumn = columnModel.getColumn(COLUMN_RESULT_IDX);
         resultColumn.setMaxWidth(64);
         // Set the editor and renderer for the result cell to view the returned response.
-        resultColumn.setCellRenderer(new ResultCellEditor());
-        resultColumn.setCellEditor(new ResultCellEditor());
+        resultColumn.setCellRenderer(new ResponseResultCellEditor(this));
+        resultColumn.setCellEditor(new ResponseResultCellEditor(this));
 
         final TableColumn policyColumn = columnModel.getColumn(COLUMN_EXEC_POLICY_IDX);
         policyColumn.setCellRenderer(new ExecPolicyCellRenderer());
@@ -515,94 +501,6 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
     }
 
     /**
-     * Custom cell editor for task IDs.
-     */
-    private class TaskIdCellEditor extends DefaultCellEditor {
-
-        /**
-         * Verifier for ID uniqueness.
-         */
-        final InputVerifier verifier;
-        /**
-         * Initial ID before the editing process has begun.
-         */
-        String oldTaskId;
-
-        public TaskIdCellEditor(InputVerifier verifier) {
-            super(new JTextField());
-            this.verifier = verifier;
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(
-                JTable table,
-                Object value,
-                boolean isSelected,
-                int row,
-                int column
-        ) {
-            final JTextField tf = (JTextField) super.getTableCellEditorComponent(
-                    table,
-                    value,
-                    isSelected,
-                    row,
-                    column);
-            if (value != null) {
-                oldTaskId = value.toString();
-                tf.setText(oldTaskId);
-            }
-            return tf;
-        }
-
-        @Override
-        public boolean stopCellEditing() {
-            String value = getCellEditorValue().toString();
-            if (value.isBlank() || value.equals(oldTaskId)) {
-                cancelCellEditing();
-                return true;
-            }
-
-            final boolean isValid = verifier.verify(editorComponent) && super.stopCellEditing();
-            if (isValid) {
-                try {
-                    taskIdSet.add(Integer.parseInt(value));
-                    taskIdSet.remove(Integer.parseInt(oldTaskId));
-                } catch (final NumberFormatException ex) {
-                    cancelCellEditing();
-                }
-            } else {
-                // Don't accept the value and leave the cell editor.
-                cancelCellEditing();
-            }
-            return true;
-        }
-    }
-
-    /**
-     * Verifier to check if the edited task ID from the user is unique.
-     */
-    private class TaskIdVerifier extends InputVerifier {
-
-        @Override
-        public boolean verify(JComponent input) {
-            final String text = ((JTextField) input).getText();
-            int newTaskId;
-            try {
-                newTaskId = Integer.parseInt(text);
-            } catch (final NumberFormatException ex) {
-                return false;
-            }
-
-            if (newTaskId > 0) {
-                if (!taskIdSet.contains(newTaskId)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
-    /**
      * A custom cell renderer for displaying UUID objects in the table. This renderer shows the UUID
      * inside a <code>JComboBox</code> for the sole purpose of signaling the user a editable cell.
      */
@@ -650,122 +548,6 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
             if (value != null) {
                 comboBox.getModel().setSelectedItem(value.toString());
                 return comboBox;
-            }
-            return EMPTY_LABEL;
-        }
-    }
-
-    /**
-     * Nested class to render/view the latest results provided by the command response.
-     */
-    private final class ResultCellEditor extends AbstractCellEditor implements TableCellEditor,
-            TableCellRenderer {
-
-        private static final int POPUP_WINDOW_WIDTH = 450;
-        private static final int POPUP_WINDOW_HEIGHT = 350;
-        private final Dimension buttonDim = new Dimension(60, 24);
-        private final JButton expandBtn;
-        private final ButtonGroup btnGroup = new ButtonGroup();
-        private final JToggleButton rawViewBtn;
-        private final JToggleButton nodeViewBtn;
-        private final JPopupMenu editorPopup;
-        private final JEditorPane editorPane;
-        private Object value;
-
-        public ResultCellEditor() {
-            editorPane = new JEditorPane();
-            editorPane.setEditable(false);
-
-            final JScrollPane scrollPane = new JScrollPane(editorPane);
-            scrollPane.setAlignmentY(LEFT_ALIGNMENT);
-
-            rawViewBtn = new JToggleButton("Raw");
-            rawViewBtn.setAlignmentY(RIGHT_ALIGNMENT);
-            rawViewBtn.setPreferredSize(buttonDim);
-            rawViewBtn.addActionListener((final ActionEvent evt) -> {
-                final QueueTask task = getTaskFromRow(editingRow);
-                editorPane.setText(task.getLastExecResult());
-                scrollPane.setViewportView(editorPane);
-            });
-            nodeViewBtn = new JToggleButton("View");
-            nodeViewBtn.setAlignmentY(RIGHT_ALIGNMENT);
-            nodeViewBtn.setPreferredSize(buttonDim);
-            nodeViewBtn.addActionListener((final ActionEvent evt) -> {
-                final QueueTask queueTask = getTaskFromRow(editingRow);
-                if (!(queueTask instanceof CommandTask)) {
-                    return;
-                }
-                final CommandTask task = (CommandTask) queueTask;
-                scrollPane.setViewportView(task.getResultPresenter());
-            });
-
-            btnGroup.add(rawViewBtn);
-            btnGroup.add(nodeViewBtn);
-
-            final Box btnBox = Box.createHorizontalBox();
-            btnBox.setAlignmentY(RIGHT_ALIGNMENT);
-            btnBox.add(Box.createHorizontalGlue());
-            btnBox.add(rawViewBtn);
-            btnBox.add(nodeViewBtn);
-
-            editorPopup = new JPopupMenu();
-            editorPopup.setAlignmentY(LEFT_ALIGNMENT);
-            editorPopup.setPreferredSize(new Dimension(POPUP_WINDOW_WIDTH, POPUP_WINDOW_HEIGHT));
-            editorPopup.add(btnBox);
-            editorPopup.add(scrollPane);
-
-            expandBtn = new JButton("[...]");
-            expandBtn.setAlignmentY(RIGHT_ALIGNMENT);
-            expandBtn.addActionListener((final ActionEvent evt) -> {
-                final QueueTask queueTask = getTaskFromRow(editingRow);
-                if (!(queueTask instanceof CommandTask)) {
-                    return;
-                }
-                final CommandTask task = (CommandTask) queueTask;
-                if (task.getState() != TaskState.FINISHED_SUCCESS) {
-                    rawViewBtn.setSelected(true);
-                    nodeViewBtn.setEnabled(false);
-                    editorPane.setText(task.getLastExecResult());
-                    scrollPane.setViewportView(editorPane);
-                } else {
-                    nodeViewBtn.setEnabled(true);
-                    nodeViewBtn.setSelected(true);
-                    scrollPane.setViewportView(task.getResultPresenter());
-                }
-                editorPopup.show(expandBtn,
-                        -(POPUP_WINDOW_WIDTH - expandBtn.getWidth()),
-                        expandBtn.getHeight());
-            });
-        }
-
-        @Override
-        public Object getCellEditorValue() {
-            return value;
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(
-                JTable table,
-                Object value,
-                boolean isSelected,
-                int row,
-                int column
-        ) {
-            this.value = value;
-            return expandBtn;
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(
-                JTable table,
-                Object value,
-                boolean isSelected,
-                boolean hasFocus,
-                int row,
-                int column
-        ) {
-            if (!value.toString().isEmpty()) {
-                return expandBtn;
             }
             return EMPTY_LABEL;
         }
