@@ -687,7 +687,7 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
                 editorPane.setText(task.getLastExecResult());
                 scrollPane.setViewportView(editorPane);
             });
-            nodeViewBtn = new JToggleButton("Node");
+            nodeViewBtn = new JToggleButton("View");
             nodeViewBtn.setAlignmentY(RIGHT_ALIGNMENT);
             nodeViewBtn.setPreferredSize(buttonDim);
             nodeViewBtn.addActionListener((final ActionEvent evt) -> {
