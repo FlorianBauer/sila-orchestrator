@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.fau.clients.orchestrator.ctx.FeatureContext;
 import static de.fau.clients.orchestrator.nodes.SilaNode.jsonMapper;
 import de.fau.clients.orchestrator.utils.IconProvider;
+import de.fau.clients.orchestrator.utils.SilaDescriptionToolTip;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
@@ -113,7 +114,10 @@ final class CompositNode extends SilaNode {
             dispLabel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             dispLabel.setAlignmentY(JComponent.BOTTOM_ALIGNMENT);
 
-            final JLabel infoLabel = new JLabel("(" + elem.getDescription().strip() + ")");
+            final String infoDesc = elem.getDescription();
+            final JLabel infoLabel = new JLabel("<html><p width=\"800\">"
+                    + "– " + infoDesc
+                    + "</p></html>");
             infoLabel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             infoLabel.setAlignmentY(JComponent.BOTTOM_ALIGNMENT);
             infoLabel.setVisible(false);
@@ -124,9 +128,7 @@ final class CompositNode extends SilaNode {
             infoBtn.setAlignmentY(JComponent.BOTTOM_ALIGNMENT);
             infoBtn.setContentAreaFilled(false);
             infoBtn.setFocusable(false);
-            infoBtn.setToolTipText("<html><p style=\"font-size:15pt\">"
-                    + elem.getDescription()
-                    + "</p></html>");
+            infoBtn.setToolTipText(SilaDescriptionToolTip.formatToolTipString(infoDesc));
             infoBtn.addItemListener((final ItemEvent evt) -> {
                 if (evt.getStateChange() == ItemEvent.SELECTED) {
                     infoLabel.setVisible(true);
