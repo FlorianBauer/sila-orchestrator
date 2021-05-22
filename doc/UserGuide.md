@@ -130,7 +130,7 @@ The columns *Start Time* as well as *End Time* contain timestamp entries of the 
 
 *Duration* shows the relative time a task took to finish.
 
-The *Result* cells hold the outcome of each task execution. This can be an empty result `-`, an error message, or a SiLA element nested in the cell indicated by `[...]`. Note: Empty braces `{}` are also considered valid result values.
+The *Result* cells hold the outcome of each task execution. This can be an empty result `-`, an error message, or a SiLA element nested in the cell indicated by `[...]`.
 
 All columns in the table can be rearranged by dragging the corresponding column header into the desired position.
 
