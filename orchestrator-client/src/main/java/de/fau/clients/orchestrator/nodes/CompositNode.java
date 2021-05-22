@@ -16,14 +16,12 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JToggleButton;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.SiLAElement;
 
 /**
  * A <code>CompositNode</code> is a <code>SilaNode</code> which holds one or more child nodes. In
  * contrast to a <code>ListNode</code>, the child nodes can consist of different types.
  */
-@Slf4j
 final class CompositNode extends SilaNode {
 
     private final FeatureContext featCtx;
