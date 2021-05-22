@@ -121,6 +121,9 @@ final class ResponseResultCellEditor extends AbstractCellEditor implements Table
             int column
     ) {
         this.value = value;
+        if (isResultValueEmpty(this.value)) {
+            return TaskQueueTable.EMPTY_LABEL;
+        }
         return expandBtn;
     }
 
@@ -133,9 +136,32 @@ final class ResponseResultCellEditor extends AbstractCellEditor implements Table
             int row,
             int column
     ) {
-        if (!value.toString().isEmpty()) {
-            return expandBtn;
+        if (isResultValueEmpty(value)) {
+            return TaskQueueTable.EMPTY_LABEL;
         }
-        return TaskQueueTable.EMPTY_LABEL;
+        return expandBtn;
+    }
+
+    /**
+     * Checks whether an result value is empty or not.
+     *
+     * @param resValue The string-object that may contain a JSON message.
+     * @return true on empty strings and empty JSON messages (e.g. `{ }`), otherwise false.
+     */
+    static boolean isResultValueEmpty(final Object resValue) {
+        if (resValue == null) {
+            return true;
+        }
+
+        final String resStr = resValue.toString().strip();
+        if (resStr.isEmpty()) {
+            return true;
+        }
+
+        // Check against empty JSON messages (e.g. `{ }`).
+        if (resStr.matches("^\\{\\s*\\}$")) {
+            return true;
+        }
+        return false;
     }
 }
