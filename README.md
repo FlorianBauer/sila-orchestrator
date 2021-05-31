@@ -16,7 +16,7 @@ First, clone the repository.
 git clone --recurse-submodules https://github.com/FlorianBauer/sila-orchestrator.git
 ```
 
-To build this project, a JavaSE/JDK in version >= 11 and <= 15, as well as a moderately current 
+To build this project, a JavaSE/JDK in version >= 11, as well as a moderately current 
 Maven installation is required. Enter the project directory and use the following command to start 
 the build process:
 
