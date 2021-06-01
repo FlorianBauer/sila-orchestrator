@@ -26,16 +26,16 @@ mvn clean install -DskipTests
 ```
 
 After that, the resulting `*.jar`-file is located in the `orchestrator-client/target`-directory as 
-`orchestrator-client-exec.jar`.
+`sila-orchestrator.jar`.
 
 
 ### Usage
 
-Starting the sila-orchestrator GUI client: `java -jar orchestrator-client-exec.jar`.
+Starting the sila-orchestrator GUI client: `java -jar sila-orchestrator.jar`.
 
 Using the client within the command line:
 ```
-Usage: java -jar orchestrator-client-exec.jar [args]
+Usage: java -jar sila-orchestrator.jar [args]
  -h, --help
 	 Print this help message.
  -v, --version

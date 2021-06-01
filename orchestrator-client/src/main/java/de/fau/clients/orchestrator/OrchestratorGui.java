@@ -1315,7 +1315,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             for (int i = 0; i < args.length; i++) {
                 final String arg = args[i];
                 if (arg.equalsIgnoreCase("-h") || arg.equalsIgnoreCase("--help")) {
-                    System.out.println("Usage: java -jar orchestrator-client-exec.jar [args]"
+                    System.out.println("Usage: java -jar sila-orchestrator.jar [args]"
                             + "\n -h, --help"
                             + "\n\t Print this help message."
                             + "\n -v, --version"
