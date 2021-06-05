@@ -1,5 +1,9 @@
 package de.fau.clients.orchestrator;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import de.fau.clients.orchestrator.cli.CommandlineArguments;
+import de.fau.clients.orchestrator.cli.CommandlineControls;
 import de.fau.clients.orchestrator.ctx.ConnectionManager;
 import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.dnd.TaskExportTransferHandler;
@@ -50,6 +54,7 @@ import javax.swing.text.NumberFormatter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
 
 /**
  * The main GUI window and execution entry point of the client. It is advised to use the NetBeans
@@ -59,22 +64,20 @@ import lombok.extern.slf4j.Slf4j;
 @SuppressWarnings("serial")
 public class OrchestratorGui extends javax.swing.JFrame {
 
+    public static final String COPYRIGHT_NOTICE = "Copyright © 2020–2021 Florian Bauer";
     private static final Image ICON_IMG = IconProvider.SILA_ORCHESTRATOR_16PX.getIcon().getImage();
     private static final String START_QUEUE_EXEC_LABEL = "Start Execute All";
     private static final String STOP_QUEUE_EXEC_LABEL = "Stop Execute All";
-    private static final String COPYRIGHT_NOTICE = "Copyright © 2020–2021 Florian Bauer";
     private static final String NO_ERROR_STR = "<No Error>";
+    private static final Properties gitProps = new Properties();
     private static ConnectionManager connectionManager;
-    private static String silaOrchestratorVersion;
-    private static String gitCommit;
-    private static String gitCommitTimestamp;
-    private static String gitRepositoryUrl;
     private final String aboutInfo = "<html>"
-            + "<p>Version: <b>" + silaOrchestratorVersion + "</b></p>"
+            + "<p>Version: <b>" + gitProps.getProperty("git.build.version")
+            + "-" + gitProps.getProperty("git.commit.id.abbrev") + "</b></p>"
             + "<p>"
-            + "Git Commit: " + gitCommit + "<br>"
-            + "Timestamp: " + gitCommitTimestamp + "<br>"
-            + "Repository: " + gitRepositoryUrl + "<br>"
+            + "Git Commit: " + gitProps.getProperty("git.commit.id") + "<br>"
+            + "Timestamp: " + gitProps.getProperty("git.commit.time") + "<br>"
+            + "Repository: " + gitProps.getProperty("git.remote.origin.url") + "<br>"
             + "E-Mail: florian.bauer.dev@gmail.com<br>"
             + "License: Apache-2.0<br>"
             + "</p></html>";
@@ -357,6 +360,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 formWindowClosing(evt);
             }
         });
+        getContentPane().setLayout(new java.awt.BorderLayout());
 
         serverSplitPane.setContinuousLayout(true);
 
@@ -1291,94 +1295,44 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }
 
     /**
-     * @param args the command line arguments
+     * The program entry function which determines the operation mode (GUI or CLI). If the program
+     * gets started without any arguments, the Graphical User Interface (GUI) is invoked, otherwise
+     * the program operation happens solely within the Command-line Interface (CLI) aka the console.
+     *
+     * @param args The command-line arguments.
+     *
+     * @see CommandlineControls
+     * @see CommandlineArguments
      */
     public static void main(String args[]) {
-        final Properties properties = new Properties();
         try {
             // retrieve version info from the maven git plug-in
-            properties.load(OrchestratorGui.class.getClassLoader().getResourceAsStream("git.properties"));
+            gitProps.load(OrchestratorGui.class.getClassLoader().getResourceAsStream("git.properties"));
             connectionManager = ConnectionManager.getInstance();
-        } catch (IOException ex) {
-            log.error(ex.getMessage());
-            System.exit(1);
+        } catch (final IOException ex) {
+            System.err.println(ex.getMessage());
+            System.exit(-1);
         }
 
-        OrchestratorGui.silaOrchestratorVersion = properties.getProperty("git.build.version")
-                + "-" + properties.getProperty("git.commit.id.abbrev");
-        OrchestratorGui.gitCommit = properties.getProperty("git.commit.id");
-        OrchestratorGui.gitCommitTimestamp = properties.getProperty("git.commit.time");
-        OrchestratorGui.gitRepositoryUrl = properties.getProperty("git.remote.origin.url");
-
         if (args.length > 0) {
-            // arguments were set, so we handel erverything in command line and ditch the GUI stuff
-            for (int i = 0; i < args.length; i++) {
-                final String arg = args[i];
-                if (arg.equalsIgnoreCase("-h") || arg.equalsIgnoreCase("--help")) {
-                    System.out.println("Usage: java -jar sila-orchestrator.jar [args]"
-                            + "\n -h, --help"
-                            + "\n\t Print this help message."
-                            + "\n -v, --version"
-                            + "\n\t Print the version number."
-                            + "\n --about, --info"
-                            + "\n\t Print some general information about this software."
-                            + "\n -x <silo file>, --execute <silo file>"
-                            + "\n\t Loads and executes the provided silo file.");
-                } else if (arg.equalsIgnoreCase("-v") || arg.equalsIgnoreCase("--version")) {
-                    System.out.println(silaOrchestratorVersion);
-                } else if (arg.equalsIgnoreCase("--about") || arg.equalsIgnoreCase("--info")) {
-                    System.out.println("sila-orchestrator"
-                            + "\n " + COPYRIGHT_NOTICE
-                            + "\n Version: " + silaOrchestratorVersion
-                            + "\n Git Commit: " + gitCommit
-                            + "\n Timestamp: " + gitCommitTimestamp
-                            + "\n Git Repository: " + gitRepositoryUrl
-                            + "\n E-Mail: florian.bauer.dev@gmail.com"
-                            + "\n License: Apache-2.0");
-                } else if (arg.equalsIgnoreCase("-x") || arg.equalsIgnoreCase("--execute")) {
-                    if (i + 1 < args.length) {
-                        final String siloFile = args[i + 1];
-                        final StringBuilder outMsg = new StringBuilder();
-                        final TaskQueueData tcd = TaskQueueData.createFromFile(siloFile, outMsg);
-                        if (tcd != null) {
-                            /* The network scan is neccesary since only the UUID is given in 
-                             * the *.silo-file and there is no way to manually connect to an server 
-                             * by the CLI until now. (2021-05-05 florian.bauer.dev@gmail.com)
-                             */
-                            connectionManager.scanNetwork();
-                            TaskQueueTable tqt = new TaskQueueTable();
-                            tcd.importToTaskQueue(tqt);
-                            for (int j = 0; j < tqt.getRowCount(); j++) {
-                                final QueueTask task = tqt.getTaskFromRow(j);
-                                task.run();
-                                if (task.getState() != TaskState.FINISHED_SUCCESS) {
-                                    // apply execution policy
-                                    if (tqt.getTaskPolicyFromRow(i) == ExecPolicy.HALT_AFTER_ERROR) {
-                                        System.out.println("Halted after task #" + j
-                                                + " \"" + task.toString()
-                                                + "\" with state " + task.getState().toString()
-                                                + " at " + task.getEndTimeStamp() + ".");
-                                        break;
-                                    }
-                                } else {
-                                    System.out.println("Finished task #" + j
-                                            + " \"" + task.toString()
-                                            + "\" with state " + task.getState().toString()
-                                            + " at " + task.getEndTimeStamp() + ".");
-                                }
-                            }
-                        } else {
-                            System.err.println(outMsg);
-                        }
-                        i++;
-                    } else {
-                        System.err.println("Path to silo file is missing.");
-                    }
-                } else {
-                    System.err.println("Unknown argument \"" + arg + "\".");
-                }
+            // arguments were set, so we handel erverything in command-line and ditch the GUI stuff
+            Logger root = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+            root.setLevel(Level.WARN);
+            System.out.println("\n");
+
+            final CommandlineArguments cmdArgs;
+            try {
+                cmdArgs = CommandlineArguments.createFromArgs(args);
+            } catch (final IllegalArgumentException ex) {
+                System.err.println(ex.getMessage());
+                connectionManager.close();
+                System.exit(-1);
+                return;
             }
-            System.exit(0);
+            final CommandlineControls cmdCtrls = new CommandlineControls(gitProps, connectionManager);
+            int exitVal = cmdCtrls.processArgs(cmdArgs);
+            connectionManager.close();
+            System.exit(exitVal);
         }
 
         String laf = "Nimbus";
@@ -1404,7 +1358,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 | InstantiationException
                 | IllegalAccessException
                 | javax.swing.UnsupportedLookAndFeelException ex) {
-            log.error(ex.getMessage());
+            System.err.println(ex.getMessage());
         }
 
         // Create and display the form
