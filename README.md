@@ -4,7 +4,8 @@
 A simple, dynamic [SiLA 2](https://sila-standard.com/) compliant client for coordinating various 
 services. The main goal of this client is to easily link different SiLA 2 commands together, to 
 create an automated, continuous workflow between distinct devices. For a short function overview and 
-a description on how to use this software, take a look into the [User Guide](doc/UserGuide.md).
+a description on how to use this software, take a look into the [User Guide](doc/UserGuide.md). For 
+the more advanced usage inside the console or a script, see the [CLI Guide](doc/CliGuide.md).
 
 ![The sila-orchestrator client](doc/pictures/sila-orchestrator-gui.png)
 
@@ -33,18 +34,7 @@ After that, the resulting `*.jar`-file is located in the `orchestrator-client/ta
 
 Starting the sila-orchestrator GUI client: `java -jar sila-orchestrator.jar`.
 
-Using the client within the command line:
-```
-Usage: java -jar sila-orchestrator.jar [args]
- -h, --help
-	 Print this help message.
- -v, --version
-	 Print the version number.
- --about, --info
-	 Print some general information about this software.
- -x <silo file>, --execute <silo file>
-	 Loads and executes the provided silo file.
-```
+To use the client within the command-line, take a look into the [CLI Guide](doc/CliGuide.md).
 
 
 ### Menu Item Installer for Linux
