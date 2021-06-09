@@ -93,6 +93,7 @@ public class CommandlineArgumentsTest {
         assertEquals("fileB.silo", result.siloFilePathForExec);
     }
 
+    @Test
     public void createFromArgs_checkChainedShortFlags() {
         CommandlineArguments result = CommandlineArguments.createFromArgs(new String[]{"-hvl"});
         assertTrue(result.isHelpToPrint);
