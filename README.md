@@ -5,9 +5,20 @@ A simple, dynamic [SiLA 2](https://sila-standard.com/) compliant client for coor
 services. The main goal of this client is to easily link different SiLA 2 commands together, to 
 create an automated, continuous workflow between distinct devices. For a short function overview and 
 a description on how to use this software, take a look into the [User Guide](doc/UserGuide.md). For 
-the more advanced usage inside the console or a script, see the [CLI Guide](doc/CliGuide.md).
+the more advanced usage inside a terminal, console or script, see the [CLI Guide](doc/CliGuide.md).
 
 ![The sila-orchestrator client](doc/pictures/sila-orchestrator-gui.png)
+
+
+## Installation
+
+To run this software, a installation of [JDK](https://jdk.java.net/) or [OpenJDK](https://adoptopenjdk.net/) in version >= 11 or higher is required.
+
+Download the latest `sila-orchestrator.jar`-package from the [Release Page](https://github.com/FlorianBauer/sila-orchestrator/releases). 
+
+Start the sila-orchestrator GUI client by typing the following into the Terminal/PowerShell: `java -jar sila-orchestrator.jar`.
+
+To use the client in command-line mode (e.g. within a script), take a look into the [CLI Guide](doc/CliGuide.md).
 
 
 ### Build the Project
@@ -17,9 +28,7 @@ First, clone the repository.
 git clone --recurse-submodules https://github.com/FlorianBauer/sila-orchestrator.git
 ```
 
-To build this project, a JavaSE/JDK in version >= 11, as well as a moderately current 
-Maven installation is required. Enter the project directory and use the following command to start 
-the build process:
+To build this project, a [JDK](https://jdk.java.net/) or [OpenJDK](https://adoptopenjdk.net/) in version >= 11, as well as a moderately current Maven installation is required. Enter the project directory and use the following command to start the build process:
 
 ```bash
 cd path/to/sila-orchestrator/
@@ -28,13 +37,6 @@ mvn clean install -DskipTests
 
 After that, the resulting `*.jar`-file is located in the `orchestrator-client/target`-directory as 
 `sila-orchestrator.jar`.
-
-
-### Usage
-
-Starting the sila-orchestrator GUI client: `java -jar sila-orchestrator.jar`.
-
-To use the client within the command-line, take a look into the [CLI Guide](doc/CliGuide.md).
 
 
 ### Menu Item Installer for Linux

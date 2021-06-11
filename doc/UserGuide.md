@@ -1,6 +1,7 @@
 # User Guide
 
-This guide provides a short descriptions of the available functionalities of the sila-orchestrator in its graphical mode and how to use them. To see the command-line interface (CLI)-mode description, take a look in the [CLI Guide](CliGuide.md). Instructions on how to build and run the software can be found in the [README](../README.md).
+This guide provides a short descriptions of the available functionalities of the sila-orchestrator in its graphical mode and how to use them. To see the command-line interface (CLI)-mode description, take a look in the [CLI Guide](CliGuide.md).
+Instructions on how to build and run the software can be found in the [README](../README.md).
 
 
 ## Function Overview

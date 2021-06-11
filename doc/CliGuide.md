@@ -1,8 +1,10 @@
 # Command-line Interface (CLI) Guide
 
-It is possible to run the sila-orchestrator entirely form the CLI (aka console), which enables the usage within scripts and can increases the degree of automation. Thereby a script can introduce flow control by creating a workflow with various tasks stored in different *.silo-files. Also "cron jobs" can be established to automatically start a queue-run at a predefined time.
+This guide provides info on how to use the sila-orchestrator within a terminal, console or script. For info on how to use this software with the graphical user interface (GUI), take a look into the [README](../README.md) and the [User Guide](UserGuide.md).
 
-To invoke the CLI-mode, the executable must be started with arguments, which define the desired actions. The available arguments can be listed with the option `-h` (e.g. `java -jar sila-orchestrator.jar -h`). 
+The sila-orchestrator with its CLI-mode enables the usage within scripts and can therefore increases the degree of automation. Thereby a script can introduce flow control by creating a workflow with various tasks stored in different *.silo-files. Also "cron jobs" can be established to automatically start a queue-run at a predefined time.
+
+To invoke the CLI-mode, the executable must be started with one or more arguments, which define the desired actions. The available options can be listed with the option `-h` (e.g. `java -jar sila-orchestrator.jar -h`).
 
 
 ## Usage overview:
@@ -26,9 +28,9 @@ Usage: java -jar sila-orchestrator.jar [args]
 	 Loads and executes the provided *.silo-file.
 ```
 
-On `--check-tasks <silo-file>` and `--execute <silo-file>` an automatic network scan is done beforehand. Therefore, a manual connection via `--add-server <[host]:[port]>` can be omitted when all tasks in the given *.silo-files rely on discoverable servers.
+On `--check-tasks <silo-file>` and `--execute <silo-file>`, an automatic network scan is done beforehand. Therefore, a manual connection via `--add-server <[host]:[port]>` can be omitted when all tasks in the given *.silo-file rely on discoverable servers.
 
-Also the order in which the arguments are provided can be arbitrary. E.g. a server-add `-a` which establishes a connection, is always handled before an *.silo-file execution or an check operation.
+The provided arguments can be given in any arbitrary order, since the processing order of operation is predefined. E.g. a server-add `-a` which establishes a connection, is always handled before an check `-c` operation, which is also always processed before an *.silo-file execution `-x`. Therefore, if the `--check-tasks <silo-file>` is used in combination with the `--execute <silo-file>` option, any failed check will immediately exit the program without executing any tasks at all.
 
 
 ## Example Scripts
@@ -38,12 +40,12 @@ Bash:
 #!/bin/bash
 
 # The path to the sila-orchestrator executable.
-SILA_ORCHESTRATOR=/path/to/sila-orchestrator/orchestrator-client/target/sila-orchestrator.jar
+SILA_ORCHESTRATOR=/path/to/sila-orchestrator.jar
 # The path to the *.silo-file we want to execute.
-SILO_FILE=/path/to/myFile.silo
+SILO_FILE=/path/to/myQueueFile.silo
 
 # Run the sila-orchestrator in CLI mode.
-# Prints the help text, connects to a server, checks a *silo-file, executes a *silo-file.
+# Prints the help text, connects to a server, checks a *.silo-file, executes a *.silo-file.
 java -jar $SILA_ORCHESTRATOR -h -a 127.0.0.1:50052 -c $SILO_FILE -x $SILO_FILE
 
 # Retrieve the exit value.
@@ -57,17 +59,20 @@ elif [ $RET_VAL -lt 0 ]; then
 elif [ $RET_VAL -gt 0 ]; then
   echo "The check or execution of the *.silo-file failed because of the task entry nr. $RET_VAL."
 fi
-
-sleep 10
 ```
 
 Python:
 ```python
-import subprocess
-sila_orchestrator: str = "/path/to/sila-orchestrator/orchestrator-client/target/sila-orchestrator.jar"
-silo_file: str = "/path/to/myFile.silo"
+#!/usr/bin/env python3
 
-ret_val = subprocess.call(["java", "-jar", sila_orchestrator, "-h", "-c", silo_file, "-x", silo_file])
+import subprocess
+
+# The path to the sila-orchestrator executable.
+SILA_ORCHESTRATOR: str = "/path/to/sila-orchestrator.jar"
+# The path to the *.silo-file we want to execute.
+SILO_FILE: str = "/path/to/myQueueFile.silo"
+
+ret_val = subprocess.call(["java", "-jar", SILA_ORCHESTRATOR, "-h", "-c", SILO_FILE, "-x", SILO_FILE])
 
 if ret_val == 0:
     print("Everything went fine. sila-orchestrator returned with 0.")
@@ -79,11 +84,13 @@ elif ret_val > 0:
 
 PowerShell:
 ```powershell
-﻿$sila_orchestrator = "C:\path\to\sila-orchestrator\orchestrator-client\target\sila-orchestrator.jar"
-$silo_file = "C:\path\to\myFile.silo"
+# The path to the sila-orchestrator executable.
+﻿$sila_orchestrator = "C:\path\to\sila-orchestrator.jar"
+# The path to the *.silo-file we want to execute.
+$silo_file = "C:\path\to\myQueueFile.silo"
 
 # Runs the program in the same process as the console.
-# Print help text, check the entries in the *.silo-file, exectues the *.silo-file.
+# Print help text, checks the entries in the *.silo-file, exectues the *.silo-file.
 java -jar $sila_orchestrator -h -c $silo_file -x $silo_file
 
 if ($LASTEXITCODE -eq 0) {
@@ -93,7 +100,6 @@ if ($LASTEXITCODE -eq 0) {
 } elseif  ($LASTEXITCODE -gt 0) {
     echo "Error. Task nr. $LASTEXITCODE failed."
 }
-
 
 # Runs the program in an new, dedicated process
 #Start-Process java -ArgumentList "-jar", "$sila_orchestrator", "-h", "-c $silo_file", "-x $silo_file"
