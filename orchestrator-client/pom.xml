@@ -5,17 +5,17 @@
     <parent>
         <groupId>de.fau.clients.orchestrator</groupId>
         <artifactId>sila-orchestrator</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>0.2.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.fau.clients.orchestrator</groupId>
     <artifactId>orchestrator-client</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
 
     <name>orchestrator-client</name>
-    <description>A dynamic SiLA 2 client for coordinating various SiLA 2 services to a continuous workflow.</description>
+    <description>A universal SiLA 2 client.</description>
 
     <properties>
         <java.version>11</java.version>
@@ -72,6 +72,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.20</version>
+        </dependency>
+        <dependency>
+            <groupId>com.akathist.maven.plugins.launch4j</groupId>
+            <artifactId>launch4j-maven-plugin</artifactId>
+            <version>2.1.1</version>
         </dependency>
     </dependencies>
 
@@ -136,6 +141,42 @@
                         <dirty>-dirty</dirty>
                     </gitDescribe>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>2.1.1</version>
+                <executions>
+                    <execution>
+                        <id>${project.parent.artifactId}</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <headerType>gui</headerType>
+                            <jar>${project.build.directory}/${project.parent.artifactId}.jar</jar>
+                            <outfile>${project.build.directory}/${project.parent.artifactId}.exe</outfile>
+                            <downloadUrl>https://adoptopenjdk.net/</downloadUrl>
+                            <supportUrl>https://github.com/FlorianBauer/sila-orchestrator</supportUrl>
+                            <icon>${project.parent.basedir}/doc/pictures/sila-orchestrator-icon.ico</icon>
+                            <jre>
+                                <minVersion>${java.version}</minVersion>
+                            </jre>
+                            <versionInfo>
+                                <txtFileVersion>${project.version}</txtFileVersion>
+                                <fileDescription>${project.description}</fileDescription>
+                                <copyright>(C) 2020-2021 Florian Bauer</copyright>
+                                <productName>${project.parent.name}</productName>
+                                <internalName>${project.parent.artifactId}</internalName>
+                                <fileVersion>${project.version}.0</fileVersion>
+                                <productVersion>${project.version}.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <originalFilename>${project.parent.artifactId}.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
