@@ -15,6 +15,7 @@ import de.fau.clients.orchestrator.tasks.TaskEntry;
 import de.fau.clients.orchestrator.tasks.TaskModel;
 import de.fau.clients.orchestrator.utils.VersionNumber;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -77,15 +78,16 @@ public class TaskQueueData {
      * further processing.
      *
      * @param siloFile The path to the *.silo file.
-     * @param outMsg The output for user messages (e.g. the appropriate error message on failure).
-     * @return The initialized <code>TaskQueueData</code> object containing the data from the file
-     * or <code>null</code> on error.
+     * @return The initialized <code>TaskQueueData</code> object containing the data from the file.
+     * @throws IllegalArgumentException
+     * @throws FileNotFoundException
+     * @trhows IOException
      */
-    public static TaskQueueData createFromFile(final String siloFile, StringBuilder outMsg) {
-        Path filePath = Paths.get(siloFile);
+    public static TaskQueueData createFromFile(final String siloFile)
+            throws IllegalArgumentException, IOException {
+        final Path filePath = Paths.get(siloFile);
         if (Files.notExists(filePath)) {
-            outMsg.append("Could not find file \"").append(filePath).append("\".");
-            return null;
+            throw new FileNotFoundException("Could not find file '" + filePath + "'.");
         }
 
         log.info("Opend file: " + filePath);
@@ -94,12 +96,10 @@ public class TaskQueueData {
             loadedVersionStr = mapper.readTree(Files.newInputStream(filePath))
                     .get("siloFileVersion")
                     .asText();
-        } catch (IOException ex) {
-            outMsg.append(ex.getMessage());
-            return null;
-        } catch (Exception ex) {
-            outMsg.append("Could not query file version number: ").append(ex.getMessage());
-            return null;
+        } catch (final IOException ex) {
+            throw ex;
+        } catch (final Exception ex) {
+            throw new IllegalArgumentException("Could not query file version number: " + ex.getMessage() + ".");
         }
 
         boolean isMinorHigher = false;
@@ -110,8 +110,7 @@ public class TaskQueueData {
                     + loadedFile.toString() + " is not compatible with this Sowftware."
                     + "\nOnly file formats up to version " + SILO_FILE_VERSION.toString()
                     + " are supported!";
-            outMsg.append(errMsg);
-            return null;
+            throw new IllegalArgumentException(errMsg);
         } else if (loadedFile.getMinorNumber() > SILO_FILE_VERSION.getMinorNumber()) {
             // minor number is higher, import may fail
             isMinorHigher = true;
@@ -120,17 +119,16 @@ public class TaskQueueData {
         final TaskQueueData tqd;
         try {
             tqd = mapper.readValue(Files.newInputStream(filePath), TaskQueueData.class);
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             if (isMinorHigher) {
                 final String errMsg = "The opened file with its format version "
                         + loadedFile.toString() + " is not compatible with this Sowftware."
                         + "\nOnly file formats up to version " + SILO_FILE_VERSION.toString()
                         + " are supported!";
-                outMsg.append(errMsg);
+                throw new IllegalArgumentException(errMsg);
             } else {
-                outMsg.append(ex.getMessage());
+                throw ex;
             }
-            return null;
         }
         return tqd;
     }

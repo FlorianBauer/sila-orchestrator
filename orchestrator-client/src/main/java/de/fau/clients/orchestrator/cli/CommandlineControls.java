@@ -9,6 +9,7 @@ import de.fau.clients.orchestrator.tasks.ConnectionStatus;
 import de.fau.clients.orchestrator.tasks.ExecPolicy;
 import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -19,7 +20,7 @@ import sila_java.library.manager.models.Server;
 
 /**
  * Class for handling the Command-Line Interface (CLI) controls. This class is responsible for
- * parsing the command-line arguments and invoking the associate actions.
+ * processing the parsed command-line arguments and invoking the associate actions.
  *
  * @see CommandlineArguments
  */
@@ -129,24 +130,25 @@ public final class CommandlineControls {
      * @return 0 on success, -1 on error or the number of the offline task.
      */
     private int checkSiloFile(final String siloFilePath) {
-        final StringBuilder outMsg = new StringBuilder();
-        final TaskQueueData tcd = TaskQueueData.createFromFile(siloFilePath, outMsg);
-        if (tcd != null) {
-            conManager.scanNetwork();
-            TaskQueueTable tqt = new TaskQueueTable();
-            tcd.importToTaskQueue(tqt);
-
-            for (int i = 0; i < tqt.getRowCount(); i++) {
-                final QueueTask task = tqt.getTaskFromRow(i);
-                if (task.getConnectionStatus() == ConnectionStatus.OFFLINE) {
-                    System.out.println("Task #" + (i + 1) + " '" + task.toString()
-                            + "' is offline or not ready.");
-                    return i + 1;
-                }
-            }
-        } else {
-            System.err.println(outMsg);
+        final TaskQueueData tcd;
+        try {
+            tcd = TaskQueueData.createFromFile(siloFilePath);
+        } catch (final IOException | IllegalArgumentException ex) {
+            System.err.println(ex.getMessage());
             return -1;
+        }
+
+        conManager.scanNetwork();
+        TaskQueueTable tqt = new TaskQueueTable();
+        tcd.importToTaskQueue(tqt);
+
+        for (int i = 0; i < tqt.getRowCount(); i++) {
+            final QueueTask task = tqt.getTaskFromRow(i);
+            if (task.getConnectionStatus() == ConnectionStatus.OFFLINE) {
+                System.out.println("Task #" + (i + 1) + " '" + task.toString()
+                        + "' is offline or not ready.");
+                return i + 1;
+            }
         }
         return 0;
     }
@@ -158,33 +160,34 @@ public final class CommandlineControls {
      * @return 0 on success, -1 on error or the number of the failed task.
      */
     private int executeSiloFile(final String siloFilePath) {
-        final StringBuilder outMsg = new StringBuilder();
-        final TaskQueueData tcd = TaskQueueData.createFromFile(siloFilePath, outMsg);
-        if (tcd != null) {
-            conManager.scanNetwork();
-            TaskQueueTable tqt = new TaskQueueTable();
-            tcd.importToTaskQueue(tqt);
+        final TaskQueueData tcd;
+        try {
+            tcd = TaskQueueData.createFromFile(siloFilePath);
+        } catch (final IOException | IllegalArgumentException ex) {
+            System.err.println(ex.getMessage());
+            return -1;
+        }
 
-            for (int i = 0; i < tqt.getRowCount(); i++) {
-                final QueueTask task = tqt.getTaskFromRow(i);
-                task.run();
-                if (task.getState() != TaskState.FINISHED_SUCCESS) {
-                    // apply execution policy
-                    if (tqt.getTaskPolicyFromRow(i) == ExecPolicy.HALT_AFTER_ERROR) {
-                        System.out.println("Halted after task #" + (i + 1) + " '" + task.toString()
-                                + "' with state " + task.getState().toString()
-                                + " at " + task.getEndTimeStamp() + ".");
-                        return i + 1;
-                    }
-                } else {
-                    System.out.println("Finished task #" + (i + 1) + " '" + task.toString()
+        conManager.scanNetwork();
+        TaskQueueTable tqt = new TaskQueueTable();
+        tcd.importToTaskQueue(tqt);
+
+        for (int i = 0; i < tqt.getRowCount(); i++) {
+            final QueueTask task = tqt.getTaskFromRow(i);
+            task.run();
+            if (task.getState() != TaskState.FINISHED_SUCCESS) {
+                // apply execution policy
+                if (tqt.getTaskPolicyFromRow(i) == ExecPolicy.HALT_AFTER_ERROR) {
+                    System.out.println("Halted after task #" + (i + 1) + " '" + task.toString()
                             + "' with state " + task.getState().toString()
                             + " at " + task.getEndTimeStamp() + ".");
+                    return i + 1;
                 }
+            } else {
+                System.out.println("Finished task #" + (i + 1) + " '" + task.toString()
+                        + "' with state " + task.getState().toString()
+                        + " at " + task.getEndTimeStamp() + ".");
             }
-        } else {
-            System.err.println(outMsg);
-            return -1;
         }
         return 0;
     }

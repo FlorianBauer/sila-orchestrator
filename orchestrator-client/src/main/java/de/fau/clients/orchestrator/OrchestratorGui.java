@@ -1169,16 +1169,14 @@ public class OrchestratorGui extends javax.swing.JFrame {
         int retVal = fileOpenChooser.showOpenDialog(this);
         if (retVal == JFileChooser.APPROVE_OPTION) {
             final File file = fileOpenChooser.getSelectedFile();
-
-            StringBuilder outMsg = new StringBuilder();
-            final TaskQueueData tqd = TaskQueueData.createFromFile(file.getAbsolutePath(), outMsg);
-            if (tqd == null) {
-                if (!outMsg.toString().isEmpty()) {
-                    JOptionPane.showMessageDialog(this,
-                            outMsg,
-                            "Import Error",
-                            JOptionPane.ERROR_MESSAGE);
-                }
+            final TaskQueueData tqd;
+            try {
+                tqd = TaskQueueData.createFromFile(file.getAbsolutePath());
+            } catch (final Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                        ex.getMessage(),
+                        "Import Error",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
             clearQueueActionPerformed(evt);
