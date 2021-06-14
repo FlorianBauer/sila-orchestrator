@@ -339,12 +339,8 @@ public class CommandTask extends QueueTask {
         try {
             lastExecResult = manager.getServerManager().newCallExecutor(call).execute();
             taskState = TaskState.FINISHED_SUCCESS;
-        } catch (RuntimeException ex) {
-            log.error(ex.getMessage());
-            lastExecResult = ex.getMessage();
-            taskState = TaskState.FINISHED_ERROR;
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
+        } catch (final Exception ex) {
+            System.err.println(ex.getMessage());
             lastExecResult = ex.getMessage();
             taskState = TaskState.FINISHED_ERROR;
         }
