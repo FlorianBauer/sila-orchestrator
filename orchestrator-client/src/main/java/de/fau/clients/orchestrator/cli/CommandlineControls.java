@@ -180,7 +180,8 @@ public final class CommandlineControls {
                 if (tqt.getTaskPolicyFromRow(i) == ExecPolicy.HALT_AFTER_ERROR) {
                     System.out.println("Halted after task #" + (i + 1) + " '" + task.toString()
                             + "' with state " + task.getState().toString()
-                            + " at " + task.getEndTimeStamp() + ".");
+                            + " at " + task.getEndTimeStamp() + ".\n"
+                            + "Run stopped with failure.");
                     return i + 1;
                 }
             } else {
@@ -189,6 +190,7 @@ public final class CommandlineControls {
                         + " at " + task.getEndTimeStamp() + ".");
             }
         }
+        System.out.println("Run finished successfully.");
         return 0;
     }
 }
