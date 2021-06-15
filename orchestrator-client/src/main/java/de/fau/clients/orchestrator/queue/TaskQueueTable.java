@@ -32,18 +32,20 @@ import javax.swing.table.TableColumn;
 @SuppressWarnings("serial")
 public final class TaskQueueTable extends JTable implements ConnectionListener {
 
-    public static final int COLUMN_TASK_ID_IDX = 0;
-    public static final int COLUMN_CONNECTION_STATUS_IDX = 1;
-    public static final int COLUMN_TASK_INSTANCE_IDX = 2;
-    public static final int COLUMN_SERVER_UUID_IDX = 3;
-    public static final int COLUMN_EXEC_POLICY_IDX = 4;
-    public static final int COLUMN_STATE_IDX = 5;
-    public static final int COLUMN_START_TIME_IDX = 6;
-    public static final int COLUMN_END_TIME_IDX = 7;
-    public static final int COLUMN_DURATION_IDX = 8;
-    public static final int COLUMN_RESULT_IDX = 9;
+    public static final int COLUMN_ROW_NR_IDX = 0;
+    public static final int COLUMN_TASK_ID_IDX = 1;
+    public static final int COLUMN_CONNECTION_STATUS_IDX = 2;
+    public static final int COLUMN_TASK_INSTANCE_IDX = 3;
+    public static final int COLUMN_SERVER_UUID_IDX = 4;
+    public static final int COLUMN_EXEC_POLICY_IDX = 5;
+    public static final int COLUMN_STATE_IDX = 6;
+    public static final int COLUMN_START_TIME_IDX = 7;
+    public static final int COLUMN_END_TIME_IDX = 8;
+    public static final int COLUMN_DURATION_IDX = 9;
+    public static final int COLUMN_RESULT_IDX = 10;
 
     public static final String[] COLUMN_TITLES = {
+        "Nr.",
         "ID",
         "Connection",
         "Task",
@@ -94,14 +96,17 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         columnModel.getColumn(COLUMN_START_TIME_IDX).setPreferredWidth(170);
         columnModel.getColumn(COLUMN_END_TIME_IDX).setPreferredWidth(170);
 
-        final TableColumn connectionStatusColumn = columnModel.getColumn(COLUMN_CONNECTION_STATUS_IDX);
-        connectionStatusColumn.setMaxWidth(48);
-        connectionStatusColumn.setCellRenderer(new ConnectionStatusCellRenderer());
+        final TableColumn rowNrColumn = columnModel.getColumn(COLUMN_ROW_NR_IDX);
+        rowNrColumn.setMaxWidth(48);
 
         final TableColumn taskIdColumn = columnModel.getColumn(COLUMN_TASK_ID_IDX);
         taskIdColumn.setPreferredWidth(48);
         taskIdColumn.setMaxWidth(64);
         taskIdColumn.setCellEditor(new TaskIdCellEditor(taskIdSet));
+
+        final TableColumn connectionStatusColumn = columnModel.getColumn(COLUMN_CONNECTION_STATUS_IDX);
+        connectionStatusColumn.setMaxWidth(48);
+        connectionStatusColumn.setCellRenderer(new ConnectionStatusCellRenderer());
 
         final TableColumn uuidColumn = columnModel.getColumn(COLUMN_SERVER_UUID_IDX);
         uuidColumn.setCellRenderer(new UuidCellRenderer());
@@ -128,6 +133,7 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         });
 
         // hidden on default
+        tch.hideColumn(COLUMN_ROW_NR_IDX);
         tch.hideColumn(COLUMN_SERVER_UUID_IDX);
         tch.hideColumn(COLUMN_START_TIME_IDX);
         tch.hideColumn(COLUMN_END_TIME_IDX);
@@ -140,7 +146,8 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
 
             final int colIdx = i;
             final boolean isChecked;
-            if (colIdx == COLUMN_SERVER_UUID_IDX
+            if (colIdx == COLUMN_ROW_NR_IDX
+                    || colIdx == COLUMN_SERVER_UUID_IDX
                     || colIdx == COLUMN_START_TIME_IDX
                     || colIdx == COLUMN_END_TIME_IDX) {
                 // uncheck hidden columns

@@ -34,6 +34,7 @@ class TaskQueueTableModel extends DefaultTableModel {
     ) {
         final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         addRow(new Object[]{
+            getRowCount() + 1,
             taskId,
             cmdTask.getConnectionStatus(),
             cmdTask,
@@ -70,6 +71,7 @@ class TaskQueueTableModel extends DefaultTableModel {
         final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         insertRow(index,
                 new Object[]{
+                    index + 1,
                     taskId,
                     cmdTask.getConnectionStatus(),
                     cmdTask,
@@ -90,6 +92,7 @@ class TaskQueueTableModel extends DefaultTableModel {
     ) {
         final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         addRow(new Object[]{
+            getRowCount() + 1,
             taskId,
             task.getConnectionStatus(),
             task,
@@ -112,6 +115,7 @@ class TaskQueueTableModel extends DefaultTableModel {
         final ExecPolicy pol = (policy != null) ? policy : ExecPolicy.HALT_AFTER_ERROR;
         insertRow(index,
                 new Object[]{
+                    index + 1,
                     taskId,
                     task.getConnectionStatus(),
                     task,
@@ -189,6 +193,7 @@ class TaskQueueTableModel extends DefaultTableModel {
     @Override
     public Class getColumnClass(int col) {
         switch (col) {
+            case TaskQueueTable.COLUMN_ROW_NR_IDX:
             case TaskQueueTable.COLUMN_TASK_ID_IDX:
                 return Integer.class;
             case TaskQueueTable.COLUMN_TASK_INSTANCE_IDX:
@@ -224,5 +229,35 @@ class TaskQueueTableModel extends DefaultTableModel {
                 break;
         }
         return false;
+    }
+
+    /**
+     * Sets the current numbering on all row entries above the given start index. Use only after a
+     * row was inserted, deleted or moved.
+     *
+     * @param startIdx The row index to start the numbering update from.
+     */
+    private void setRowNumbering(int startIdx) {
+        for (int i = startIdx; i < getRowCount(); i++) {
+            setValueAt(i + 1, i, TaskQueueTable.COLUMN_ROW_NR_IDX);
+        }
+    }
+
+    @Override
+    public void fireTableRowsInserted(int firstRow, int lastRow) {
+        super.fireTableRowsInserted(firstRow, lastRow);
+        setRowNumbering(firstRow);
+    }
+
+    @Override
+    public void fireTableRowsDeleted(int firstRow, int lastRow) {
+        super.fireTableRowsDeleted(firstRow, lastRow);
+        setRowNumbering(firstRow);
+    }
+
+    @Override
+    public void fireTableRowsUpdated(int firstRow, int lastRow) {
+        super.fireTableRowsUpdated(firstRow, lastRow);
+        setRowNumbering(firstRow);
     }
 }
