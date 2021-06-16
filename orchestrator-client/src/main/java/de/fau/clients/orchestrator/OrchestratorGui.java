@@ -1334,17 +1334,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
             System.exit(exitVal);
         }
 
-        String laf = "Nimbus";
+        final ToolTipManager ttmSharedInst = ToolTipManager.sharedInstance();
+        ttmSharedInst.setInitialDelay(300);
+        ttmSharedInst.setDismissDelay(Integer.MAX_VALUE);
+
         final String osName = System.getProperty("os.name");
+        final String laf;
         if (osName.startsWith("Windows")) {
             laf = "Windows";
         } else if (osName.startsWith("Linux")) {
             laf = "GTK+";
+        } else {
+            laf = "Nimbus";
         }
-
-        final ToolTipManager ttmSharedInst = ToolTipManager.sharedInstance();
-        ttmSharedInst.setInitialDelay(300);
-        ttmSharedInst.setDismissDelay(Integer.MAX_VALUE);
 
         try {
             for (final UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
