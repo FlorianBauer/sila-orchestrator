@@ -7,6 +7,7 @@ import de.fau.clients.orchestrator.cli.CommandlineControls;
 import de.fau.clients.orchestrator.ctx.ConnectionManager;
 import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.dnd.TaskExportTransferHandler;
+import de.fau.clients.orchestrator.queue.Column;
 import de.fau.clients.orchestrator.queue.TaskQueueData;
 import de.fau.clients.orchestrator.queue.TaskQueueTable;
 import de.fau.clients.orchestrator.tasks.DelayTask;
@@ -1088,7 +1089,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             moveTaskUpBtn.setEnabled(false);
         }
         taskQueueTable.moveRow(selectedRowIdx, selectedRowIdx - 1);
-        taskQueueTable.changeSelection(selectedRowIdx - 1, TaskQueueTable.COLUMN_TASK_ID_IDX, false, false);
+        taskQueueTable.changeSelection(selectedRowIdx - 1, Column.TASK_ID.ordinal(), false, false);
         moveTaskDownBtn.setEnabled(true);
     }//GEN-LAST:event_moveTaskUpBtnActionPerformed
 
@@ -1101,7 +1102,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             moveTaskDownBtn.setEnabled(false);
         }
         taskQueueTable.moveRow(selectedRowIdx, selectedRowIdx + 1);
-        taskQueueTable.changeSelection(selectedRowIdx + 1, TaskQueueTable.COLUMN_TASK_ID_IDX, false, false);
+        taskQueueTable.changeSelection(selectedRowIdx + 1, Column.TASK_ID.ordinal(), false, false);
         moveTaskUpBtn.setEnabled(true);
     }//GEN-LAST:event_moveTaskDownBtnActionPerformed
 

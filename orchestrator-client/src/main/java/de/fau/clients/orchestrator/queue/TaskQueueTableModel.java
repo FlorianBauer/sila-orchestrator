@@ -10,7 +10,9 @@ import javax.swing.table.DefaultTableModel;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class represents the underlying data-model of the <code>TaskQueueTable</code> in the GUI.
+ * This class represents the underlying data-model of the <code>TaskQueueTable</code>.
+ *
+ * @see TaskQueueTable
  */
 @Slf4j
 @SuppressWarnings("serial")
@@ -131,11 +133,11 @@ class TaskQueueTableModel extends DefaultTableModel {
 
     protected void resetTaskStates() {
         for (int i = 0; i < getRowCount(); i++) {
-            setValueAt(TaskState.NEUTRAL, i, TaskQueueTable.COLUMN_STATE_IDX);
-            setValueAt("-", i, TaskQueueTable.COLUMN_DURATION_IDX);
-            setValueAt("-", i, TaskQueueTable.COLUMN_END_TIME_IDX);
-            setValueAt("-", i, TaskQueueTable.COLUMN_START_TIME_IDX);
-            setValueAt("", i, TaskQueueTable.COLUMN_RESULT_IDX);
+            setValueAt(TaskState.NEUTRAL, i, Column.STATE);
+            setValueAt("-", i, Column.DURATION);
+            setValueAt("-", i, Column.END_TIME);
+            setValueAt("-", i, Column.START_TIME);
+            setValueAt("", i, Column.RESULT);
         }
     }
 
@@ -147,7 +149,7 @@ class TaskQueueTableModel extends DefaultTableModel {
                 // the order of rows might change during runtime.
                 int rowIdx = -1;
                 for (int i = 0; i < getRowCount(); i++) {
-                    if (getValueAt(i, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX).equals(taskEntry)) {
+                    if (getValueAt(i, Column.TASK_INSTANCE).equals(taskEntry)) {
                         rowIdx = i;
                         break;
                     }
@@ -157,21 +159,21 @@ class TaskQueueTableModel extends DefaultTableModel {
                     log.error("Could not find entry in table");
                     return;
                 }
-                setValueAt(state, rowIdx, TaskQueueTable.COLUMN_STATE_IDX);
+                setValueAt(state, rowIdx, Column.STATE);
                 switch (state) {
                     case RUNNING:
-                        setValueAt(taskEntry.getStartTimeStamp(), rowIdx, TaskQueueTable.COLUMN_START_TIME_IDX);
-                        setValueAt(taskEntry.getState(), rowIdx, TaskQueueTable.COLUMN_STATE_IDX);
+                        setValueAt(taskEntry.getStartTimeStamp(), rowIdx, Column.START_TIME);
+                        setValueAt(taskEntry.getState(), rowIdx, Column.STATE);
                         break;
                     case FINISHED_SUCCESS:
                     case FINISHED_ERROR:
-                        setValueAt(taskEntry.getState(), rowIdx, TaskQueueTable.COLUMN_STATE_IDX);
-                        setValueAt(taskEntry.getLastExecResult(), rowIdx, TaskQueueTable.COLUMN_RESULT_IDX);
-                        setValueAt(taskEntry.getEndTimeStamp(), rowIdx, TaskQueueTable.COLUMN_END_TIME_IDX);
-                        setValueAt(taskEntry.getDuration(), rowIdx, TaskQueueTable.COLUMN_DURATION_IDX);
+                        setValueAt(taskEntry.getState(), rowIdx, Column.STATE);
+                        setValueAt(taskEntry.getLastExecResult(), rowIdx, Column.RESULT);
+                        setValueAt(taskEntry.getEndTimeStamp(), rowIdx, Column.END_TIME);
+                        setValueAt(taskEntry.getDuration(), rowIdx, Column.DURATION);
                         break;
                     case NEUTRAL:
-                        setValueAt(taskEntry.getState(), rowIdx, TaskQueueTable.COLUMN_STATE_IDX);
+                        setValueAt(taskEntry.getState(), rowIdx, Column.STATE);
                         break;
                     default:
                         log.warn("Unhandled state change");
@@ -182,25 +184,25 @@ class TaskQueueTableModel extends DefaultTableModel {
 
     @Override
     public int getColumnCount() {
-        return TaskQueueTable.COLUMN_TITLES.length;
+        return Column.size();
     }
 
     @Override
     public String getColumnName(int col) {
-        return TaskQueueTable.COLUMN_TITLES[col];
+        return Column.values()[col].title;
     }
 
     @Override
     public Class getColumnClass(int col) {
-        switch (col) {
-            case TaskQueueTable.COLUMN_ROW_NR_IDX:
-            case TaskQueueTable.COLUMN_TASK_ID_IDX:
+        switch (Column.values()[col]) {
+            case ROW_NR:
+            case TASK_ID:
                 return Integer.class;
-            case TaskQueueTable.COLUMN_TASK_INSTANCE_IDX:
+            case TASK_INSTANCE:
                 return CommandTask.class;
-            case TaskQueueTable.COLUMN_CONNECTION_STATUS_IDX:
+            case CONNECTION_STATUS:
                 return ConnectionStatus.class;
-            case TaskQueueTable.COLUMN_STATE_IDX:
+            case STATE:
                 return TaskState.class;
             default:
                 return String.class;
@@ -210,17 +212,17 @@ class TaskQueueTableModel extends DefaultTableModel {
     @Override
     public boolean isCellEditable(int row, int col) {
         // make the task-ID and the server-UUID column editable
-        switch (col) {
-            case TaskQueueTable.COLUMN_TASK_ID_IDX:
-            case TaskQueueTable.COLUMN_EXEC_POLICY_IDX:
+        switch (Column.values()[col]) {
+            case TASK_ID:
+            case EXEC_POLICY:
                 return true;
-            case TaskQueueTable.COLUMN_SERVER_UUID_IDX:
-                if (getValueAt(row, TaskQueueTable.COLUMN_TASK_INSTANCE_IDX) instanceof CommandTask) {
+            case SERVER_UUID:
+                if (getValueAt(row, Column.TASK_INSTANCE) instanceof CommandTask) {
                     return true;
                 }
                 break;
-            case TaskQueueTable.COLUMN_RESULT_IDX:
-                final String result = (String) getValueAt(row, TaskQueueTable.COLUMN_RESULT_IDX);
+            case RESULT:
+                final String result = (String) getValueAt(row, Column.RESULT);
                 if (!result.isEmpty()) {
                     return true;
                 }
@@ -231,6 +233,14 @@ class TaskQueueTableModel extends DefaultTableModel {
         return false;
     }
 
+    public Object getValueAt(int row, final Column col) {
+        return getValueAt(row, col.ordinal());
+    }
+
+    public void setValueAt(final Object obj, int row, final Column col) {
+        setValueAt(obj, row, col.ordinal());
+    }
+
     /**
      * Sets the current numbering on all row entries above the given start index. Use only after a
      * row was inserted, deleted or moved.
@@ -239,7 +249,7 @@ class TaskQueueTableModel extends DefaultTableModel {
      */
     private void setRowNumbering(int startIdx) {
         for (int i = startIdx; i < getRowCount(); i++) {
-            setValueAt(i + 1, i, TaskQueueTable.COLUMN_ROW_NR_IDX);
+            setValueAt(i + 1, i, Column.ROW_NR);
         }
     }
 

@@ -154,7 +154,7 @@ public class TaskQueueData {
                 log.warn("Unknow TaskModel instance found. Task import omitted.");
             }
         }
-        queue.showColumn(TaskQueueTable.COLUMN_SERVER_UUID_IDX);
+        queue.showColumn(Column.SERVER_UUID);
     }
 
     public ArrayList<TaskEntry> getTasks() {

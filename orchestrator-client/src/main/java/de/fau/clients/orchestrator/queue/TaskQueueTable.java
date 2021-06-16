@@ -28,42 +28,18 @@ import javax.swing.table.TableColumn;
 
 /**
  * Table component responsible for managing queue-tasks with all their properties.
+ *
+ * @see TaskQueueTableModel
  */
 @SuppressWarnings("serial")
 public final class TaskQueueTable extends JTable implements ConnectionListener {
-
-    public static final int COLUMN_ROW_NR_IDX = 0;
-    public static final int COLUMN_TASK_ID_IDX = 1;
-    public static final int COLUMN_CONNECTION_STATUS_IDX = 2;
-    public static final int COLUMN_TASK_INSTANCE_IDX = 3;
-    public static final int COLUMN_SERVER_UUID_IDX = 4;
-    public static final int COLUMN_EXEC_POLICY_IDX = 5;
-    public static final int COLUMN_STATE_IDX = 6;
-    public static final int COLUMN_START_TIME_IDX = 7;
-    public static final int COLUMN_END_TIME_IDX = 8;
-    public static final int COLUMN_DURATION_IDX = 9;
-    public static final int COLUMN_RESULT_IDX = 10;
-
-    public static final String[] COLUMN_TITLES = {
-        "Nr.",
-        "ID",
-        "Connection",
-        "Task",
-        "Server UUID",
-        "Policy",
-        "State",
-        "Start Time",
-        "End Time",
-        "Duration",
-        "Result"
-    };
 
     public static final JLabel EMPTY_LABEL = new JLabel(" - ");
     private static final int INIT_TASK_ID = 1;
     private static int genericTaskId = INIT_TASK_ID;
     private final TableColumnHider tch;
     private final JPopupMenu taskQueueHeaderPopupMenu = new JPopupMenu();
-    private final JCheckBoxMenuItem[] headerItems = new JCheckBoxMenuItem[COLUMN_TITLES.length];
+    private final JCheckBoxMenuItem[] headerItems = new JCheckBoxMenuItem[Column.size()];
 
     /**
      * Set to keep track of available SiLA server.
@@ -92,80 +68,64 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         this.setTransferHandler(new TaskImportTransferHandler());
         this.setDragEnabled(false);
         this.setDropMode(DropMode.INSERT_ROWS);
-        tch = new TableColumnHider(columnModel, COLUMN_TITLES);
-        columnModel.getColumn(COLUMN_START_TIME_IDX).setPreferredWidth(170);
-        columnModel.getColumn(COLUMN_END_TIME_IDX).setPreferredWidth(170);
+        columnModel.getColumn(Column.START_TIME.ordinal()).setPreferredWidth(170);
+        columnModel.getColumn(Column.END_TIME.ordinal()).setPreferredWidth(170);
 
-        final TableColumn rowNrColumn = columnModel.getColumn(COLUMN_ROW_NR_IDX);
+        final TableColumn rowNrColumn = columnModel.getColumn(Column.ROW_NR.ordinal());
         rowNrColumn.setMaxWidth(48);
 
-        final TableColumn taskIdColumn = columnModel.getColumn(COLUMN_TASK_ID_IDX);
+        final TableColumn taskIdColumn = columnModel.getColumn(Column.TASK_ID.ordinal());
         taskIdColumn.setPreferredWidth(48);
         taskIdColumn.setMaxWidth(64);
         taskIdColumn.setCellEditor(new TaskIdCellEditor(taskIdSet));
 
-        final TableColumn connectionStatusColumn = columnModel.getColumn(COLUMN_CONNECTION_STATUS_IDX);
+        final TableColumn connectionStatusColumn = columnModel.getColumn(Column.CONNECTION_STATUS.ordinal());
         connectionStatusColumn.setMaxWidth(48);
         connectionStatusColumn.setCellRenderer(new ConnectionStatusCellRenderer());
 
-        final TableColumn uuidColumn = columnModel.getColumn(COLUMN_SERVER_UUID_IDX);
+        final TableColumn uuidColumn = columnModel.getColumn(Column.SERVER_UUID.ordinal());
         uuidColumn.setCellRenderer(new UuidCellRenderer());
         uuidColumn.setCellEditor(new DefaultCellEditor(uuidComboBox));
         uuidComboBox.addActionListener(evt -> {
             changeTaskUuidActionPerformed();
         });
 
-        final TableColumn taskStateColumn = columnModel.getColumn(COLUMN_STATE_IDX);
+        final TableColumn taskStateColumn = columnModel.getColumn(Column.STATE.ordinal());
         taskStateColumn.setMaxWidth(48);
         taskStateColumn.setCellRenderer(new TaskStateCellRenderer());
 
-        final TableColumn resultColumn = columnModel.getColumn(COLUMN_RESULT_IDX);
+        final TableColumn resultColumn = columnModel.getColumn(Column.RESULT.ordinal());
         resultColumn.setMaxWidth(64);
         // Set the editor and renderer for the result cell to view the returned response.
         resultColumn.setCellRenderer(new ResponseResultCellEditor(this));
         resultColumn.setCellEditor(new ResponseResultCellEditor(this));
 
-        final TableColumn policyColumn = columnModel.getColumn(COLUMN_EXEC_POLICY_IDX);
+        final TableColumn policyColumn = columnModel.getColumn(Column.EXEC_POLICY.ordinal());
         policyColumn.setCellRenderer(new ExecPolicyCellRenderer());
         policyColumn.setCellEditor(new DefaultCellEditor(policyComboBox));
         policyComboBox.addActionListener(evt -> {
             changeTaskPolicyActionPerformed();
         });
 
-        // hidden on default
-        tch.hideColumn(COLUMN_ROW_NR_IDX);
-        tch.hideColumn(COLUMN_SERVER_UUID_IDX);
-        tch.hideColumn(COLUMN_START_TIME_IDX);
-        tch.hideColumn(COLUMN_END_TIME_IDX);
-
-        for (int i = 0; i < TaskQueueTable.COLUMN_TITLES.length; i++) {
-            if (i == COLUMN_TASK_INSTANCE_IDX) {
+        tch = new TableColumnHider(columnModel);
+        for (final Column col : Column.values()) {
+            if (col == Column.TASK_INSTANCE) {
                 // Do not allow the user to hide the task column.
                 continue;
             }
 
-            final int colIdx = i;
-            final boolean isChecked;
-            if (colIdx == COLUMN_ROW_NR_IDX
-                    || colIdx == COLUMN_SERVER_UUID_IDX
-                    || colIdx == COLUMN_START_TIME_IDX
-                    || colIdx == COLUMN_END_TIME_IDX) {
-                // uncheck hidden columns
-                isChecked = false;
-            } else {
-                isChecked = true;
-            }
+            final int colIdx = col.ordinal();
             headerItems[colIdx] = new JCheckBoxMenuItem();
-            headerItems[colIdx].setSelected(isChecked);
-            headerItems[colIdx].setText(COLUMN_TITLES[colIdx]);
+            headerItems[colIdx].setSelected(!col.isHiddenOnDefault);
+            headerItems[colIdx].setText(col.title);
             headerItems[colIdx].addActionListener(evt -> {
                 if (headerItems[colIdx].isSelected()) {
-                    tch.showColumn(colIdx);
+                    tch.showColumn(col);
                 } else {
-                    tch.hideColumn(colIdx);
+                    tch.hideColumn(col);
                 }
             });
-            taskQueueHeaderPopupMenu.add(headerItems[i]);
+            taskQueueHeaderPopupMenu.add(headerItems[colIdx]);
         }
 
         this.tableHeader.addMouseListener(new MouseAdapter() {
@@ -201,7 +161,7 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
 
         final int taskId;
         try {
-            taskId = Integer.parseInt(dataModel.getValueAt(rowIdx, COLUMN_TASK_ID_IDX).toString());
+            taskId = Integer.parseInt(dataModel.getValueAt(rowIdx, Column.TASK_ID.ordinal()).toString());
         } catch (final NumberFormatException ex) {
             System.err.println("Failed to parse task ID. Can not delete entry.");
             return;
@@ -219,15 +179,15 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
     }
 
     public int getTaskIdFromRow(int rowIdx) {
-        return Integer.parseInt(dataModel.getValueAt(rowIdx, COLUMN_TASK_ID_IDX).toString());
+        return Integer.parseInt(dataModel.getValueAt(rowIdx, Column.TASK_ID.ordinal()).toString());
     }
 
     public QueueTask getTaskFromRow(int rowIdx) {
-        return (QueueTask) dataModel.getValueAt(rowIdx, COLUMN_TASK_INSTANCE_IDX);
+        return (QueueTask) dataModel.getValueAt(rowIdx, Column.TASK_INSTANCE.ordinal());
     }
 
     public ExecPolicy getTaskPolicyFromRow(int rowIdx) {
-        return (ExecPolicy) dataModel.getValueAt(rowIdx, COLUMN_EXEC_POLICY_IDX);
+        return (ExecPolicy) dataModel.getValueAt(rowIdx, Column.EXEC_POLICY.ordinal());
     }
 
     /**
@@ -375,18 +335,14 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         }
     }
 
-    public void showColumn(int columnIdx) {
-        if (columnIdx >= 0 && columnIdx < COLUMN_TITLES.length) {
-            tch.showColumn(columnIdx);
-            headerItems[columnIdx].setSelected(true);
-        }
+    public void showColumn(final Column col) {
+        tch.showColumn(col);
+        headerItems[col.ordinal()].setSelected(true);
     }
 
-    public void hideColumn(int columnIdx) {
-        if (columnIdx >= 0 && columnIdx < COLUMN_TITLES.length) {
-            tch.hideColumn(columnIdx);
-            headerItems[columnIdx].setSelected(false);
-        }
+    public void hideColumn(final Column col) {
+        tch.hideColumn(col);
+        headerItems[col.ordinal()].setSelected(false);
     }
 
     public JPopupMenu getColumnHeaderPopupMenu() {
@@ -401,19 +357,19 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
      */
     public void exportTableContentsAsCsv(final StringBuilder exportStr) {
         final char sep = ';'; // use semicolon as separator
-        for (final String title : COLUMN_TITLES) {
-            exportStr.append(title);
+        for (final Column col : Column.values()) {
+            exportStr.append(col.title);
             exportStr.append(sep);
         }
         exportStr.append("\n");
 
         for (int i = 0; i < this.getRowCount(); i++) {
-            for (int j = COLUMN_TASK_ID_IDX; j <= COLUMN_DURATION_IDX; j++) {
+            for (int j = Column.TASK_ID.ordinal(); j <= Column.DURATION.ordinal(); j++) {
                 exportStr.append(dataModel.getValueAt(i, j).toString());
                 exportStr.append(sep);
             }
             exportStr.append("\"");
-            exportStr.append(dataModel.getValueAt(i, COLUMN_RESULT_IDX).toString()
+            exportStr.append(dataModel.getValueAt(i, Column.RESULT.ordinal()).toString()
                     .replaceAll("\\s{2,}", " "));  // remove whitespace chains in the result string
             exportStr.append("\"");
             exportStr.append(sep);
@@ -428,7 +384,7 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
      */
     private void changeTaskUuidActionPerformed() {
         if (editingRow >= 0) {
-            final Object taskObj = dataModel.getValueAt(editingRow, COLUMN_TASK_INSTANCE_IDX);
+            final Object taskObj = dataModel.getValueAt(editingRow, Column.TASK_INSTANCE.ordinal());
             if (!(taskObj instanceof CommandTask)) {
                 return;
             }
@@ -438,11 +394,11 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
             if (wasChangeSuccess) {
                 dataModel.setValueAt(ConnectionStatus.ONLINE,
                         editingRow,
-                        COLUMN_CONNECTION_STATUS_IDX);
+                        Column.CONNECTION_STATUS.ordinal());
             } else {
                 dataModel.setValueAt(ConnectionStatus.OFFLINE,
                         editingRow,
-                        COLUMN_CONNECTION_STATUS_IDX);
+                        Column.CONNECTION_STATUS.ordinal());
             }
 
             if (paramsPane != null) {
@@ -455,7 +411,7 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
     private void changeTaskPolicyActionPerformed() {
         if (editingRow >= 0) {
             final ExecPolicy policy = (ExecPolicy) policyComboBox.getSelectedItem();
-            dataModel.setValueAt(policy, editingRow, COLUMN_EXEC_POLICY_IDX);
+            dataModel.setValueAt(policy, editingRow, Column.EXEC_POLICY.ordinal());
         }
     }
 
@@ -483,22 +439,22 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
      */
     private void updateConnectionStateOfQueueEntries(final ServerContext serverCtx) {
         for (int i = 0; i < getRowCount(); i++) {
-            final Object obj = dataModel.getValueAt(i, COLUMN_SERVER_UUID_IDX);
+            final Object obj = dataModel.getValueAt(i, Column.SERVER_UUID.ordinal());
 
             if (obj instanceof UUID) {
                 UUID taskUuid = (UUID) obj;
                 if (taskUuid.compareTo(serverCtx.getServerUuid()) == 0) {
                     if (serverCtx.isOnline()) {
                         final CommandTask task = (CommandTask) dataModel.getValueAt(i,
-                                COLUMN_TASK_INSTANCE_IDX);
+                                Column.TASK_INSTANCE.ordinal());
                         task.changeServerByCtx(serverCtx);
                         dataModel.setValueAt(ConnectionStatus.ONLINE,
                                 i,
-                                COLUMN_CONNECTION_STATUS_IDX);
+                                Column.CONNECTION_STATUS.ordinal());
                     } else {
                         dataModel.setValueAt(ConnectionStatus.OFFLINE,
                                 i,
-                                COLUMN_CONNECTION_STATUS_IDX);
+                                Column.CONNECTION_STATUS.ordinal());
                     }
                 }
             }

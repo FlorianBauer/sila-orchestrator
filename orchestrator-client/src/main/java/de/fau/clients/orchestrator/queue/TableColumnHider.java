@@ -2,57 +2,59 @@ package de.fau.clients.orchestrator.queue;
 
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Handles the visibility of the columns in a <code>TableColumnModel</code> of an
- * <code>JTable</code>.
+ * <code>JTable</code>. The indices of the shown/hidden columns and the defined column-enums are
+ * different and the actual mapping has to be resolved by using the internal look-up table (LUT).
  */
-@Slf4j
-class TableColumnHider {
+final class TableColumnHider {
 
     private final TableColumnModel columnModel;
-    private final String[] columnTitles;
-    private final TableColumn[] hiddenColumnLut;
+    private final TableColumn[] hiddenColumnLut = new TableColumn[Column.size()];
 
-    public TableColumnHider(final TableColumnModel columnModel, final String[] columnTitles) {
-        if (columnModel.getColumnCount() != columnTitles.length) {
-            throw new IllegalArgumentException("Column count missmatch between model an titles.");
-        }
+    /**
+     * Constructor. Sets the column model and hides the flagged entries. Ensure the column model is
+     * completely initialized before constructing this class.
+     *
+     * @param columnModel The fully initialized column model of an table.
+     */
+    public TableColumnHider(final TableColumnModel columnModel) {
         this.columnModel = columnModel;
-        this.columnTitles = columnTitles;
-        this.hiddenColumnLut = new TableColumn[this.columnModel.getColumnCount()];
-    }
 
-    /**
-     * Makes the given column in the table invisible.
-     *
-     * @param columnIdx The index of the column.
-     */
-    public void hideColumn(int columnIdx) {
-        if (columnIdx >= 0 && columnIdx < columnTitles.length) {
-            final int idx = columnModel.getColumnIndex(columnTitles[columnIdx]);
-            final TableColumn column = columnModel.getColumn(idx);
-            hiddenColumnLut[columnIdx] = column;
-            columnModel.removeColumn(column);
+        for (final Column col : Column.values()) {
+            if (col.isHiddenOnDefault) {
+                this.hideColumn(col);
+            }
         }
     }
 
     /**
-     * Makes the given column in the table visible.
+     * Makes the given column invisible in the table.
      *
-     * @param columnIdx The index of the column.
+     * @param col The column to hide.
      */
-    public void showColumn(int columnIdx) {
-        if (columnIdx >= 0 && columnIdx < columnTitles.length) {
-            final TableColumn column = hiddenColumnLut[columnIdx];
-            if (column != null) {
-                columnModel.addColumn(column);
-                hiddenColumnLut[columnIdx] = null;
-                int lastColumn = columnModel.getColumnCount() - 1;
-                if (columnIdx < lastColumn) {
-                    columnModel.moveColumn(lastColumn, columnIdx);
-                }
+    public void hideColumn(final Column col) {
+        final int modelIdx = columnModel.getColumnIndex(col.title);
+        final TableColumn column = columnModel.getColumn(modelIdx);
+        hiddenColumnLut[col.ordinal()] = column;
+        columnModel.removeColumn(column);
+    }
+
+    /**
+     * Makes the given column visible in the table.
+     *
+     * @param col The column to show.
+     */
+    public void showColumn(final Column col) {
+        final int idx = col.ordinal();
+        final TableColumn column = hiddenColumnLut[idx];
+        if (column != null) {
+            columnModel.addColumn(column);
+            hiddenColumnLut[idx] = null;
+            int lastColumn = columnModel.getColumnCount() - 1;
+            if (idx < lastColumn) {
+                columnModel.moveColumn(lastColumn, idx);
             }
         }
     }
