@@ -14,9 +14,11 @@ the more advanced usage inside a terminal, console or script, see the [CLI Guide
 
 To run this software, a installation of [JDK](https://jdk.java.net/) or [OpenJDK](https://adoptopenjdk.net/) in version >= 11 or higher is required.
 
-Download the latest `sila-orchestrator.jar`-package from the [Release Page](https://github.com/FlorianBauer/sila-orchestrator/releases). 
+Downloads for the latest versions are available at the [Release Page](https://github.com/FlorianBauer/sila-orchestrator/releases).
 
-Start the sila-orchestrator GUI client by typing the following into the Terminal/PowerShell: `java -jar sila-orchestrator.jar`.
+Windows user can download the `sila-orchestrator.exe` and start the application directly.
+
+Alternatively, download the `sila-orchestrator.jar` package and start the client by typing the following into a Terminal/Shell: `java -jar sila-orchestrator.jar`.
 
 To use the client in command-line mode (e.g. within a script), take a look into the [CLI Guide](doc/CliGuide.md).
 
