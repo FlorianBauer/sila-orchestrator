@@ -999,6 +999,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="aboutDialogCloseBtn">
           <Properties>
+            <Property name="mnemonic" type="int" value="99"/>
             <Property name="text" type="java.lang.String" value="Close"/>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[5, 15, 5, 15]"/>
@@ -1548,7 +1549,7 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="tasksMenu">
           <Properties>
-            <Property name="mnemonic" type="int" value="116"/>
+            <Property name="mnemonic" type="int" value="107"/>
             <Property name="text" type="java.lang.String" value="Tasks"/>
           </Properties>
           <AuxValues>
@@ -2913,6 +2914,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/icons/document-open.png"/>
             </Property>
+            <Property name="mnemonic" type="int" value="111"/>
             <Property name="text" type="java.lang.String" value="Open"/>
             <Property name="toolTipText" type="java.lang.String" value="Opens a *.silo file."/>
             <Property name="focusable" type="boolean" value="false"/>
@@ -2931,6 +2933,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/icons/document-save.png"/>
             </Property>
+            <Property name="mnemonic" type="int" value="115"/>
             <Property name="text" type="java.lang.String" value="Save"/>
             <Property name="toolTipText" type="java.lang.String" value="Saves a current queue into a *.silo file."/>
             <Property name="enabled" type="boolean" value="false"/>

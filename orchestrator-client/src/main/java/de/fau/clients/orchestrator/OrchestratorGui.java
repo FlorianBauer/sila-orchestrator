@@ -304,6 +304,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(15, 15, 15, 15);
         aboutDialog.getContentPane().add(aboutInfoTextPane, gridBagConstraints);
 
+        aboutDialogCloseBtn.setMnemonic('c');
         aboutDialogCloseBtn.setText("Close");
         aboutDialogCloseBtn.setMargin(new java.awt.Insets(5, 15, 5, 15));
         aboutDialogCloseBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -544,6 +545,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         toolBar.setRollover(true);
 
         openFileBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-open.png"))); // NOI18N
+        openFileBtn.setMnemonic('o');
         openFileBtn.setText("Open");
         openFileBtn.setToolTipText("Opens a *.silo file.");
         openFileBtn.setFocusable(false);
@@ -557,6 +559,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         toolBar.add(openFileBtn);
 
         saveFileBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-save.png"))); // NOI18N
+        saveFileBtn.setMnemonic('s');
         saveFileBtn.setText("Save");
         saveFileBtn.setToolTipText("Saves a current queue into a *.silo file.");
         saveFileBtn.setEnabled(false);
@@ -767,7 +770,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         menuBar.add(serverMenu);
 
-        tasksMenu.setMnemonic('t');
+        tasksMenu.setMnemonic('k');
         tasksMenu.setText("Tasks");
 
         clearQueueMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/queue-clear-16px.png"))); // NOI18N
