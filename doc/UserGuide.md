@@ -9,7 +9,7 @@ Instructions on how to build and run the software can be found in the [README](.
 * Discover SiLA servers with a network scan.
 * Function for manually adding SiLA servers.
 * Save and load task-queues with all their parameters to/from a file.
-* Vilidators for constrained types (validate on `[Tap]`)
+* Validators for constrained types (validate on `[Tap]`)
 	- Ranges (numbers, date, time, timestamp, string lengths)
 	- Regex match expressions
 	- List ranges
@@ -35,7 +35,7 @@ If a server can not be discovered (e.g. does not support the discover-function o
 
 To save the current task queue to a *.silo-file, click <img src="pictures/document-save.svg" width="24" height="24"> or use the shortcut `[Ctrl]+[S]`.
 
-To open a existing *.silo-file, click <img src="pictures/document-open.svg" width="24" height="24"> or press `[Ctrl]+[O]`.
+To open an existing *.silo-file, click <img src="pictures/document-open.svg" width="24" height="24"> or press `[Ctrl]+[O]`.
 
 To add a delay-task to the end of the queue, click *Add Delay* <img src="pictures/delay-add.svg" width="24" height="24"> or drag the icon from the toolbar directly into the desired position in the task queue.
 When a delay-task was added to the queue and gets executed, the set timer gets triggered, and the execution of the next element in the queue gets delayed until the timer runs out.
@@ -59,7 +59,7 @@ Execute a command in the Windows PowerShell:
 
 *Clear Queue* <img src="pictures/queue-clear.svg" width="24" height="24"> purges all entries form the current queue.
 
-The current data in the queue can be exported any time to a *.csv-file with *Export Queue* <img src="pictures/queue-export.svg" width="24" height="24">. The *.csv-file can then be imported and used with a common spreadsheet program (e.g. LibreOffice Calc or Microsoft Excel). Note that the exported data is only meant to be used for archiving or analysis purposes. A import back to the sila-orchestrator is therefore not possible.
+The current data in the queue can be exported any time to a *.csv-file with *Export Queue* <img src="pictures/queue-export.svg" width="24" height="24">. The *.csv-file can then be imported and used with a common spreadsheet program (e.g. LibreOffice Calc or Microsoft Excel). Note that the exported data is only meant to be used for archiving or analysis purposes. An import back to the sila-orchestrator is therefore not possible.
 
 
 ## Server and Feature Entries
@@ -69,7 +69,7 @@ After successfully establishing a connection to at least one SiLA complaint serv
 ![server tree](pictures/server-tree.png)
 
 
- Symbol                                                           | Description 
+ Symbol                                                           | Description
 ------------------------------------------------------------------|-------------
 <img src="pictures/server-online.svg" width="24" height="24">     | A server node which is available and online.
 <img src="pictures/server-offline.svg" width="24" height="24">    | A server node which has become offline.
@@ -89,49 +89,31 @@ The order of a task can be changed by moving its position with the <img src="pic
 
 To remove a task, use the <img src="pictures/task-remove.svg" width="24" height="24"> button.
 
-Finally, to run the entire task queue, click the  <img src="pictures/queue-exec-start.svg" width="24" height="24"> button.
+Finally, to run the entire task queue, click the *Start Run* <img src="pictures/queue-run-start.svg" width="24" height="24"> button.
 
-To abort the current run, click <img src="pictures/queue-exec-stop.svg" width="24" height="24">.
+To abort the current run, click *Stop Run* <img src="pictures/queue-run-stop.svg" width="24" height="24">.
 
+By right-clicking on a task entry, the *Run From Here* <img src="pictures/queue-run-from.svg" width="24" height="24"> option can be used to run the queue from a specific task on forward until the end.
 
 ### Queue Columns
 
 The task queue itself consists of the following columns:
 
-* ID
-* Connection
-* Task
-* Server UUID
-* Policy
-* State
-* Start Time
-* End Time
-* Duration
-* Result
+Column      | Description
+------------|-------------
+Nr.         | Labels the task positions inside the queue.
+ID          | Holds a unique number to identify the task. The number can be edited by double-clicking into the cell.
+Connection  | Shows with an online <img src="pictures/task-online.svg" width="24" height="24">, or an offline <img src="pictures/task-offline.svg" width="24" height="24"> symbol if the task is ready for execution. A neutral <img src="pictures/task-neutral.svg" width="24" height="24"> symbol (e.g. on delay-tasks) indicates that no network connection is necessary.
+Task        | Holds the Command Identifier (Name).
+Server UUID | Holds the Universal Unique IDs of the server instances for each task. The instance of each task can be re-assigned by choosing a entry from the drop-down menu in the cell. This is especially useful when a *.silo-file from an older session is loaded but the UUID of the original server changed in the meantime. Therefore, the UUID can be changed to the new instance to let the tasks become online and ready for execution once again.
+Policy      | Holds the entries for the error handling of each task. The contents can either be `HALT_AFTER_ERROR` or `PROCEED_AFTER_ERROR`. On `HALT_AFTER_ERROR`, the entire queue execution is stopped after the affected task finished with an error. If the value in the cell is set to `PROCEED_AFTER_ERROR`, a queue run is continued even if execution of the task was not successful.
+State       | Shows the current state of each task: <ul><li><img src="pictures/state-neutral.svg" width="24" height="24"> Neutral: The task is, or was not executed (yet).</li><li><img src="pictures/state-running.svg" width="24" height="24"> Running: The task is currently executed.</li><li><img src="pictures/state-finished-success.svg" width="24" height="24"> Finished with success: The task ran successfully.</li><li><img src="pictures/state-finished-error.svg" width="24" height="24"> Finished with error: The task failed or could not be completed.</li></ul>
+Start Time  | Contains the timestamp of the beginning of an task execution (`-` on empty).
+End Time    | Contains the timestamp of the end of an task execution (`-` on empty).
+Duration    | Shows the relative time a task took to finish (`-` on empty).
+Result      | Holds the outcome of each task execution. This can be an empty result `-`, an error message, or a SiLA element nested in the cell indicated by `[...]`.
 
-Not all columns are on display by default but can selectively be shown or hidden by clicking the `...`-button at the upper-right corner or by right-clicking in the column header of the table.
-
-The *ID* field holds a unique number to identify the task. The number can be edited by double-clicking into the cell.
-
-The *Connection* column shows with an online <img src="pictures/task-online.svg" width="24" height="24">, or an offline <img src="pictures/task-offline.svg" width="24" height="24"> symbol if the task is ready for execution. A neutral <img src="pictures/task-neutral.svg" width="24" height="24"> symbol (e.g. on delay-tasks) indicates that no network connection is necessary.
-
-*Task* holds the command identifier.
-
-The *Server UUID* column holds the Universal Unique IDs of the server instances for each task. The instance of each task can be re-assigned by choosing a entry from the drop-down menu in the cell. This is especially useful when a *.silo-file from an older session is loaded but the UUID of the original server changed in the meantime. Therefore, the UUID can be changed to the new instance to let the tasks become online and ready for execution once again.
-
-The *Policy* column holds the entries for the error handling of each task. The contents can either be `HALT_AFTER_ERROR` or `PROCEED_AFTER_ERROR`. On `HALT_AFTER_ERROR`, the entire queue execution is stopped after the affected task finished with an error. If the value in the cell is set to `PROCEED_AFTER_ERROR`, a queue run is continued even if execution of the task was not successful.
-
-The *State* column signals the current state of each task.
-- <img src="pictures/state-neutral.svg" width="24" height="24"> Neutral: The task is, or was not executed (yet).
-- <img src="pictures/state-running.svg" width="24" height="24"> Running: The task is currently executed.
-- <img src="pictures/state-finished-success.svg" width="24" height="24"> Finished with success: The task ran successfully.
-- <img src="pictures/state-finished-error.svg" width="24" height="24"> Finished with error: The task failed or could not be completed.
-
-The columns *Start Time* as well as *End Time* contain timestamp entries of the beginning and end of the task execution.
-
-*Duration* shows the relative time a task took to finish.
-
-The *Result* cells hold the outcome of each task execution. This can be an empty result `-`, an error message, or a SiLA element nested in the cell indicated by `[...]`.
+Not all columns are on display by default, but can selectively be shown or hidden by clicking the `...`-button at the upper-right corner or by right-clicking in the column header of the table.
 
 All columns in the table can be rearranged by dragging the corresponding column header into the desired position.
 
@@ -164,7 +146,7 @@ The server view shows various info and offers a built-in function for renaming t
 * Not modifiable SiLA properties with a constraint get validated. The value can be edited to check against the validator by pressing `[Tab]`, but does not affect the actual value on the server.
 
 Example:  
-A not so SiLA complaint Command Parameter Identifier (just a example, no intention to blame the vendor of this server):  
+A not so SiLA complaint Command Parameter Identifier (just an example, no intention to blame the vendor of this server):  
 ![validation wrong](pictures/command-parameter-id-wrong.png)
 
 The, according to the standard, correct Command Parameter Identifier the validator would accept:  
@@ -173,7 +155,7 @@ The, according to the standard, correct Command Parameter Identifier the validat
 
 ### Command View
 
-To show and edit the parameter of a SiLA command, the command must be added to the task queue first. After that, the command can be selected in the task queue and the parameters can be set accordingly.
+To show and edit the parameter of a SiLA command, the command must be added to the task queue first. After that, the command can be selected in the task queue, and the parameters can be set accordingly.
 
 To execute a single command, without invoking any other entries in the task queue, click the <img src="pictures/execute.svg" width="24" height="24"> button.
 
