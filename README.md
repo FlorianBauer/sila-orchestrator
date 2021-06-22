@@ -37,8 +37,8 @@ cd path/to/sila-orchestrator/
 mvn clean install -DskipTests
 ```
 
-After that, the resulting `*.jar`-file is located in the `orchestrator-client/target`-directory as 
-`sila-orchestrator.jar`.
+After that, the resulting executable files are located in the `orchestrator-client/target`-directory as 
+`sila-orchestrator.jar` and `sila-orchestrator.exe`.
 
 
 ### Menu Item Installer for Linux
