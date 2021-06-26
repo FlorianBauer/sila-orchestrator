@@ -1370,7 +1370,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private void disableStartRunControls() {
         startQueueRunBtn.setEnabled(false);
         startQueueRunMenuItem.setEnabled(false);
-        startQueueRunFromHereMenuItem.setEnabled(true);
+        startQueueRunFromHereMenuItem.setEnabled(false);
 
         stopQueueRunBtn.setEnabled(true);
         stopQueueRunMenuItem.setEnabled(true);
