@@ -24,7 +24,7 @@ public enum IconProvider {
     LIST_REMOVE(new ImageIcon(IconProvider.class.getResource("/icons/list-remove.png"))),
     MOVE_DOWN(new ImageIcon(IconProvider.class.getResource("/icons/move-down.png"))),
     MOVE_UP(new ImageIcon(IconProvider.class.getResource("/icons/move-up.png"))),
-    NETWORK_SCAN(new ImageIcon(IconProvider.class.getResource("/icons/network-scan.png"))),
+    NETWORK_SCAN_32PX(new ImageIcon(IconProvider.class.getResource("/icons/network-scan-32px.png"))),
     NETWORK_SCAN_16PX(new ImageIcon(IconProvider.class.getResource("/icons/network-scan-16px.png"))),
     PROPERTY(new ImageIcon(IconProvider.class.getResource("/icons/property.png"))),
     QUEUE_CLEAR(new ImageIcon(IconProvider.class.getResource("/icons/queue-clear.png"))),

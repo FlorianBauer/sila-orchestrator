@@ -410,7 +410,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         serverPanel.add(addServerBtn, gridBagConstraints);
 
-        scanServerBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/network-scan.png"))); // NOI18N
+        scanServerBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/network-scan-32px.png"))); // NOI18N
         scanServerBtn.setMnemonic('c');
         scanServerBtn.setText("Scan");
         scanServerBtn.setToolTipText("Scans the network for discoverable SiLA servers.");
