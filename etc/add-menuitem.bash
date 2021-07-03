@@ -37,7 +37,7 @@ Type=Application
 Categories=Development
 Terminal=false
 StartupWMClass=sila-orchestator
-Exec=java -jar "$ORCHESTRATOR_DIR/orchestrator-client/target/orchestrator-client-exec.jar"
+Exec=java -jar "$ORCHESTRATOR_DIR/orchestrator-client/target/sila-orchestrator.jar"
 MimeType=x-scheme-handler/sila-orchestrator;
 Icon=$ORCHESTRATOR_DIR/doc/pictures/$ICON_NAME.svg
 EOF
