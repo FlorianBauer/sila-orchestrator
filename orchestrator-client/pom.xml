@@ -161,6 +161,7 @@
                             <supportUrl>https://github.com/FlorianBauer/sila-orchestrator</supportUrl>
                             <icon>${project.parent.basedir}/doc/pictures/sila-orchestrator-icon.ico</icon>
                             <jre>
+                                <path>%JAVA_HOME%;%PATH%</path>
                                 <minVersion>${java.version}</minVersion>
                             </jre>
                             <versionInfo>
