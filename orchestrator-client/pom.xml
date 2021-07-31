@@ -157,7 +157,7 @@
                             <headerType>gui</headerType>
                             <jar>${project.build.directory}/${project.parent.artifactId}.jar</jar>
                             <outfile>${project.build.directory}/${project.parent.artifactId}.exe</outfile>
-                            <downloadUrl>https://adoptopenjdk.net/</downloadUrl>
+                            <downloadUrl>https://adoptium.net</downloadUrl>
                             <supportUrl>https://github.com/FlorianBauer/sila-orchestrator</supportUrl>
                             <icon>${project.parent.basedir}/doc/pictures/sila-orchestrator-icon.ico</icon>
                             <jre>
