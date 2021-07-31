@@ -204,7 +204,7 @@ final class BasicNodeFactory {
                         return createErrorType(basicType, ex.getMessage());
                     }
                     return createDateType(
-                            LocalDate.of(dateVal.getDay(), dateVal.getMonth(), dateVal.getYear()),
+                            LocalDate.of(dateVal.getYear(), dateVal.getMonth(), dateVal.getDay()),
                             isEditable);
                 case INTEGER:
                     try {
