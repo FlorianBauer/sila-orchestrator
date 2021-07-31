@@ -10,8 +10,6 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.Base64;
-import java.util.Base64.Encoder;
 import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -30,6 +28,7 @@ import sila_java.library.core.models.BasicType;
 public class BasicNodeFactoryTest {
 
     static final ObjectMapper mapper = new ObjectMapper();
+    static final double EPSILON = 0.0001;
 
     @Test
     public void create() {
@@ -219,8 +218,159 @@ public class BasicNodeFactoryTest {
     }
 
     @Test
+    public void createAnyFromJsonWithInteger() throws JsonProcessingException {
+        final String jsonStr = "{\"Any\":{\"type\":\""
+                + "<dataTypeType>\\n"
+                + "    <Basic>Integer</Basic>\\n"
+                + "</dataTypeType>\\n\","
+                + "\"payload\":\"CIkG\"}}";
+        final JsonNode jsonNode = mapper.readTree(jsonStr);
+        boolean isEditable = false;
+        BasicNode actual = (BasicNode) BasicNodeFactory.createFromJson(BasicType.ANY, jsonNode.get("Any"), isEditable);
+        assertEquals(BasicType.INTEGER, actual.getType());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JTextField.class, actual.getComponent().getClass());
+        assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
+        assertEquals(777l, actual.getValue());
+        assertEquals("{\"value\":\"777\"}", actual.toJsonString());
+    }
+
+    @Test
+    public void createAnyFromJsonWithReal() throws JsonProcessingException {
+        final String jsonStr = "{\n"
+                + "  \"Any\": {\n"
+                + "    \"type\": \"<DataType><Basic>Real</Basic></DataType>\",\n"
+                + "    \"payload\": \"CW8Sg8DKIQlA\"\n"
+                + "  }\n"
+                + "}";
+        final JsonNode jsonNode = mapper.readTree(jsonStr);
+        boolean isEditable = false;
+        BasicNode actual = (BasicNode) BasicNodeFactory.createFromJson(BasicType.ANY, jsonNode.get("Any"), isEditable);
+        assertEquals(BasicType.REAL, actual.getType());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JTextField.class, actual.getComponent().getClass());
+        assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
+        assertEquals(3.1415, (double) actual.getValue(), EPSILON);
+        assertEquals("{\"value\":\"3.1415\"}", actual.toJsonString());
+    }
+
+    @Test
+    public void createAnyFromJsonWithBoolean() throws JsonProcessingException {
+        final String jsonStr = "{\n"
+                + "  \"Any\": {\n"
+                + "    \"type\": \"<DataType><Basic>Boolean</Basic></DataType>\",\n"
+                + "    \"payload\": \"CAE=\"\n"
+                + "  }\n"
+                + "}";
+        final JsonNode jsonNode = mapper.readTree(jsonStr);
+        boolean isEditable = false;
+        BasicNode actual = (BasicNode) BasicNodeFactory.createFromJson(BasicType.ANY, jsonNode.get("Any"), isEditable);
+        assertEquals(BasicType.BOOLEAN, actual.getType());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JCheckBox.class, actual.getComponent().getClass());
+        assertEquals(isEditable, ((JCheckBox) actual.getComponent()).isEnabled());
+        assertEquals(true, actual.getValue());
+        assertEquals("{\"value\":\"true\"}", actual.toJsonString());
+    }
+
+    @Test
+    public void createAnyFromJsonWithBinary() throws JsonProcessingException {
+        final String jsonStr = "{\n"
+                + "  \"Any\": {\n"
+                + "    \"type\": \"<DataType><Basic>Binary</Basic></DataType>\",\n"
+                + "    \"payload\": \"CgpCaW5hcnlUZXN0\"\n"
+                + "  }\n"
+                + "}";
+        final JsonNode jsonNode = mapper.readTree(jsonStr);
+        boolean isEditable = false;
+        BasicNode actual = (BasicNode) BasicNodeFactory.createFromJson(BasicType.ANY, jsonNode.get("Any"), isEditable);
+        assertEquals(BasicType.BINARY, actual.getType());
+        assertEquals(false, actual.isEditable);
+        assertArrayEquals("BinaryTest".getBytes(), (byte[]) actual.getValue());
+        assertEquals("{\"value\":\"QmluYXJ5VGVzdA==\"}", actual.toJsonString());
+    }
+
+    @Test
+    public void createAnyFromJsonWithString() throws JsonProcessingException {
+        final String jsonStr = "{\"Any\":{\"type\":\""
+                + "<dataTypeType>\\n"
+                + "    <Basic>String</Basic>\\n"
+                + "</dataTypeType>\\n\","
+                + "\"payload\":\"CgRTaUxB\"}}";
+        final JsonNode jsonNode = mapper.readTree(jsonStr);
+        boolean isEditable = false;
+        BasicNode actual = (BasicNode) BasicNodeFactory.createFromJson(BasicType.ANY, jsonNode.get("Any"), isEditable);
+        assertEquals(BasicType.STRING, actual.getType());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JTextField.class, actual.getComponent().getClass());
+        assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
+        assertEquals("SiLA", actual.getValue());
+        assertEquals("{\"value\":\"SiLA\"}", actual.toJsonString());
+    }
+
+    @Test
+    public void createAnyFromJsonWithDate() throws JsonProcessingException {
+        final String jsonStr = "{\n"
+                + "  \"Any\": {\n"
+                + "    \"type\": \"<DataType><Basic>Date</Basic></DataType>\",\n"
+                + "    \"payload\": \"CB8QBxjlDyICCAI=\"\n"
+                + "  }\n"
+                + "}";
+        final JsonNode jsonNode = mapper.readTree(jsonStr);
+        boolean isEditable = false;
+        BasicNode actual = (BasicNode) BasicNodeFactory.createFromJson(BasicType.ANY, jsonNode.get("Any"), isEditable);
+        assertEquals(BasicType.DATE, actual.getType());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JTextField.class, actual.getComponent().getClass());
+        assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
+        assertEquals(LocalDate.of(2021, 07, 31), actual.getValue());
+        assertEquals("{\"day\":31,\"month\":7,\"year\":2021,\"timezone\":{\"hours\":0}}", actual.toJsonString());
+
+    }
+
+    @Test
+    public void createAnyFromJsonWithTime() throws JsonProcessingException {
+        final String jsonStr = "{\n"
+                + "  \"Any\": {\n"
+                + "    \"type\": \"<DataType><Basic>Time</Basic></DataType>\",\n"
+                + "    \"payload\": \"CAoQBRgXIgIIAg==\"\n"
+                + "  }\n"
+                + "}";
+        final JsonNode jsonNode = mapper.readTree(jsonStr);
+        boolean isEditable = false;
+        BasicNode actual = (BasicNode) BasicNodeFactory.createFromJson(BasicType.ANY, jsonNode.get("Any"), isEditable);
+        assertEquals(BasicType.TIME, actual.getType());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JTextField.class, actual.getComponent().getClass());
+        assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
+        assertEquals(OffsetTime.of(21, 5, 10, 0, ZoneOffset.UTC), actual.getValue());
+        assertEquals("{\"second\":10,\"minute\":5,\"hour\":21,\"timezone\":{\"hours\":0}}", actual.toJsonString());
+    }
+
+    @Test
+    public void createAnyFromJsonWithTimestamp() throws JsonProcessingException {
+        final String jsonStr = "{\n"
+                + "  \"Any\": {\n"
+                + "    \"type\": \"<DataType><Basic>Timestamp</Basic></DataType>\",\n"
+                + "    \"payload\": \"CC8QCxgXIB8oBzDlDzoCCAI=\"\n"
+                + "  }\n"
+                + "}";
+        final JsonNode jsonNode = mapper.readTree(jsonStr);
+        boolean isEditable = false;
+        BasicNode actual = (BasicNode) BasicNodeFactory.createFromJson(BasicType.ANY, jsonNode.get("Any"), isEditable);
+        assertEquals(BasicType.TIMESTAMP, actual.getType());
+        assertEquals(false, actual.isEditable);
+        assertEquals(JTextField.class, actual.getComponent().getClass());
+        assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
+        assertEquals(OffsetDateTime.of(2021, 07, 31, 21, 11, 47, 0, ZoneOffset.UTC), actual.getValue());
+        assertEquals("{\"second\":47,\"minute\":11,\"hour\":21,"
+                + "\"day\":31,\"month\":7,\"year\":2021,"
+                + "\"timezone\":{\"hours\":0}}",
+                actual.toJsonString());
+    }
+
+    @Test
     public void createBinaryType() {
-        final Encoder enc = Base64.getEncoder();
         String testData = "test";
         byte[] payload = testData.getBytes(StandardCharsets.UTF_8);
         boolean isEditable = false;
