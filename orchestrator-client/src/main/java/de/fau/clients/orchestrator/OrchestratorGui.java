@@ -431,8 +431,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         mainPanel.setPreferredSize(new java.awt.Dimension(512, 409));
         mainPanel.setLayout(new javax.swing.BoxLayout(mainPanel, javax.swing.BoxLayout.PAGE_AXIS));
 
-        mainPanelSplitPane.setDividerLocation(300);
+        mainPanelSplitPane.setDividerLocation(250);
         mainPanelSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        mainPanelSplitPane.setToolTipText("");
         mainPanelSplitPane.setContinuousLayout(true);
 
         java.awt.GridBagLayout taskQueuePanelLayout = new java.awt.GridBagLayout();

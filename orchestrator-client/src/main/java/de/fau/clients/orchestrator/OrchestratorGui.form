@@ -2165,8 +2165,9 @@
           <SubComponents>
             <Container class="javax.swing.JSplitPane" name="mainPanelSplitPane">
               <Properties>
-                <Property name="dividerLocation" type="int" value="300"/>
+                <Property name="dividerLocation" type="int" value="250"/>
                 <Property name="orientation" type="int" value="0"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
                 <Property name="continuousLayout" type="boolean" value="true"/>
               </Properties>
               <AuxValues>
