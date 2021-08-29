@@ -114,10 +114,6 @@ public final class SilaBasicTypeUtils {
     public static LocalDate dateFromJsonNode(final JsonNode jsonNode) {
         final LocalDate date;
         if (jsonNode.has(FIELD_VALUE)) {
-            /* This is not conform with SiLA v1.0, so we nag about it in the logs and handle the
-               wrong 'value'-field anyway.*/
-            log.warn("The 'value'-field in Date-types is not conform with the SiLA standard. "
-                    + "Please use the defined data fields instead.");
             date = DateTimeParser.parseIsoDate(jsonNode.get(FIELD_VALUE).asText());
         } else {
             try {
@@ -136,10 +132,6 @@ public final class SilaBasicTypeUtils {
     public static OffsetTime timeFromJsonNode(final JsonNode jsonNode) {
         final OffsetTime date;
         if (jsonNode.has(FIELD_VALUE)) {
-            /* This is not conform with SiLA v1.0, so we nag about it in the logs and handle the
-               wrong 'value'-field anyway.*/
-            log.warn("The 'value'-field in Date-types is not conform with the SiLA standard. "
-                    + "Please use the defined data fields instead.");
             date = DateTimeParser.parseIsoTime(jsonNode.get(FIELD_VALUE).asText());
         } else {
             final JsonNode zoneNode = jsonNode.get(FIELD_TIMEZONE);
@@ -164,10 +156,6 @@ public final class SilaBasicTypeUtils {
     public static OffsetDateTime timestampFromJsonNode(final JsonNode jsonNode) {
         final OffsetDateTime timestamp;
         if (jsonNode.has(FIELD_VALUE)) {
-            /* This is not conform with SiLA v1.0, so we nag about it in the logs and handle the
-               wrong 'value'-field anyway.*/
-            log.warn("The 'value'-field in Date-types is not conform with the SiLA standard. "
-                    + "Please use the defined data fields instead.");
             timestamp = DateTimeParser.parseIsoDateTime(jsonNode.get(FIELD_VALUE).asText());
         } else {
             final JsonNode zoneNode = jsonNode.get(FIELD_TIMEZONE);
