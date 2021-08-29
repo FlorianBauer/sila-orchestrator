@@ -20,14 +20,14 @@ import sila_java.library.core.models.BasicType;
  * @see BasciNodeFactory
  * @see ConstraintBasicNode
  */
-class BasicNode extends SilaNode {
+public class BasicNode extends SilaNode {
 
     protected final BasicType type;
     protected final JComponent component;
     protected final Supplier<? extends Object> valueSupplier;
     protected final boolean isEditable;
 
-    protected BasicNode(
+    public BasicNode(
             @NonNull final BasicType type,
             @NonNull final JComponent component,
             @NonNull final Supplier<? extends Object> valueSupplier,
