@@ -378,14 +378,14 @@ public class BasicNodeFactoryTest {
         assertEquals(BasicType.BINARY, actual.getType());
         assertEquals(JScrollPane.class, actual.getComponent().getClass());
         assertEquals(JEditorPane.class, ((JViewport) actual.getComponent().getComponent(0)).getComponent(0).getClass());
-        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEnabled());
+        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEditable());
         assertEquals(testData, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).getText());
         assertArrayEquals(payload, (byte[]) actual.getValue());
 
         isEditable = true;
         actual = BasicNodeFactory.createBinaryType(payload, isEditable);
         assertEquals(BasicType.BINARY, actual.getType());
-        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEnabled());
+        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEditable());
         assertEquals(testData, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).getText());
         assertArrayEquals(payload, (byte[]) actual.getValue());
 
@@ -396,14 +396,14 @@ public class BasicNodeFactoryTest {
         assertEquals(BasicType.BINARY, actual.getType());
         assertEquals(JScrollPane.class, actual.getComponent().getClass());
         assertEquals(JEditorPane.class, ((JViewport) actual.getComponent().getComponent(0)).getComponent(0).getClass());
-        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEnabled());
+        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEditable());
         assertEquals(testData, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).getText());
         assertArrayEquals(payload, (byte[]) actual.getValue());
 
         isEditable = true;
         actual = BasicNodeFactory.createBinaryType(payload, isEditable);
         assertEquals(BasicType.BINARY, actual.getType());
-        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEnabled());
+        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEditable());
         assertEquals(testData, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).getText());
         assertArrayEquals(payload, (byte[]) actual.getValue());
 
@@ -412,19 +412,19 @@ public class BasicNodeFactoryTest {
         actual = BasicNodeFactory.createBinaryType(payload, isEditable);
         assertEquals(BasicType.BINARY, actual.getType());
         assertEquals(JTextField.class, actual.getComponent().getClass());
-        assertEquals(isEditable, ((JTextField) actual.getComponent()).isEnabled());
+        assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals("SHA-256: cbf2a37578fc1ec0eb92cf57a406f126514036a67aef4df071e2116876ebfb4a",
                 ((JTextField) actual.getComponent()).getText());
-        assertEquals(payload, (byte[]) actual.getValue());
+        assertArrayEquals(payload, (byte[]) actual.getValue());
 
         isEditable = true;
         actual = BasicNodeFactory.createBinaryType(payload, isEditable);
         assertEquals(BasicType.BINARY, actual.getType());
         assertEquals(JTextField.class, actual.getComponent().getClass());
-        assertEquals(false, ((JTextField) actual.getComponent()).isEnabled());
+        assertEquals(isEditable, ((JTextField) actual.getComponent()).isEditable());
         assertEquals("SHA-256: cbf2a37578fc1ec0eb92cf57a406f126514036a67aef4df071e2116876ebfb4a",
                 ((JTextField) actual.getComponent()).getText());
-        assertEquals(payload, (byte[]) actual.getValue());
+        assertArrayEquals(payload, (byte[]) actual.getValue());
     }
 
     @Test
@@ -435,7 +435,7 @@ public class BasicNodeFactoryTest {
         assertEquals(BasicType.BINARY, actual.getType());
         assertEquals(JScrollPane.class, actual.getComponent().getClass());
         assertEquals(JEditorPane.class, ((JViewport) actual.getComponent().getComponent(0)).getComponent(0).getClass());
-        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEnabled());
+        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEditable());
         assertEquals("", ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).getText());
         assertArrayEquals(expected, (byte[]) actual.getValue());
 
@@ -444,7 +444,7 @@ public class BasicNodeFactoryTest {
         assertEquals(BasicType.BINARY, actual.getType());
         assertEquals(JScrollPane.class, actual.getComponent().getClass());
         assertEquals(JEditorPane.class, ((JViewport) actual.getComponent().getComponent(0)).getComponent(0).getClass());
-        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEnabled());
+        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEditable());
         assertEquals("", ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).getText());
         assertArrayEquals(expected, (byte[]) actual.getValue());
     }
@@ -459,7 +459,7 @@ public class BasicNodeFactoryTest {
         assertEquals(BasicType.BINARY, actual.getType());
         assertEquals(JScrollPane.class, actual.getComponent().getClass());
         assertEquals(JEditorPane.class, ((JViewport) actual.getComponent().getComponent(0)).getComponent(0).getClass());
-        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEnabled());
+        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEditable());
         assertEquals("test", ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).getText());
         assertArrayEquals(expected, (byte[]) actual.getValue());
         assertEquals(jsonStr, actual.toJson().toString());
@@ -469,7 +469,7 @@ public class BasicNodeFactoryTest {
         assertEquals(BasicType.BINARY, actual.getType());
         assertEquals(JScrollPane.class, actual.getComponent().getClass());
         assertEquals(JEditorPane.class, ((JViewport) actual.getComponent().getComponent(0)).getComponent(0).getClass());
-        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEnabled());
+        assertEquals(isEditable, ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).isEditable());
         assertEquals("test", ((JEditorPane) ((JViewport) actual.getComponent().getComponent(0)).getComponent(0)).getText());
     }
 

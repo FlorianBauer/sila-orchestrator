@@ -307,7 +307,7 @@ final class BasicNodeFactory {
         if (isUtf8) {
             binaryReprStr = new String(byteValue, StandardCharsets.UTF_8);
             final JEditorPane editorPane = new JEditorPane();
-            editorPane.setEnabled(isEditable);
+            editorPane.setEditable(isEditable);
             editorPane.setText(binaryReprStr);
             final JScrollPane scrollPane = new JScrollPane(editorPane);
             scrollPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
@@ -325,8 +325,7 @@ final class BasicNodeFactory {
             final JTextField textField = new JTextField();
             textField.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             textField.setMaximumSize(MaxDim.TEXT_FIELD.getDim());
-            // Raw (non UTF-8) data can not be edited.
-            textField.setEnabled(false);
+            textField.setEditable(isEditable);
             textField.setText(binaryReprStr);
             comp = textField;
             supp = () -> (byteValue);
