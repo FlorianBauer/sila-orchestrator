@@ -19,7 +19,6 @@ import de.fau.clients.orchestrator.utils.OffsetTimeSpinnerModel;
 import de.fau.clients.orchestrator.utils.SilaBasicTypeUtils;
 import de.fau.clients.orchestrator.utils.ValidatorUtils;
 import de.fau.clients.orchestrator.utils.XmlUtils;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -319,7 +318,7 @@ final class BasicNodeFactory {
         } else {
             try {
                 final MessageDigest md = MessageDigest.getInstance("SHA-256");
-                binaryReprStr = "SHA-256: " + toHexString(md.digest(byteValue));
+                binaryReprStr = "SHA-256: " + SilaBasicTypeUtils.toHexString(md.digest(byteValue));
             } catch (final NoSuchAlgorithmException ex) {
                 binaryReprStr = "SHA-256: error";
             }
@@ -534,20 +533,5 @@ final class BasicNodeFactory {
         final JLabel errLabel = new JLabel("Error: " + errorMsg);
         errLabel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
         return new BasicNode(basicType, errLabel, () -> (""), false);
-    }
-
-    /**
-     * Converts hexadecimal byte values to a string.
-     *
-     * @param hexValues The hex values to represent as string.
-     * @return A the hex values as String.
-     */
-    public static String toHexString(byte[] hexValues) {
-        final BigInteger number = new BigInteger(1, hexValues);
-        final StringBuilder hexString = new StringBuilder(number.toString(16));
-        while (hexString.length() < 32) {
-            hexString.insert(0, '0');
-        }
-        return hexString.toString();
     }
 }

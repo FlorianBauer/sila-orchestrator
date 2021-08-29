@@ -3,6 +3,7 @@ package de.fau.clients.orchestrator.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
@@ -204,5 +205,20 @@ public final class SilaBasicTypeUtils {
         return ZoneOffset.ofHoursMinutes(
                 hours != null ? hours.asInt(0) : 0,
                 minutes != null ? minutes.asInt(0) : 0);
+    }
+
+    /**
+     * Converts hexadecimal byte values to a string.
+     *
+     * @param hexValues The hex values to represent as string.
+     * @return A the hex values as String.
+     */
+    public static String toHexString(byte[] hexValues) {
+        final BigInteger number = new BigInteger(1, hexValues);
+        final StringBuilder hexString = new StringBuilder(number.toString(16));
+        while (hexString.length() < 32) {
+            hexString.insert(0, '0');
+        }
+        return hexString.toString();
     }
 }
