@@ -1,8 +1,11 @@
 package de.fau.clients.orchestrator.ctx;
 
 import de.fau.clients.orchestrator.utils.VersionNumber;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.NonNull;
@@ -14,7 +17,7 @@ import sila_java.library.core.models.SiLAElement;
  * The context of a SiLA feature allowing traversal trough the corresponding members as well as the
  * lower server context level.
  */
-public class FeatureContext implements FullyQualifiedIdentifieable {
+public class FeatureContext implements FullyQualifiedIdentifieable, Comparable<FeatureContext> {
 
     private final ServerContext serverCtx;
     private final Feature feature;
@@ -63,6 +66,10 @@ public class FeatureContext implements FullyQualifiedIdentifieable {
         return feature.getIdentifier();
     }
 
+    public String getDisplayName() {
+        return feature.getDisplayName();
+    }
+
     public boolean isCoreFeature() {
         return isCoreFeature;
     }
@@ -83,6 +90,18 @@ public class FeatureContext implements FullyQualifiedIdentifieable {
         return propertyMap.values();
     }
 
+    public List<CommandContext> getCommandCtxSortedList() {
+        final ArrayList<CommandContext> sortedList = new ArrayList<>(commandMap.values());
+        Collections.sort(sortedList);
+        return sortedList;
+    }
+
+    public List<PropertyContext> getPropertyCtxSortedList() {
+        final ArrayList<PropertyContext> sortedList = new ArrayList<>(propertyMap.values());
+        Collections.sort(sortedList);
+        return sortedList;
+    }
+
     public Collection<MetadataContext> getMetadataCtxList() {
         return metadataMap.values();
     }
@@ -94,5 +113,31 @@ public class FeatureContext implements FullyQualifiedIdentifieable {
                 + "/" + feature.getCategory()
                 + "/" + feature.getIdentifier()
                 + "/v" + featVer.getMajorNumber();
+    }
+
+    /**
+     * Comparator function for sorting. The first criteria for ordering is done by the (non-) core
+     * feature category, the second is the lexicographical order of the display name.
+     *
+     * @param other The other `FeatureContext` to compare against.
+     * @return A negative integer on an lower rank, zero on equality and a positive integer on an
+     * higher rank as the compared object.
+     */
+    @Override
+    public int compareTo(final FeatureContext other) {
+        int selfRank = this.isCoreFeature ? 1 : -1;
+        int otherRank = other.isCoreFeature ? 1 : -1;
+
+        if (selfRank != otherRank) {
+            // Fist, sort after core features (to place core features always at the end) ...
+            return selfRank - otherRank;
+        }
+        // ... then sort after the display name.
+        return this.getDisplayName().compareTo(other.getDisplayName());
+    }
+
+    @Override
+    public String toString() {
+        return getFullyQualifiedIdentifier();
     }
 }

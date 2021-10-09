@@ -11,6 +11,7 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -77,13 +78,13 @@ public final class ServerFeatureTree extends JTree implements Presentable, Serve
         final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
         rootNode.add(serverNode);
 
-        for (final FeatureContext featCtx : serverCtx.getFeatureCtxList()) {
+        for (final FeatureContext featCtx : serverCtx.getFeatureCtxSortedList()) {
             final Feature feature = featCtx.getFeature();
             final FeatureInfoTreeNode featureNode = new FeatureInfoTreeNode(featCtx);
             featureNode.setUserObject(new TreeNodeType(feature, featCtx.isCoreFeature()));
             serverNode.add(featureNode);
 
-            final Collection<PropertyContext> propCtxList = featCtx.getPropertyCtxList();
+            final List<PropertyContext> propCtxList = featCtx.getPropertyCtxSortedList();
             if (!propCtxList.isEmpty()) {
                 final DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode("Properties");
                 featureNode.add(propertyNode);
@@ -94,7 +95,7 @@ public final class ServerFeatureTree extends JTree implements Presentable, Serve
                 }
             }
 
-            final Collection<CommandContext> cmdCtxList = featCtx.getCommandCtxList();
+            final List<CommandContext> cmdCtxList = featCtx.getCommandCtxSortedList();
             if (!cmdCtxList.isEmpty()) {
                 final DefaultMutableTreeNode commandNode = new DefaultMutableTreeNode("Commands");
                 featureNode.add(commandNode);

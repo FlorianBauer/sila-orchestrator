@@ -1,7 +1,10 @@
 package de.fau.clients.orchestrator.ctx;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.NonNull;
@@ -49,6 +52,12 @@ public class ServerContext {
 
     public Collection<FeatureContext> getFeatureCtxList() {
         return featureMap.values();
+    }
+
+    public List<FeatureContext> getFeatureCtxSortedList() {
+        final ArrayList<FeatureContext> sortedList = new ArrayList<>(featureMap.values());
+        Collections.sort(sortedList);
+        return sortedList;
     }
 
     public boolean isServerNameValid(final String newServerName) {

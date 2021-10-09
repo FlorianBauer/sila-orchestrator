@@ -3,7 +3,7 @@ package de.fau.clients.orchestrator.ctx;
 import lombok.NonNull;
 import sila_java.library.core.models.Feature;
 
-public class PropertyContext implements FullyQualifiedIdentifieable {
+public class PropertyContext implements FullyQualifiedIdentifieable, Comparable<PropertyContext> {
 
     private final FeatureContext featureCtx;
     private final Feature.Property property;
@@ -24,8 +24,22 @@ public class PropertyContext implements FullyQualifiedIdentifieable {
         return property;
     }
 
+    public String getDisplayName() {
+        return property.getDisplayName();
+    }
+
     @Override
     public String getFullyQualifiedIdentifier() {
         return featureCtx.getFullyQualifiedIdentifier() + "/Property/" + property.getIdentifier();
+    }
+
+    @Override
+    public int compareTo(final PropertyContext other) {
+        return this.getDisplayName().compareTo(other.getDisplayName());
+    }
+
+    @Override
+    public String toString() {
+        return getFullyQualifiedIdentifier();
     }
 }
