@@ -9,7 +9,6 @@ import de.fau.clients.orchestrator.dnd.CommandNodeTransferHandler;
 import de.fau.clients.orchestrator.utils.SilaDescriptionToolTip;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
