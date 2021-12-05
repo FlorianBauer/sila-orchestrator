@@ -190,6 +190,10 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         return (ExecPolicy) dataModel.getValueAt(rowIdx, Column.EXEC_POLICY.ordinal());
     }
 
+    public boolean isEmpty() {
+        return !(dataModel.getRowCount() > 0);
+    }
+
     /**
      * Resets the run-time states of every task in the queue. The the following fields get set to
      * their default values:

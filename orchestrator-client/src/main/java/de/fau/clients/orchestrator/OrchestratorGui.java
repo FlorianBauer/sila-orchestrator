@@ -703,6 +703,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         openMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-open-16px.png"))); // NOI18N
         openMenuItem.setMnemonic('o');
         openMenuItem.setText("Open");
+        openMenuItem.setToolTipText("Loads the content of a *.silo-file into the task queue.");
         openMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openFileActionPerformed(evt);
@@ -1157,6 +1158,20 @@ public class OrchestratorGui extends javax.swing.JFrame {
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
+
+            if (!wasSaved && !taskQueueTable.isEmpty()) {
+                int optionVal = JOptionPane.showConfirmDialog(
+                        this,
+                        "The current task queue is not empty and will be overwritten.\n"
+                        + "Do you want to overwrite the task queue?",
+                        "Overwrite Queue?",
+                        JOptionPane.YES_NO_CANCEL_OPTION);
+
+                if (optionVal != JOptionPane.YES_OPTION) {
+                    return;
+                }
+            }
+
             clearQueueActionPerformed(evt);
             tqd.importToTaskQueue(taskQueueTable);
         }
@@ -1213,8 +1228,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
                         "File \"" + outPath.getFileName() + "\" already exists in \""
                         + outPath.getParent() + "\"!\n"
                         + "Do you want to overwrite the existing file?",
-                        "Overwrite File",
-                        JOptionPane.INFORMATION_MESSAGE,
+                        "Overwrite File?",
+                        JOptionPane.QUESTION_MESSAGE,
                         JOptionPane.YES_NO_CANCEL_OPTION);
             }
 
