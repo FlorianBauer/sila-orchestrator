@@ -14,6 +14,8 @@ public enum IconProvider {
     DELAY_ADD(new ImageIcon(IconProvider.class.getResource("/icons/delay-add.png"))),
     DOCUMENT_OPEN(new ImageIcon(IconProvider.class.getResource("/icons/document-open.png"))),
     DOCUMENT_OPEN_16PX(new ImageIcon(IconProvider.class.getResource("/icons/document-open-16px.png"))),
+    DOCUMENT_OPEN_APPEND_16PX(new ImageIcon(IconProvider.class.getResource("/icons/document-open-append-16px.png"))),
+    DOCUMENT_OPEN_APPEND_24PX(new ImageIcon(IconProvider.class.getResource("/icons/document-open-append-24px.png"))),
     DOCUMENT_SAVE(new ImageIcon(IconProvider.class.getResource("/icons/document-save.png"))),
     DOCUMENT_SAVE_16PX(new ImageIcon(IconProvider.class.getResource("/icons/document-save-16px.png"))),
     EXEC_ADD(new ImageIcon(IconProvider.class.getResource("/icons/exec-add.png"))),

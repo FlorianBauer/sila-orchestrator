@@ -559,6 +559,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         toolBar.add(openFileBtn);
 
+        openAndAppendFileBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-open-append-24px.png"))); // NOI18N
+        openAndAppendFileBtn.setText("Open Add");
+        openAndAppendFileBtn.setToolTipText("Loads the content of a *.silo-file and appends it to end of the current queue.");
+        openAndAppendFileBtn.setFocusable(false);
+        openAndAppendFileBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        openAndAppendFileBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        openAndAppendFileBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openAndAppendFileActionPerformed(evt);
+            }
+        });
+        toolBar.add(openAndAppendFileBtn);
+
         saveFileBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-save.png"))); // NOI18N
         saveFileBtn.setMnemonic('s');
         saveFileBtn.setText("Save");
@@ -710,6 +723,16 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         fileMenu.add(openMenuItem);
+
+        openAndAppendMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-open-append-16px.png"))); // NOI18N
+        openAndAppendMenuItem.setText("Open and Add");
+        openAndAppendMenuItem.setToolTipText("Loads the content of a *.silo-file and appends it to end of the current queue.");
+        openAndAppendMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openAndAppendFileActionPerformed(evt);
+            }
+        });
+        fileMenu.add(openAndAppendMenuItem);
 
         saveMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/document-save-16px.png"))); // NOI18N
@@ -1375,6 +1398,24 @@ public class OrchestratorGui extends javax.swing.JFrame {
         new Thread(queueRunner).start();
     }//GEN-LAST:event_startQueueRunFromHereMenuItemActionPerformed
 
+    private void openAndAppendFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openAndAppendFileActionPerformed
+        int retVal = fileOpenChooser.showOpenDialog(this);
+        if (retVal == JFileChooser.APPROVE_OPTION) {
+            final File file = fileOpenChooser.getSelectedFile();
+            final TaskQueueData tqd;
+            try {
+                tqd = TaskQueueData.createFromFile(file.getAbsolutePath());
+            } catch (final Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                        ex.getMessage(),
+                        "Import Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            tqd.importToTaskQueue(taskQueueTable);
+        }
+    }//GEN-LAST:event_openAndAppendFileActionPerformed
+
     private void enableStartRunControls() {
         stopQueueRunBtn.setEnabled(false);
         stopQueueRunMenuItem.setEnabled(false);
@@ -1542,6 +1583,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
     private final javax.swing.JButton moveTaskDownBtn = new javax.swing.JButton();
     private final javax.swing.JButton moveTaskUpBtn = new javax.swing.JButton();
+    private final javax.swing.JButton openAndAppendFileBtn = new javax.swing.JButton();
+    private final javax.swing.JMenuItem openAndAppendMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton openFileBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem openMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JScrollPane presenterScrollPane = new javax.swing.JScrollPane();
