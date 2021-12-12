@@ -289,7 +289,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(15, 15, 10, 15);
         aboutDialog.getContentPane().add(aboutLabel, gridBagConstraints);
 
         aboutInfoTextPane.setEditable(false);
@@ -306,7 +306,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         aboutDialogCloseBtn.setMnemonic('c');
         aboutDialogCloseBtn.setText("Close");
-        aboutDialogCloseBtn.setMargin(new java.awt.Insets(5, 15, 5, 15));
+        aboutDialogCloseBtn.setMargin(new java.awt.Insets(10, 15, 10, 15));
         aboutDialogCloseBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 aboutDialogCloseBtnActionPerformed(evt);
@@ -316,7 +316,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 15, 5, 15);
+        gridBagConstraints.insets = new java.awt.Insets(10, 15, 15, 15);
         aboutDialog.getContentPane().add(aboutDialogCloseBtn, gridBagConstraints);
 
         aboutDialog.getAccessibleContext().setAccessibleParent(this);
