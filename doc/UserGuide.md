@@ -37,6 +37,8 @@ To save the current task queue to a *.silo-file, click <img src="pictures/docume
 
 To open an existing *.silo-file, click <img src="pictures/document-open.svg" width="24" height="24"> or press `[Ctrl]+[O]`.
 
+To append the content of an *.silo-file at the end of the current queue, click <img src="pictures/document-open-append.svg" width="24" height="24">.
+
 To add a delay-task to the end of the queue, click *Add Delay* <img src="pictures/delay-add.svg" width="24" height="24"> or drag the icon from the toolbar directly into the desired position in the task queue.
 When a delay-task was added to the queue and gets executed, the set timer gets triggered, and the execution of the next element in the queue gets delayed until the timer runs out.
 
