@@ -167,7 +167,7 @@
                             <versionInfo>
                                 <txtFileVersion>${project.version}</txtFileVersion>
                                 <fileDescription>${project.description}</fileDescription>
-                                <copyright>(C) 2020-2021 Florian Bauer</copyright>
+                                <copyright>(C) 2020-2022 The sila-orchestrator Authors</copyright>
                                 <productName>${project.parent.name}</productName>
                                 <internalName>${project.parent.artifactId}</internalName>
                                 <fileVersion>${project.version}.0</fileVersion>
