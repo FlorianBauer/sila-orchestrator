@@ -46,6 +46,10 @@ public class ServerContext {
         return (server.getStatus() == Server.Status.ONLINE);
     }
 
+    public boolean isConnectionServerInitiated() {
+        return (server.getConnectionType() == Server.ConnectionType.SERVER_INITIATED);
+    }
+
     public FeatureContext getFeatureCtx(@NonNull final String featureIdentifier) {
         return featureMap.get(featureIdentifier);
     }
