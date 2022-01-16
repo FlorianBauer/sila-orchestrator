@@ -465,6 +465,11 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         }
     }
 
+    @Override
+    public void onServerConnectionAdded(final ServerContext serverCtx) {
+        addUuidToSelectionSet(serverCtx.getServerUuid());
+    }
+
     /**
      * Listener function which gets invoked when the server connection state gets changed.
      *
