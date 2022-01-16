@@ -37,15 +37,18 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
             if (server.getHost().equals(host) && server.getPort() == port) {
                 final UUID serverUuid = server.getConfiguration().getUuid();
                 if (!serverMap.containsKey(serverUuid)) {
-                    final ServerContext serverCtx = new ServerContext(this, server);
-                    serverMap.put(serverUuid, serverCtx);
-                    connectionListenerList.forEach(listener
-                            -> listener.onServerConnectionChanged(serverCtx));
+                    addServerToContext(serverUuid, server);
                 }
                 return serverUuid;
             }
         }
         return null;
+    }
+
+    private void addServerToContext(final UUID serverUuid, final Server server) {
+        final ServerContext serverCtx = new ServerContext(this, server);
+        serverMap.put(serverUuid, serverCtx);
+        connectionListenerList.forEach(listener -> listener.onServerConnectionAdded(serverCtx));
     }
 
     public void removeServer(@NonNull final UUID serverUuid) {
@@ -63,7 +66,6 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
     }
 
     public Collection<ServerContext> getServerCtxList() {
-
         return serverMap.values();
     }
 
