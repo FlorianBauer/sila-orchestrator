@@ -10,6 +10,7 @@ import de.fau.clients.orchestrator.nodes.SilaNode;
 import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.concurrent.Future;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -21,6 +22,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Feature;
 import sila_java.library.manager.ServerManager;
+import sila_java.library.manager.executor.ExecutableServerCall;
 import sila_java.library.manager.models.SiLACall;
 
 /**
@@ -87,25 +89,24 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
      * <code>SilaNode</code>.
      */
     public void requestPropertyData() {
+        final FeatureContext featCtx = propCtx.getFeatureCtx();
+        final Feature.Property property = propCtx.getProperty();
         final SiLACall.Type callType = propCtx.getProperty().getObservable().equalsIgnoreCase("yes")
                 ? SiLACall.Type.OBSERVABLE_PROPERTY
                 : SiLACall.Type.UNOBSERVABLE_PROPERTY;
-
-        final FeatureContext featCtx = propCtx.getFeatureCtx();
-        final Feature.Property property = propCtx.getProperty();
-        final SiLACall call = new SiLACall(
+        final SiLACall.Builder callBuilder = new SiLACall.Builder(
                 featCtx.getServerUuid(),
                 featCtx.getFeatureId(),
                 property.getIdentifier(),
-                callType);
+                callType
+        );
 
         boolean wasSuccessful = false;
         try {
-            lastResult = ServerManager.getInstance().newCallExecutor(call).execute();
+            final ExecutableServerCall executableServerCall = ExecutableServerCall.newBuilder(callBuilder.build()).build();
+            final Future<String> futureCallResult = ServerManager.getInstance().getServerCallManager().runAsync(executableServerCall);
+            lastResult = futureCallResult.get();
             wasSuccessful = true;
-        } catch (RuntimeException ex) {
-            log.error(ex.getMessage());
-            lastResult = ex.getMessage();
         } catch (Exception ex) {
             log.error(ex.getMessage());
             lastResult = ex.getMessage();
