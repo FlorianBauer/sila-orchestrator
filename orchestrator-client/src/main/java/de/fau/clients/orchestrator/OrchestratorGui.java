@@ -50,7 +50,6 @@ import javax.swing.table.TableModel;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 
@@ -107,15 +106,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
 
         serverFeatureTree.putServerToTree(connectionManager.getServerCtx(serverUuid));
-        ((DefaultTreeModel) serverFeatureTree.getModel()).reload();
-        serverFeatureTree.setRootVisible(false);
-        serverFeatureTree.setEnabled(true);
-        // Expand all nodes in the tree.
-        for (int i = 0; i < serverFeatureTree.getRowCount(); i++) {
-            serverFeatureTree.expandRow(i);
-        }
-
-        taskQueueTable.addUuidToSelectionSet(serverUuid);
+        serverFeatureTree.updateTreeView();
         serverAddErrorEditorPane.setText(NO_ERROR_STR);
         addServerDialog.setVisible(false);
         addServerDialog.dispose();
@@ -1015,11 +1006,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
             // update components in the GUI thread
             SwingUtilities.invokeLater(() -> {
-                ((DefaultTreeModel) serverFeatureTree.getModel()).reload();
-                // Expand all nodes in the tree.
-                for (int i = 0; i < serverFeatureTree.getRowCount(); i++) {
-                    serverFeatureTree.expandRow(i);
-                }
+                serverFeatureTree.updateTreeView();
                 scanServerBtn.setEnabled(true);
             });
         };

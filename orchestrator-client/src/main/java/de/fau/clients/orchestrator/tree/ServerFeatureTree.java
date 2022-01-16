@@ -118,6 +118,21 @@ public final class ServerFeatureTree extends JTree implements Presentable, Conne
     }
 
     /**
+     * Refreshes the view of the tree elements. This function shall only be called in the GUI
+     * thread.
+     */
+    public void updateTreeView() {
+        ((DefaultTreeModel) this.treeModel).reload();
+        final boolean isTreeRootVisible = serverMap.isEmpty();
+        setRootVisible(isTreeRootVisible);
+        setEnabled(!isTreeRootVisible);
+        // Expand all nodes in the tree.
+        for (int i = 0; i < getRowCount(); i++) {
+            expandRow(i);
+        }
+    }
+
+    /**
      * Gets the presenter of the selected tree node for the context sensitive view panel.
      *
      * @return The presenter panel according to the selected node.
