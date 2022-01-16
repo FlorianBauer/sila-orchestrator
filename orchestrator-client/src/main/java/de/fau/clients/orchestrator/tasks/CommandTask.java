@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Future;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -22,6 +23,7 @@ import javax.swing.JPanel;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.SiLAElement;
+import sila_java.library.manager.executor.ExecutableServerCall;
 import sila_java.library.manager.models.SiLACall;
 
 /**
@@ -308,36 +310,32 @@ public class CommandTask extends QueueTask {
         if (isPanelBuilt) {
             execBtn.setEnabled(false);
         }
-        final SiLACall.Type callType = cmdCtx.getCommand().getObservable().equalsIgnoreCase("yes")
-                ? SiLACall.Type.OBSERVABLE_COMMAND
-                : SiLACall.Type.UNOBSERVABLE_COMMAND;
+
 
         startTimeStamp = OffsetDateTime.now();
         taskState = TaskState.RUNNING;
         stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, taskState);
         oldState = taskState;
-
-        String jsonParams = "";
+        final SiLACall.Type callType = cmdCtx.getCommand().getObservable().equalsIgnoreCase("yes")
+                ? SiLACall.Type.OBSERVABLE_COMMAND
+                : SiLACall.Type.UNOBSERVABLE_COMMAND;
+        final SiLACall.Builder callBuilder = new SiLACall.Builder(
+                commandModel.getServerUuid(),
+                commandModel.getFeatureId(),
+                commandModel.getCommandId(),
+                callType
+        );
         if (cmdNode != null) {
-            jsonParams = cmdNode.toJsonString();
-        }
-
-        final SiLACall call;
-        if (jsonParams.isEmpty()) {
-            call = new SiLACall(commandModel.getServerUuid(),
-                    commandModel.getFeatureId(),
-                    commandModel.getCommandId(),
-                    callType);
-        } else {
-            call = new SiLACall(commandModel.getServerUuid(),
-                    commandModel.getFeatureId(),
-                    commandModel.getCommandId(),
-                    callType,
-                    jsonParams);
+            String jsonParams = cmdNode.toJsonString();
+            if (!jsonParams.isEmpty()) {
+                callBuilder.withParameters(jsonParams);
+            }
         }
 
         try {
-            lastExecResult = manager.getServerManager().newCallExecutor(call).execute();
+            final ExecutableServerCall executableServerCall = ExecutableServerCall.newBuilder(callBuilder.build()).build();
+            final Future<String> futureCallResult = manager.getServerManager().getServerCallManager().runAsync(executableServerCall);
+            lastExecResult = futureCallResult.get();
             taskState = TaskState.FINISHED_SUCCESS;
         } catch (final Exception ex) {
             System.err.println(ex.getMessage());

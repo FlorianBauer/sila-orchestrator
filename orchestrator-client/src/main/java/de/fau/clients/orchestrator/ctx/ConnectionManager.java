@@ -8,7 +8,6 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.NonNull;
 import sila_java.library.manager.ServerAdditionException;
-import sila_java.library.manager.ServerFinder;
 import sila_java.library.manager.ServerListener;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
@@ -37,15 +36,18 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
             if (server.getHost().equals(host) && server.getPort() == port) {
                 final UUID serverUuid = server.getConfiguration().getUuid();
                 if (!serverMap.containsKey(serverUuid)) {
-                    final ServerContext serverCtx = new ServerContext(this, server);
-                    serverMap.put(serverUuid, serverCtx);
-                    connectionListenerList.forEach(listener
-                            -> listener.onServerConnectionChanged(serverCtx));
+                    addServerToContext(serverUuid, server);
                 }
                 return serverUuid;
             }
         }
         return null;
+    }
+
+    private void addServerToContext(final UUID serverUuid, final Server server) {
+        final ServerContext serverCtx = new ServerContext(this, server);
+        serverMap.put(serverUuid, serverCtx);
+        connectionListenerList.forEach(listener -> listener.onServerConnectionAdded(serverCtx));
     }
 
     public void removeServer(@NonNull final UUID serverUuid) {
@@ -63,7 +65,6 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
     }
 
     public Collection<ServerContext> getServerCtxList() {
-
         return serverMap.values();
     }
 
@@ -73,18 +74,6 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
 
     public void scanNetwork() {
         serverManager.getDiscovery().scanNetwork();
-        final List<Server> serverList = ServerFinder
-                .filterBy(ServerFinder.Filter.status(Server.Status.ONLINE))
-                .find();
-        for (final Server server : serverList) {
-            final UUID serverUuid = server.getConfiguration().getUuid();
-            if (!serverMap.containsKey(serverUuid)) {
-                final ServerContext serverCtx = new ServerContext(this, server);
-                serverMap.put(serverUuid, serverCtx);
-                connectionListenerList.forEach(listener
-                        -> listener.onServerConnectionChanged(serverCtx));
-            }
-        }
     }
 
     public void setServerName(@NonNull final UUID serverUuid, @NonNull final String newServerName) {
@@ -121,9 +110,28 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
     public void onServerChange(UUID uuid, Server server) {
         final ServerContext serverCtx = serverMap.get(uuid);
         if (serverCtx != null) {
-            connectionListenerList.forEach(listener
-                    -> listener.onServerConnectionChanged(serverCtx));
+            connectionListenerList.forEach(listener -> listener.onServerConnectionChanged(serverCtx));
         }
+    }
+
+    @Override
+    public void onServerAdded(UUID uuid, Server server) {
+        final ServerContext serverCtx = serverMap.get(uuid);
+        if (serverCtx != null) {
+            connectionListenerList.forEach(listener -> listener.onServerConnectionChanged(serverCtx));
+        } else {
+            addServerToContext(uuid, server);
+        }
+    }
+
+    @Override
+    public void onServerRemoved(UUID uuid, Server server) {
+        // todo remove server from context
+    }
+
+    @Override
+    public void onServerAdditionFail(String host, int port, String reason) {
+        // todo display error
     }
 
     private static class ConnectionManagerHolder {

@@ -34,6 +34,7 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
     private JButton applyNewServerNameBtn = null;
     private JTextField hostTextField = null;
     private JTextField portTextField = null;
+    private JTextField connectionInitiatedSideTextField = null;
     private JTextField statusTextField = null;
     private JTextField joinedTextField = null;
     private JTextField negoTypeTextField = null;
@@ -47,6 +48,9 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
         return "<html><p><b>" + server.getConfiguration().getName() + "</b></p>"
                 + "<p>UUID: " + server.getConfiguration().getUuid().toString() + "</p>"
                 + "<p>Addr: " + server.getHostAndPort().toString() + "</p>"
+                + "<p>Connection type: "
+                + (serverCtx.isConnectionServerInitiated() ? "Server" : "Client")
+                + " Initiated</p>"
                 + "</html>";
     }
 
@@ -125,6 +129,15 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
             portTextField.setMaximumSize(MAX_DIM);
             portTextField.setEditable(false);
             panel.add(portTextField);
+            panel.add(Box.createVerticalStrut(10));
+
+            panel.add(new JLabel("Connection initiated by"));
+            final String connectionInitiationText = (serverCtx.isConnectionServerInitiated()) ? "Server" : "Client";
+            connectionInitiatedSideTextField = new JTextField(connectionInitiationText);
+            connectionInitiatedSideTextField.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+            connectionInitiatedSideTextField.setMaximumSize(MAX_DIM);
+            connectionInitiatedSideTextField.setEditable(false);
+            panel.add(connectionInitiatedSideTextField);
             panel.add(Box.createVerticalStrut(10));
 
             panel.add(new JLabel("Status"));

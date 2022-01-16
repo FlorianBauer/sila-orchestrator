@@ -2,6 +2,7 @@ package de.fau.clients.orchestrator.tree;
 
 import de.fau.clients.orchestrator.Presentable;
 import de.fau.clients.orchestrator.ctx.CommandContext;
+import de.fau.clients.orchestrator.ctx.ConnectionListener;
 import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.ctx.PropertyContext;
 import de.fau.clients.orchestrator.ctx.ServerContext;
@@ -22,14 +23,12 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
 import lombok.NonNull;
 import sila_java.library.core.models.Feature;
-import sila_java.library.manager.ServerListener;
-import sila_java.library.manager.models.Server;
 
 /**
  * Tree class which shows the available servers and features in a hierarchical ordered view.
  */
 @SuppressWarnings("serial")
-public final class ServerFeatureTree extends JTree implements Presentable, ServerListener {
+public final class ServerFeatureTree extends JTree implements Presentable, ConnectionListener {
 
     private static final String NO_SERVER_STR = "No Server Available";
     private final HashMap<UUID, ServerTreeNode> serverMap = new HashMap<>();
@@ -119,6 +118,21 @@ public final class ServerFeatureTree extends JTree implements Presentable, Serve
     }
 
     /**
+     * Refreshes the view of the tree elements. This function shall only be called in the GUI
+     * thread.
+     */
+    public void updateTreeView() {
+        ((DefaultTreeModel) this.treeModel).reload();
+        final boolean isTreeRootVisible = serverMap.isEmpty();
+        setRootVisible(isTreeRootVisible);
+        setEnabled(!isTreeRootVisible);
+        // Expand all nodes in the tree.
+        for (int i = 0; i < getRowCount(); i++) {
+            expandRow(i);
+        }
+    }
+
+    /**
      * Gets the presenter of the selected tree node for the context sensitive view panel.
      *
      * @return The presenter panel according to the selected node.
@@ -148,25 +162,34 @@ public final class ServerFeatureTree extends JTree implements Presentable, Serve
     }
 
     /**
+     * Listener for adding a server to the tree render symbols.
+     *
+     * @param serverCtx The context of the added server instance.
+     */
+    @Override
+    public void onServerConnectionAdded(final ServerContext serverCtx) {
+        putServerToTree(serverCtx);
+    }
+
+    /**
      * Listener for server status (online/offline) which changes the server tree render symbols
      * accordingly.
      *
-     * @param uuid The UUID of the changing server.
-     * @param server The changing server instance.
+     * @param serverCtx The context of the changing server instance.
      */
     @Override
-    public void onServerChange(UUID uuid, Server server) {
-        final ServerTreeNode serverNode = serverMap.get(uuid);
+    public void onServerConnectionChanged(final ServerContext serverCtx) {
+        final ServerTreeNode serverNode = serverMap.get(serverCtx.getServerUuid());
         if (serverNode != null) {
             final Object obj = serverNode.getUserObject();
             if (!(obj instanceof TreeNodeType)) {
                 return;
             }
             final TreeNodeType ftt = (TreeNodeType) obj;
-            if (server.getStatus() == Server.Status.OFFLINE) {
-                ftt.setTreeRenderSymbol(TreeRenderSymbol.SERVER_OFFLINE);
-            } else {
+            if (serverCtx.isOnline()) {
                 ftt.setTreeRenderSymbol(TreeRenderSymbol.SERVER_ONLINE);
+            } else {
+                ftt.setTreeRenderSymbol(TreeRenderSymbol.SERVER_OFFLINE);
             }
             ftt.setDescription(serverNode.getDescription());
             this.repaint();

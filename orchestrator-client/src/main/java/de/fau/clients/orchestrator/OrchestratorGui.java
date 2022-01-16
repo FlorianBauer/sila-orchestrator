@@ -5,7 +5,6 @@ import ch.qos.logback.classic.Logger;
 import de.fau.clients.orchestrator.cli.CommandlineArguments;
 import de.fau.clients.orchestrator.cli.CommandlineControls;
 import de.fau.clients.orchestrator.ctx.ConnectionManager;
-import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.dnd.TaskExportTransferHandler;
 import de.fau.clients.orchestrator.queue.Column;
 import de.fau.clients.orchestrator.queue.TaskQueueData;
@@ -30,8 +29,6 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.UUID;
 import javax.swing.AbstractAction;
@@ -53,7 +50,6 @@ import javax.swing.table.TableModel;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 
@@ -110,15 +106,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
 
         serverFeatureTree.putServerToTree(connectionManager.getServerCtx(serverUuid));
-        ((DefaultTreeModel) serverFeatureTree.getModel()).reload();
-        serverFeatureTree.setRootVisible(false);
-        serverFeatureTree.setEnabled(true);
-        // Expand all nodes in the tree.
-        for (int i = 0; i < serverFeatureTree.getRowCount(); i++) {
-            serverFeatureTree.expandRow(i);
-        }
-
-        taskQueueTable.addUuidToSelectionSet(serverUuid);
+        serverFeatureTree.updateTreeView();
         serverAddErrorEditorPane.setText(NO_ERROR_STR);
         addServerDialog.setVisible(false);
         addServerDialog.dispose();
@@ -946,7 +934,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 presenterScrollPane.setViewportView(serverFeatureTree.getPresenter());
             }
         });
-        connectionManager.addServerListener(serverFeatureTree);
+        connectionManager.addConnectionListener(serverFeatureTree);
     }
 
     /**
@@ -1015,30 +1003,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
         scanServerBtn.setEnabled(false);
         final Runnable scan = () -> {
             connectionManager.scanNetwork();
-            final Collection<ServerContext> serverList = connectionManager.getServerCtxList();
-            final Iterator<ServerContext> iter = serverList.iterator();
-            while (iter.hasNext()) {
-                final ServerContext ctx = iter.next();
-                if (ctx.isOnline()) {
-                    serverFeatureTree.putServerToTree(ctx);
-                    taskQueueTable.addUuidToSelectionSet(ctx.getServerUuid());
-                } else {
-                    serverFeatureTree.removeServerFromTree(ctx);
-                    iter.remove();
-                }
-            }
-            // show the "No Server Available" string when the server list is empty
-            final boolean isTreeRootVisible = serverList.isEmpty();
 
             // update components in the GUI thread
             SwingUtilities.invokeLater(() -> {
-                ((DefaultTreeModel) serverFeatureTree.getModel()).reload();
-                serverFeatureTree.setRootVisible(isTreeRootVisible);
-                serverFeatureTree.setEnabled(!isTreeRootVisible);
-                // Expand all nodes in the tree.
-                for (int i = 0; i < serverFeatureTree.getRowCount(); i++) {
-                    serverFeatureTree.expandRow(i);
-                }
+                serverFeatureTree.updateTreeView();
                 scanServerBtn.setEnabled(true);
             });
         };
