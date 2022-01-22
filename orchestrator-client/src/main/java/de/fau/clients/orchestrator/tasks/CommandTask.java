@@ -14,6 +14,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -311,7 +312,6 @@ public class CommandTask extends QueueTask {
             execBtn.setEnabled(false);
         }
 
-
         startTimeStamp = OffsetDateTime.now();
         taskState = TaskState.RUNNING;
         stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, taskState);
@@ -335,7 +335,7 @@ public class CommandTask extends QueueTask {
         try {
             final ExecutableServerCall executableServerCall = ExecutableServerCall.newBuilder(callBuilder.build()).build();
             final Future<String> futureCallResult = manager.getServerManager().getServerCallManager().runAsync(executableServerCall);
-            lastExecResult = futureCallResult.get();
+            lastExecResult = futureCallResult.get(3, TimeUnit.SECONDS);
             taskState = TaskState.FINISHED_SUCCESS;
         } catch (final Exception ex) {
             System.err.println(ex.getMessage());

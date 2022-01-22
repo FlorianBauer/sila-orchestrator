@@ -11,6 +11,7 @@ import de.fau.clients.orchestrator.utils.IconProvider;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -105,9 +106,9 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
         try {
             final ExecutableServerCall executableServerCall = ExecutableServerCall.newBuilder(callBuilder.build()).build();
             final Future<String> futureCallResult = ServerManager.getInstance().getServerCallManager().runAsync(executableServerCall);
-            lastResult = futureCallResult.get();
+            lastResult = futureCallResult.get(3, TimeUnit.SECONDS);
             wasSuccessful = true;
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             log.error(ex.getMessage());
             lastResult = ex.getMessage();
         }
