@@ -90,7 +90,7 @@ public class SilaBasciTypeUtilsTest {
     public void stringAsJsonNode() {
         JsonNode actNode = SilaBasicTypeUtils.stringAsJsonNode("Lorem ipsum dolor sit amet");
         assertEquals("Lorem ipsum dolor sit amet", actNode.get(FIELD_VALUE).asText());
-        final String unwantedStr = "\"äöü\\n\\tß\\\\0xf00bar:<></>\\\";€¶@æ²³\\b01101®testâ€™\\\\u0048{[]}\\u2212\"¯\\_(ツ)_/¯;";
+        final String unwantedStr = "\"äöü\\n\\tß\\\\0xf00bar:\\\";€¶@æ²³\\b01101®testâ€™\\\\u0048{[]}\\u2212\"¯\\_(ツ)_/¯;";
         actNode = SilaBasicTypeUtils.stringAsJsonNode(unwantedStr);
         assertEquals(unwantedStr, actNode.get(FIELD_VALUE).asText());
 
