@@ -21,7 +21,7 @@
         <java.version>11</java.version>
         <sila.version>0.5.0</sila.version>
         <protobuf.version>3.19.4</protobuf.version>
-        <logback.version>1.2.3</logback.version>
+        <logback.version>1.2.9</logback.version>
         <fasterxml.version>2.12.7</fasterxml.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
