@@ -21,7 +21,8 @@
         <java.version>11</java.version>
         <sila.version>0.5.0</sila.version>
         <protobuf.version>3.19.4</protobuf.version>
-        <logback.version>1.2.3</logback.version>
+        <grpc.version>1.43.2</grpc.version>
+        <logback.version>1.2.9</logback.version>
         <fasterxml.version>2.12.7</fasterxml.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -72,7 +73,22 @@
             <dependency>
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-core</artifactId>
-                <version>1.43.2</version>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-netty</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-stub</artifactId>
+                <version>${grpc.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
@@ -83,7 +99,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>23.0</version>
+                <version>29.0-jre</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
