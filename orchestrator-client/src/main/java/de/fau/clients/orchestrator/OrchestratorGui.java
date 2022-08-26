@@ -100,8 +100,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
         try {
             serverUuid = connectionManager.addServer(addr, port);
         } catch (final Exception ex) {
-            log.warn(ex.getMessage());
-            serverAddErrorEditorPane.setText(ex.getMessage());
+            final String errMsg = ex.getMessage();
+            final String warnStr = (errMsg == null || errMsg.isBlank()) ? "Unknown error." : errMsg;
+            log.warn(warnStr);
+            serverAddErrorEditorPane.setText(warnStr);
             return;
         }
 
