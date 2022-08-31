@@ -9,12 +9,13 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import lombok.extern.slf4j.Slf4j;
+import sila2.org.silastandard.SiLAFramework;
 
 /**
  * Utility class providing functions to put/extract basic data-types to and from JSON. This class
  * provides basically the same functionality as the classes in the package
  * <code>sila_java.library.core.sila.types</code> only with the usage of the Jackson
- * <code>JsonNode</code> type, since the Protobuf complaint <code>SiLAFramework</code>-types are
+ * <code>JsonNode</code> type, since the Protobuf compliant <code>SiLAFramework</code>-types are
  * internally harder to handle.
  */
 @Slf4j
@@ -208,5 +209,26 @@ public final class SilaBasicTypeUtils {
             hexString.insert(0, '0');
         }
         return hexString.toString();
+    }
+
+    /**
+     * Extracts the contents from a `SiLAError`-type and formats it to a human readable error
+     * message.
+     *
+     * @param silaError The `SiLAError` to format.
+     * @return A simple, human readable error string.
+     */
+    public static String formatSilaErrorToMsgString(final SiLAFramework.SiLAError silaError) {
+        if (silaError.hasValidationError()) {
+            return "ValidationError: " + silaError.getValidationError().getMessage();
+        } else if (silaError.hasFrameworkError()) {
+            return "FrameworkError: " + silaError.getFrameworkError().getMessage();
+        } else if (silaError.hasDefinedExecutionError()) {
+            return "DefinedExecutionError: " + silaError.getDefinedExecutionError().getMessage();
+        } else if (silaError.hasUndefinedExecutionError()) {
+            return "UndefinedExecutionError: " + silaError.getUndefinedExecutionError().getMessage();
+        } else {
+            return "Error: " + silaError.getInitializationErrorString();
+        }
     }
 }

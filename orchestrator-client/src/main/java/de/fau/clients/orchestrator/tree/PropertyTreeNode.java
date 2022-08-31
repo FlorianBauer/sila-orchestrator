@@ -8,10 +8,13 @@ import de.fau.clients.orchestrator.ctx.PropertyContext;
 import de.fau.clients.orchestrator.nodes.NodeFactory;
 import de.fau.clients.orchestrator.nodes.SilaNode;
 import de.fau.clients.orchestrator.utils.IconProvider;
+import de.fau.clients.orchestrator.utils.SilaBasicTypeUtils;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -22,6 +25,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.Feature;
+import sila_java.library.core.sila.errors.SiLAErrorException;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.executor.ExecutableServerCall;
 import sila_java.library.manager.models.SiLACall;
@@ -37,6 +41,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
      * Index to place and update the contents of the panel.
      */
     private static final int CONTENT_COMPONENT_IDX = 0;
+    private static final int MAX_SERVER_RESPONSE_TIME_IN_SEC = 3;
     private static final ObjectMapper jsonMapper = new ObjectMapper();
     private final PropertyContext propCtx;
     private JPanel panel;
@@ -92,7 +97,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
     public void requestPropertyData() {
         final FeatureContext featCtx = propCtx.getFeatureCtx();
         final Feature.Property property = propCtx.getProperty();
-        final SiLACall.Type callType = propCtx.getProperty().getObservable().equalsIgnoreCase("yes")
+        final SiLACall.Type callType = property.getObservable().equalsIgnoreCase("yes")
                 ? SiLACall.Type.OBSERVABLE_PROPERTY
                 : SiLACall.Type.UNOBSERVABLE_PROPERTY;
         final SiLACall.Builder callBuilder = new SiLACall.Builder(
@@ -106,8 +111,21 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
         try {
             final ExecutableServerCall executableServerCall = ExecutableServerCall.newBuilder(callBuilder.build()).build();
             final Future<String> futureCallResult = ServerManager.getInstance().getServerCallManager().runAsync(executableServerCall);
-            lastResult = futureCallResult.get(3, TimeUnit.SECONDS);
+            lastResult = futureCallResult.get(MAX_SERVER_RESPONSE_TIME_IN_SEC, TimeUnit.SECONDS);
             wasSuccessful = true;
+        } catch (final TimeoutException ex) {
+            final String msg = "Timeout: Server did not responde within " + MAX_SERVER_RESPONSE_TIME_IN_SEC + " sec.";
+            log.error(msg);
+            lastResult = msg;
+        } catch (final ExecutionException ex) {
+            final String msg;
+            if (ex.getCause() instanceof SiLAErrorException) {
+                msg = SilaBasicTypeUtils.formatSilaErrorToMsgString(((SiLAErrorException) ex.getCause()).getSiLAError());
+            } else {
+                msg = ex.getMessage();
+            }
+            log.error(msg);
+            lastResult = msg;
         } catch (final Exception ex) {
             log.error(ex.getMessage());
             lastResult = ex.getMessage();

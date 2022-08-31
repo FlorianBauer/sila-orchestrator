@@ -9,12 +9,15 @@ import de.fau.clients.orchestrator.ctx.FeatureContext;
 import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.nodes.NodeFactory;
 import de.fau.clients.orchestrator.nodes.SilaNode;
+import de.fau.clients.orchestrator.utils.SilaBasicTypeUtils;
 import java.awt.event.ActionEvent;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -24,6 +27,7 @@ import javax.swing.JPanel;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import sila_java.library.core.models.SiLAElement;
+import sila_java.library.core.sila.errors.SiLAErrorException;
 import sila_java.library.manager.executor.ExecutableServerCall;
 import sila_java.library.manager.models.SiLACall;
 
@@ -37,6 +41,7 @@ import sila_java.library.manager.models.SiLACall;
 @Slf4j
 public class CommandTask extends QueueTask {
 
+    private static final int MAX_SERVER_RESPONSE_TIME_IN_SEC = 3;
     private static final ConnectionManager manager = ConnectionManager.getInstance();
     private static final ObjectMapper jsonMapper = new ObjectMapper();
     private final CommandTaskModel commandModel;
@@ -332,15 +337,28 @@ public class CommandTask extends QueueTask {
             }
         }
 
+        taskState = TaskState.FINISHED_ERROR;
         try {
             final ExecutableServerCall executableServerCall = ExecutableServerCall.newBuilder(callBuilder.build()).build();
             final Future<String> futureCallResult = manager.getServerManager().getServerCallManager().runAsync(executableServerCall);
-            lastExecResult = futureCallResult.get(3, TimeUnit.SECONDS);
+            lastExecResult = futureCallResult.get(MAX_SERVER_RESPONSE_TIME_IN_SEC, TimeUnit.SECONDS);
             taskState = TaskState.FINISHED_SUCCESS;
+        } catch (final TimeoutException ex) {
+            final String msg = "Timeout: Server did not responde within " + MAX_SERVER_RESPONSE_TIME_IN_SEC + " sec.";
+            log.error(msg);
+            lastExecResult = msg;
+        } catch (final ExecutionException ex) {
+            final String msg;
+            if (ex.getCause() instanceof SiLAErrorException) {
+                msg = SilaBasicTypeUtils.formatSilaErrorToMsgString(((SiLAErrorException) ex.getCause()).getSiLAError());
+            } else {
+                msg = ex.getMessage();
+            }
+            log.error(msg);
+            lastExecResult = msg;
         } catch (final Exception ex) {
-            System.err.println(ex.getMessage());
+            log.error(ex.getMessage());
             lastExecResult = ex.getMessage();
-            taskState = TaskState.FINISHED_ERROR;
         }
         endTimeStamp = OffsetDateTime.now();
         stateChanges.firePropertyChange(TASK_STATE_PROPERTY, oldState, taskState);
