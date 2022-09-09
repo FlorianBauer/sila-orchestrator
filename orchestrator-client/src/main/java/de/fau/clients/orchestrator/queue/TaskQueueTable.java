@@ -361,14 +361,14 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
      */
     public void exportTableContentsAsCsv(final StringBuilder exportStr) {
         final char sep = ';'; // use semicolon as separator
-        for (final Column col : Column.values()) {
-            exportStr.append(col.title);
+        for (int i = Column.TASK_ID.ordinal(); i <= Column.RESULT.ordinal(); i++) {
+            exportStr.append(dataModel.getColumnName(i));
             exportStr.append(sep);
         }
         exportStr.append("\n");
 
         for (int i = 0; i < this.getRowCount(); i++) {
-            for (int j = Column.TASK_ID.ordinal(); j <= Column.DURATION.ordinal(); j++) {
+            for (int j = Column.TASK_ID.ordinal(); j < Column.RESULT.ordinal(); j++) {
                 exportStr.append(dataModel.getValueAt(i, j).toString());
                 exportStr.append(sep);
             }
