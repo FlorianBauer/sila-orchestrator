@@ -1222,7 +1222,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
                         + outPath.getParent() + "\"!\n"
                         + "Do you want to overwrite the existing file?",
                         "Overwrite File?",
-                        JOptionPane.QUESTION_MESSAGE,
                         JOptionPane.YES_NO_CANCEL_OPTION);
             }
 
