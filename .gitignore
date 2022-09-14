@@ -1,6 +1,6 @@
 # Output directory
-/target/
-/build/
+target/
+build/
 
 # Generated files
 *.class
@@ -17,8 +17,5 @@ core
 dist/
 private/
 nbproject/
-/src/target/
-/orchestrator/target/
-/orchestrator-client/target/
 nb-configuration.xml
 nbactions.xml
