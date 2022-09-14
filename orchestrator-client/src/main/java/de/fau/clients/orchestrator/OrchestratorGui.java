@@ -21,8 +21,12 @@ import de.fau.clients.orchestrator.utils.SiloFileFilter;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -64,24 +68,56 @@ public class OrchestratorGui extends javax.swing.JFrame {
     public static final String COPYRIGHT_NOTICE = "Copyright © 2020–2022 The sila-orchestrator Authors";
     private static final Image ICON_IMG = IconProvider.SILA_ORCHESTRATOR_16PX.getIcon().getImage();
     private static final String NO_ERROR_STR = "<No Error>";
-    private static final Properties gitProps = new Properties();
+    private static final String AUTHORS;
+    private static final String LICENSE;
+    private static final Properties GIT_PROPS = new Properties();
     private static ConnectionManager connectionManager;
-    private final String aboutInfo = "<html>"
-            + "<p>Version: <b>" + gitProps.getProperty("git.build.version")
-            + "-" + gitProps.getProperty("git.commit.id.abbrev") + "</b></p>"
-            + "<p>"
-            + "Git Commit: " + gitProps.getProperty("git.commit.id") + "<br>"
-            + "Timestamp: " + gitProps.getProperty("git.commit.time") + "<br>"
-            + "Repository: " + gitProps.getProperty("git.remote.origin.url") + "<br>"
-            + "E-Mail: florian.bauer.dev@gmail.com<br>"
-            + "License: Apache-2.0<br>"
-            + "</p></html>";
     private final TaskQueueTable taskQueueTable = new TaskQueueTable();
     private final ServerFeatureTree serverFeatureTree = new ServerFeatureTree();
     private volatile boolean isQueueOnExecution = false;
     private boolean wasSaved = false;
     private Path outFilePath = null;
     private Thread currentlyExecutedTaskThread = null;
+
+    static {
+        final StringBuilder asb = new StringBuilder();
+        try (final InputStream in = OrchestratorGui.class.getResourceAsStream("/AUTHORS");
+             final BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                if (line.isEmpty()) {
+                    continue;
+                }
+                asb.append("&emsp ").append(line).append("<br>");
+            }
+        } catch (final IOException ex) {
+            throw new RuntimeException("Authors list cannot be loaded.", ex);
+        }
+        AUTHORS = asb.toString();
+
+        final StringBuilder lsb = new StringBuilder();
+        try (final InputStream in = OrchestratorGui.class.getResourceAsStream("/LICENSE");
+             final BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                lsb.append(line).append('\n');
+            }
+        } catch (final IOException ex) {
+            throw new RuntimeException("License text cannot be loaded.", ex);
+        }
+        LICENSE = lsb.toString();
+    }
+
+    private final String aboutInfo = "<html>"
+            + "<p>Version: <b>" + GIT_PROPS.getProperty("git.build.version")
+            + "-" + GIT_PROPS.getProperty("git.commit.id.abbrev") + "</b></p>"
+            + "<p>"
+            + "Git Commit: " + GIT_PROPS.getProperty("git.commit.id") + "<br>"
+            + "Timestamp: " + GIT_PROPS.getProperty("git.commit.time") + "<br>"
+            + "Repository: " + GIT_PROPS.getProperty("git.remote.origin.url") + "<br>"
+            + "E-Mail: florian.bauer.dev@gmail.com<br>"
+            + "License: Apache-2.0<br><br>"
+            + "Authors: <br>"
+            + AUTHORS
+            + "</p></html>";
 
     private void addSpecificServer() {
         final String addr = serverAddressTextField.getText();
@@ -304,10 +340,22 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(10, 15, 15, 15);
         aboutDialog.getContentPane().add(aboutDialogCloseBtn, gridBagConstraints);
+
+        viewLicenseBtn.setText("View License");
+        viewLicenseBtn.setToolTipText("Shows the complete License text.");
+        viewLicenseBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewLicenseBtnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        aboutDialog.getContentPane().add(viewLicenseBtn, gridBagConstraints);
 
         aboutDialog.getAccessibleContext().setAccessibleParent(this);
 
@@ -352,6 +400,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
         fileSaveAsChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
 
         fileOpenChooser.setFileFilter(new SiloFileFilter());
+
+        licenseDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        licenseDialog.setTitle("License");
+        licenseDialog.setAlwaysOnTop(true);
+        licenseDialog.setLocationByPlatform(true);
+        licenseDialog.setModal(true);
+        licenseDialog.setPreferredSize(new java.awt.Dimension(530, 720));
+
+        licenseTextArea.setEditable(false);
+        licenseTextArea.setText(LICENSE);
+        licenseScrollPane.setViewportView(licenseTextArea);
+
+        licenseDialog.getContentPane().add(licenseScrollPane, java.awt.BorderLayout.CENTER);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SiLA Orchestrator");
@@ -1385,6 +1446,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_openAndAppendFileActionPerformed
 
+    private void viewLicenseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewLicenseBtnActionPerformed
+        licenseDialog.pack();
+        licenseDialog.setVisible(true);
+    }//GEN-LAST:event_viewLicenseBtnActionPerformed
+
     private void enableStartRunControls() {
         stopQueueRunBtn.setEnabled(false);
         stopQueueRunMenuItem.setEnabled(false);
@@ -1457,7 +1523,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     public static void main(String args[]) {
         try {
             // retrieve version info from the maven git plug-in
-            gitProps.load(OrchestratorGui.class.getClassLoader().getResourceAsStream("git.properties"));
+            GIT_PROPS.load(OrchestratorGui.class.getClassLoader().getResourceAsStream("git.properties"));
             connectionManager = ConnectionManager.getInstance();
         } catch (final IOException ex) {
             System.err.println(ex.getMessage());
@@ -1479,7 +1545,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
                 System.exit(-1);
                 return;
             }
-            final CommandlineControls cmdCtrls = new CommandlineControls(gitProps, connectionManager);
+            final CommandlineControls cmdCtrls = new CommandlineControls(GIT_PROPS, connectionManager);
             int exitVal = cmdCtrls.processArgs(cmdArgs);
             connectionManager.close();
             System.exit(exitVal);
@@ -1547,6 +1613,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.Box.Filler filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 32767));
     private final javax.swing.Box.Filler filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 32767));
     private final javax.swing.JMenu helpMenu = new javax.swing.JMenu();
+    private final javax.swing.JDialog licenseDialog = new javax.swing.JDialog();
+    private final javax.swing.JScrollPane licenseScrollPane = new javax.swing.JScrollPane();
+    private final javax.swing.JTextArea licenseTextArea = new javax.swing.JTextArea();
     private final javax.swing.JPanel mainPanel = new javax.swing.JPanel();
     private final javax.swing.JSplitPane mainPanelSplitPane = new javax.swing.JSplitPane();
     private final javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
@@ -1589,5 +1658,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JToolBar toolBar = new javax.swing.JToolBar();
     private final javax.swing.JToolBar.Separator toolBarSeparator1 = new javax.swing.JToolBar.Separator();
     private final javax.swing.JToolBar.Separator toolBarSeparator2 = new javax.swing.JToolBar.Separator();
+    private final javax.swing.JButton viewLicenseBtn = new javax.swing.JButton();
     // End of variables declaration//GEN-END:variables
 }
