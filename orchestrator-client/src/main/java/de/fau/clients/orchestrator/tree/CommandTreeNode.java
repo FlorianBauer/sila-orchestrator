@@ -17,9 +17,9 @@ public class CommandTreeNode extends DefaultMutableTreeNode {
 
     static {
         COMMAND_USAGE_PANEL = new JPanel();
-        final JLabel infoLabel1 = new JLabel("Click  ");
+        final JLabel infoLabel1 = new JLabel("Right-click and  ");
         infoLabel1.setEnabled(false);
-        final JLabel infoLabel2 = new JLabel(IconProvider.ADD_ENTRY.getIcon());
+        final JLabel infoLabel2 = new JLabel(IconProvider.QUEUE_ADD_TASK_16PX.getIcon());
         infoLabel2.setText(" or drag  ");
         infoLabel2.setEnabled(false);
         final JLabel infoLabel3 = new JLabel(IconProvider.COMMAND.getIcon());

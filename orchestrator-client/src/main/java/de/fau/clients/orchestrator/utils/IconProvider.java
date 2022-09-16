@@ -8,7 +8,6 @@ import javax.swing.ImageIcon;
  * Usage example: <code>new JLabel iconLabel(IconProvider.DOCUMENT_MISSING.getIcon());</code>
  */
 public enum IconProvider {
-    ADD_ENTRY(new ImageIcon(IconProvider.class.getResource("/icons/add-entry.png"))),
     APPLICATION_EXIT(new ImageIcon(IconProvider.class.getResource("/icons/application-exit-16px.png"))),
     COMMAND(new ImageIcon(IconProvider.class.getResource("/icons/command.png"))),
     DELAY_ADD(new ImageIcon(IconProvider.class.getResource("/icons/delay-add.png"))),
@@ -29,14 +28,15 @@ public enum IconProvider {
     NETWORK_SCAN_32PX(new ImageIcon(IconProvider.class.getResource("/icons/network-scan-32px.png"))),
     NETWORK_SCAN_16PX(new ImageIcon(IconProvider.class.getResource("/icons/network-scan-16px.png"))),
     PROPERTY(new ImageIcon(IconProvider.class.getResource("/icons/property.png"))),
+    QUEUE_ADD_TASK_16PX(new ImageIcon(IconProvider.class.getResource("/icons/queue-add-task-16px.png"))),
     QUEUE_CLEAR(new ImageIcon(IconProvider.class.getResource("/icons/queue-clear.png"))),
     QUEUE_CLEAR_16PX(new ImageIcon(IconProvider.class.getResource("/icons/queue-clear-16px.png"))),
+    QUEUE_EXPORT(new ImageIcon(IconProvider.class.getResource("/icons/queue-export.png"))),
     QUEUE_RUN_FROM_16PX(new ImageIcon(IconProvider.class.getResource("/icons/queue-run-from-16px.png"))),
     QUEUE_RUN_START_16PX(new ImageIcon(IconProvider.class.getResource("/icons/queue-run-start-16px.png"))),
     QUEUE_RUN_START_24PX(new ImageIcon(IconProvider.class.getResource("/icons/queue-run-start-24px.png"))),
     QUEUE_RUN_STOP_16PX(new ImageIcon(IconProvider.class.getResource("/icons/queue-run-stop-16px.png"))),
     QUEUE_RUN_STOP_24PX(new ImageIcon(IconProvider.class.getResource("/icons/queue-run-stop-24px.png"))),
-    QUEUE_EXPORT(new ImageIcon(IconProvider.class.getResource("/icons/queue-export.png"))),
     REFRESH(new ImageIcon(IconProvider.class.getResource("/icons/refresh.png"))),
     SERVER_ADD(new ImageIcon(IconProvider.class.getResource("/icons/server-add.png"))),
     SERVER_ADD_16PX(new ImageIcon(IconProvider.class.getResource("/icons/server-add-16px.png"))),

@@ -68,6 +68,7 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         this.setTransferHandler(new TaskImportTransferHandler());
         this.setDragEnabled(false);
         this.setDropMode(DropMode.INSERT_ROWS);
+        this.setFocusable(false);
         columnModel.getColumn(Column.START_TIME.ordinal()).setPreferredWidth(170);
         columnModel.getColumn(Column.END_TIME.ordinal()).setPreferredWidth(170);
 

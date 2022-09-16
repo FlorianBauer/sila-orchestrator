@@ -21,6 +21,8 @@ import de.fau.clients.orchestrator.utils.SiloFileFilter;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -41,19 +43,17 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableModelEvent;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.TableModel;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 
@@ -359,6 +359,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         aboutDialog.getAccessibleContext().setAccessibleParent(this);
 
+        taskQueuePopupMenu.setFocusable(false);
+
         execRowEntryMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/execute-16px.png"))); // NOI18N
         execRowEntryMenuItem.setMnemonic('x');
         execRowEntryMenuItem.setText("Execute Entry");
@@ -413,6 +415,17 @@ public class OrchestratorGui extends javax.swing.JFrame {
         licenseScrollPane.setViewportView(licenseTextArea);
 
         licenseDialog.getContentPane().add(licenseScrollPane, java.awt.BorderLayout.CENTER);
+
+        commandTreeNodePopupMenu.setFocusable(false);
+
+        addCommandToQueueMenuItem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/queue-add-task-16px.png"))); // NOI18N
+        addCommandToQueueMenuItem.setText("Add Command to Queue");
+        addCommandToQueueMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addCommandToQueueMenuItemActionPerformed(evt);
+            }
+        });
+        commandTreeNodePopupMenu.add(addCommandToQueueMenuItem);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SiLA Orchestrator");
@@ -488,25 +501,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
         mainPanelSplitPane.setContinuousLayout(true);
 
         java.awt.GridBagLayout taskQueuePanelLayout = new java.awt.GridBagLayout();
-        taskQueuePanelLayout.columnWidths = new int[] {3};
+        taskQueuePanelLayout.columnWidths = new int[] {2};
         taskQueuePanelLayout.rowHeights = new int[] {4};
         taskQueuePanel.setLayout(taskQueuePanelLayout);
-
-        addTaskToQueueBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/add-entry.png"))); // NOI18N
-        addTaskToQueueBtn.setToolTipText("Add command to task-queue");
-        addTaskToQueueBtn.setEnabled(false);
-        addTaskToQueueBtn.setMargin(new java.awt.Insets(4, 2, 4, 2));
-        addTaskToQueueBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addTaskToQueueBtnActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        taskQueuePanel.add(addTaskToQueueBtn, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -527,7 +524,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         taskQueuePanel.add(showOrHideTableColumnBtn, gridBagConstraints);
 
@@ -543,7 +540,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 0.5;
@@ -561,7 +558,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 0.5;
@@ -579,7 +576,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         taskQueuePanel.add(removeTaskFromQueueBtn, gridBagConstraints);
@@ -942,7 +939,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         taskQueueTable.setComponentPopupMenu(taskQueuePopupMenu);
         taskQueueScrollPane.setViewportView(taskQueueTable);
         taskQueueTable.getModel().addTableModelListener((TableModelEvent evt) -> {
-            int evtType = evt.getType();
+            final int evtType = evt.getType();
             if (evtType == TableModelEvent.INSERT) {
                 final TableModel model = (TableModel) evt.getSource();
                 if (model.getRowCount() == 1) {
@@ -973,27 +970,26 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }
 
     private void initServerTree() {
-        serverFeatureTree.addFocusListener(new java.awt.event.FocusAdapter() {
+        serverFeatureTree.addMouseListener(new MouseAdapter() {
             @Override
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                if (evt.isTemporary()) {
+            public void mouseClicked(MouseEvent me) {
+                final int button = me.getButton();
+                if (button != MouseEvent.BUTTON1 && button != MouseEvent.BUTTON3) {
+                    // Anything besides the left and rigth mouse button is invalid.
                     return;
                 }
-                final ListSelectionModel selectModel = taskQueueTable.getSelectionModel();
-                if (!selectModel.isSelectionEmpty()) {
-                    taskQueueTable.getSelectionModel().clearSelection();
-                    presenterScrollPane.setViewportView(serverFeatureTree.getPresenter());
+                final TreePath path = serverFeatureTree.getPathForLocation(me.getX(), me.getY());
+                if (path == null) {
+                    return;
                 }
-            }
-        });
-        serverFeatureTree.addTreeSelectionListener(new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent evt) {
-                boolean isAddTaskBtnToEnable = false;
-                if (evt.getPath().getLastPathComponent() instanceof CommandTreeNode) {
-                    isAddTaskBtnToEnable = true;
+                serverFeatureTree.setSelectionPath(path);
+                if (button == MouseEvent.BUTTON3) { // on right click
+                    final Object node = path.getLastPathComponent();
+                    if (node instanceof CommandTreeNode) {
+                        commandTreeNodePopupMenu.show(serverFeatureTree, me.getX(), me.getY());
+                    }
                 }
-                addTaskToQueueBtn.setEnabled(isAddTaskBtnToEnable);
+                taskQueueTable.clearSelection();
                 presenterScrollPane.setViewportView(serverFeatureTree.getPresenter());
             }
         });
@@ -1028,7 +1024,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
         if (entry == null) {
             return;
         }
-        addTaskToQueueBtn.setEnabled(false);
         presenterScrollPane.setViewportView(entry.getPresenter());
     }
 
@@ -1088,21 +1083,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         connectionManager.close();
     }//GEN-LAST:event_formWindowClosing
-
-    private void addTaskToQueueBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTaskToQueueBtnActionPerformed
-        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) serverFeatureTree.getLastSelectedPathComponent();
-        if (node == null) {
-            return;
-        }
-
-        if (node.isLeaf()) {
-            if (node instanceof CommandTreeNode) {
-                final CommandTreeNode cmdNode = (CommandTreeNode) node;
-                // use the selected node to create a new table entry.
-                taskQueueTable.addCommandTask(cmdNode.createTableEntry());
-            }
-        }
-    }//GEN-LAST:event_addTaskToQueueBtnActionPerformed
 
     private void execRowEntryMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_execRowEntryMenuItemActionPerformed
         int selectedRowIdx = taskQueueTable.getSelectedRow();
@@ -1451,6 +1431,21 @@ public class OrchestratorGui extends javax.swing.JFrame {
         licenseDialog.setVisible(true);
     }//GEN-LAST:event_viewLicenseBtnActionPerformed
 
+    private void addCommandToQueueMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCommandToQueueMenuItemActionPerformed
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) serverFeatureTree.getLastSelectedPathComponent();
+        if (node == null) {
+            return;
+        }
+
+        if (node.isLeaf()) {
+            if (node instanceof CommandTreeNode) {
+                final CommandTreeNode cmdNode = (CommandTreeNode) node;
+                // use the selected node to create a new table entry.
+                taskQueueTable.addCommandTask(cmdNode.createTableEntry());
+            }
+        }
+    }//GEN-LAST:event_addCommandToQueueMenuItemActionPerformed
+
     private void enableStartRunControls() {
         stopQueueRunBtn.setEnabled(false);
         stopQueueRunMenuItem.setEnabled(false);
@@ -1591,6 +1586,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JTextPane aboutInfoTextPane = new javax.swing.JTextPane();
     private final javax.swing.JLabel aboutLabel = new javax.swing.JLabel();
     private final javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JMenuItem addCommandToQueueMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton addDelayBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem addDelayTaskMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton addLocalExecBtn = new javax.swing.JButton();
@@ -1598,9 +1594,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JButton addServerBtn = new javax.swing.JButton();
     private final javax.swing.JDialog addServerDialog = new javax.swing.JDialog();
     private final javax.swing.JMenuItem addServerMenuItem = new javax.swing.JMenuItem();
-    private final javax.swing.JButton addTaskToQueueBtn = new javax.swing.JButton();
     private final javax.swing.JButton clearQueueBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem clearQueueMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JPopupMenu commandTreeNodePopupMenu = new javax.swing.JPopupMenu();
     private final javax.swing.JMenuItem execRowEntryMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton exportQueueBtn = new javax.swing.JButton();
