@@ -23,7 +23,7 @@ Instructions on how to build and run the software can be found in the [README](.
 * Built-in function for time delays.
 * Built-in function to locally execute programs and scripts on the client host.
 * Show Results in Raw- or Node-View.
-* Headless mode for CLI.
+* Headless mode for CLI (See [CLI Guide](CliGuide.md)).
 * Platform independent. Runs on Windows, Linux and any other OS with a JavaSE/JDK 11 installation.
 
 
@@ -66,7 +66,7 @@ The current data in the queue can be exported any time to a *.csv-file with *Exp
 
 ## Server and Feature Entries
 
-After successfully establishing a connection to at least one SiLA complaint server, the left panel shows various, hierarchically grouped  entries. By hovering over one of these entries, the corresponding SiLA description will appear.
+After successfully establishing a connection to at least one SiLA compliant server, the left panel shows various, hierarchically grouped entries. By hovering over one of these entries, the corresponding SiLA description will appear.
 
 ![server tree](pictures/server-tree.png)
 
@@ -80,12 +80,14 @@ After successfully establishing a connection to at least one SiLA complaint serv
 <img src="pictures/property.svg" width="24" height="24">          | A Feature property.
 <img src="pictures/command.svg" width="24" height="24">           | A Feature command.
 
+To disconnect or to re-establish a connection to a server, right-click on the *Server* <img src="pictures/server-online.svg" width="24" height="24"> entry and select *Disconnect Server* or *Reconnect Server*.
+
 
 ## Task Queue
 
 The task queue is one of the main components of the sila-orchestrator. All the SiLA commands and tasks within the queue can be chained together and executed one after another. This enables the User to build complex, automated workflows, run them, store them and re-run them over again without repeating all the configuration steps.
 
-Now, before the queue can be executed, it must be filled with tasks first. To do this, select a command and click the <img src="pictures/entry-add.svg" width="24" height="24"> button to append it to the end of the queue, or drag <img src="pictures/command.svg" width="24" height="24"> directly into the desired location within the queue.
+Now, before the queue can be executed, it must be filled with tasks first. To do this, select a command and right-click on the <img src="pictures/queue-add-task.svg" width="24" height="24"> entry to append it to the end of the queue, or drag <img src="pictures/command.svg" width="24" height="24"> directly into the desired location within the queue.
 
 The order of a task can be changed by moving its position with the <img src="pictures/move-up.svg" width="24" height="24"> and <img src="pictures/move-down.svg" width="24" height="24"> buttons.
 
