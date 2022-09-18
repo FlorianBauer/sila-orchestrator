@@ -5,6 +5,9 @@ import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.nodes.MaxDim;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.security.cert.X509Certificate;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -20,6 +23,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import static sila_java.library.core.encryption.EncryptionUtils.readCertificate;
 import sila_java.library.manager.models.Server;
 import sila_java.library.manager.models.Server.Status;
 
@@ -174,13 +178,41 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
             panel.add(negoTypeTextField);
             panel.add(Box.createVerticalStrut(10));
 
+            X509Certificate cert = null;
+            try {
+                cert = readCertificate(server.getCertificateAuthority());
+            } catch (final IOException ex) {
+                log.warn(ex.getMessage());
+            }
+            if (cert != null) {
+                panel.add(new JLabel("Certificate"));
+                final String htmlCertString
+                        = "<html><p>Subject: " + cert.getSubjectX500Principal().getName()
+                        + "<br>Issuer: " + cert.getIssuerX500Principal().getName()
+                        + "<br>Serial Number: " + cert.getSerialNumber().toString(16)
+                        + "<br>Valid from: " + cert.getNotBefore().toInstant().atOffset(ZoneOffset.UTC)
+                        + "<br>Valid until: " + cert.getNotAfter().toInstant().atOffset(ZoneOffset.UTC)
+                        + "<br>Type: " + cert.getType()
+                        + "<br>Version: " + cert.getVersion()
+                        + "<br>Algorithm: " + cert.getSigAlgName()
+                        + "<br><br></p></html>";
+                final JTextPane certTextPane = new JTextPane();
+                certTextPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+                certTextPane.setEditable(false);
+                certTextPane.setContentType("text/html");
+                certTextPane.setText(htmlCertString);
+                certTextPane.putClientProperty(javax.swing.JTextPane.HONOR_DISPLAY_PROPERTIES, true);
+                panel.add(certTextPane);
+                panel.add(Box.createVerticalStrut(10));
+            }
+
             panel.add(new JLabel("General Info"));
-            final String htmlInfoString = "<html><p>"
-                    + "Description: " + server.getInformation().getDescription() + "<br>"
-                    + "Type: " + server.getInformation().getType() + "<br>"
-                    + "Vendor URL: " + server.getInformation().getVendorURL() + "<br>"
-                    + "Version: " + server.getInformation().getVersion() + "<br>"
-                    + "<br></p></html>";
+            final String htmlInfoString
+                    = "<html><p>Description: " + server.getInformation().getDescription()
+                    + "<br>Type: " + server.getInformation().getType()
+                    + "<br>Vendor URL: " + server.getInformation().getVendorURL()
+                    + "<br>Version: " + server.getInformation().getVersion()
+                    + "<br><br></p></html>";
             final JTextPane serverInfoTextPane = new JTextPane();
             serverInfoTextPane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
             serverInfoTextPane.setEditable(false);
