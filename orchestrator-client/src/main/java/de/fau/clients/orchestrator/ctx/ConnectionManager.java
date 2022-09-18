@@ -50,13 +50,21 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
         connectionListenerList.forEach(listener -> listener.onServerConnectionAdded(serverCtx));
     }
 
+    public void reconnectServer(@NonNull final UUID serverUuid) throws ServerAdditionException {
+        final ServerContext serverCtx = serverMap.get(serverUuid);
+        if (serverCtx != null) {
+            final Server server = serverCtx.getServer();
+            serverManager.addServer(
+                    server.getHost(),
+                    server.getPort(),
+                    server.getCertificateAuthority());
+        }
+    }
+
     public void removeServer(@NonNull final UUID serverUuid) {
         final ServerContext serverCtx = serverMap.get(serverUuid);
         if (serverCtx != null) {
-            serverMap.remove(serverUuid);
             serverManager.removeServer(serverUuid);
-            connectionListenerList.forEach(listener
-                    -> listener.onServerConnectionChanged(serverCtx));
         }
     }
 
@@ -118,6 +126,7 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
     public void onServerAdded(UUID uuid, Server server) {
         final ServerContext serverCtx = serverMap.get(uuid);
         if (serverCtx != null) {
+            serverCtx.getServer().setStatus(Server.Status.ONLINE);
             connectionListenerList.forEach(listener -> listener.onServerConnectionChanged(serverCtx));
         } else {
             addServerToContext(uuid, server);
@@ -126,7 +135,11 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
 
     @Override
     public void onServerRemoved(UUID uuid, Server server) {
-        // todo remove server from context
+        final ServerContext serverCtx = serverMap.get(uuid);
+        if (serverCtx != null) {
+            serverCtx.getServer().setStatus(Server.Status.OFFLINE);
+            connectionListenerList.forEach(listener -> listener.onServerConnectionChanged(serverCtx));
+        }
     }
 
     @Override

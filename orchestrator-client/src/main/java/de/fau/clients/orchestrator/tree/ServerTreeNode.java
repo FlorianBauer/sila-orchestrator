@@ -5,6 +5,7 @@ import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.nodes.MaxDim;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.util.UUID;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -61,6 +62,14 @@ public class ServerTreeNode extends DefaultMutableTreeNode implements Presentabl
         } else {
             return "Offline";
         }
+    }
+
+    public UUID getServerUuid() {
+        return serverCtx.getServerUuid();
+    }
+
+    public boolean isOnline() {
+        return serverCtx.isOnline();
     }
 
     @Override

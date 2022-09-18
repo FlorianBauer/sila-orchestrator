@@ -16,6 +16,7 @@ import de.fau.clients.orchestrator.tasks.QueueTask;
 import de.fau.clients.orchestrator.tasks.TaskState;
 import de.fau.clients.orchestrator.tree.CommandTreeNode;
 import de.fau.clients.orchestrator.tree.ServerFeatureTree;
+import de.fau.clients.orchestrator.tree.ServerTreeNode;
 import de.fau.clients.orchestrator.utils.IconProvider;
 import de.fau.clients.orchestrator.utils.SiloFileFilter;
 import java.awt.Image;
@@ -56,6 +57,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
+import sila_java.library.manager.ServerAdditionException;
 
 /**
  * The main GUI window and execution entry point of the client. It is advised to use the NetBeans
@@ -173,6 +175,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addServerDialog.setTitle("Add Server");
         addServerDialog.setAlwaysOnTop(true);
         addServerDialog.setIconImage(ICON_IMG);
+        addServerDialog.setModal(true);
         addServerDialog.setPreferredSize(new java.awt.Dimension(400, 280));
         addServerDialog.setResizable(false);
         addServerDialog.setLocationRelativeTo(null);
@@ -426,6 +429,27 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         commandTreeNodePopupMenu.add(addCommandToQueueMenuItem);
+
+        serverTreeNodePopupMenu.setFocusable(false);
+
+        disconnectServerMenuItem.setText("Disconnect Server");
+        disconnectServerMenuItem.setToolTipText("Closes the connection to this server.");
+        disconnectServerMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                disconnectServerMenuItemActionPerformed(evt);
+            }
+        });
+        serverTreeNodePopupMenu.add(disconnectServerMenuItem);
+
+        reconnectServerMenuItem.setText("Reconnect Server");
+        reconnectServerMenuItem.setToolTipText("Re-establishes the connection to this server.");
+        reconnectServerMenuItem.setEnabled(false);
+        reconnectServerMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reconnectServerMenuItemActionPerformed(evt);
+            }
+        });
+        serverTreeNodePopupMenu.add(reconnectServerMenuItem);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SiLA Orchestrator");
@@ -987,6 +1011,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     final Object node = path.getLastPathComponent();
                     if (node instanceof CommandTreeNode) {
                         commandTreeNodePopupMenu.show(serverFeatureTree, me.getX(), me.getY());
+                    } else if (node instanceof ServerTreeNode) {
+                        final ServerTreeNode serverNode = (ServerTreeNode) node;
+                        final boolean isServerOnline = serverNode.isOnline();
+                        disconnectServerMenuItem.setEnabled(isServerOnline);
+                        reconnectServerMenuItem.setEnabled(!isServerOnline);
+                        serverTreeNodePopupMenu.show(serverFeatureTree, me.getX(), me.getY());
                     }
                 }
                 taskQueueTable.clearSelection();
@@ -1446,6 +1476,46 @@ public class OrchestratorGui extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_addCommandToQueueMenuItemActionPerformed
 
+    private void disconnectServerMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectServerMenuItemActionPerformed
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) serverFeatureTree.getLastSelectedPathComponent();
+        if (node == null) {
+            return;
+        }
+
+        if (!node.isLeaf()) {
+            if (node instanceof ServerTreeNode) {
+                final ServerTreeNode serverNode = (ServerTreeNode) node;
+                if (!serverNode.isOnline()) {
+                    return;
+                }
+                connectionManager.removeServer(serverNode.getServerUuid());
+            }
+        }
+    }//GEN-LAST:event_disconnectServerMenuItemActionPerformed
+
+    private void reconnectServerMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reconnectServerMenuItemActionPerformed
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) serverFeatureTree.getLastSelectedPathComponent();
+        if (node == null) {
+            return;
+        }
+
+        if (!node.isLeaf()) {
+            if (node instanceof ServerTreeNode) {
+                final ServerTreeNode serverNode = (ServerTreeNode) node;
+                if (serverNode.isOnline()) {
+                    return;
+                }
+
+                try {
+                    connectionManager.reconnectServer(serverNode.getServerUuid());
+                } catch (ServerAdditionException ex) {
+                    log.warn(ex.getMessage());
+                    return;
+                }
+            }
+        }
+    }//GEN-LAST:event_reconnectServerMenuItemActionPerformed
+
     private void enableStartRunControls() {
         stopQueueRunBtn.setEnabled(false);
         stopQueueRunMenuItem.setEnabled(false);
@@ -1597,6 +1667,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JButton clearQueueBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem clearQueueMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JPopupMenu commandTreeNodePopupMenu = new javax.swing.JPopupMenu();
+    private final javax.swing.JMenuItem disconnectServerMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem execRowEntryMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton exportQueueBtn = new javax.swing.JButton();
@@ -1622,6 +1693,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JButton openFileBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem openMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JScrollPane presenterScrollPane = new javax.swing.JScrollPane();
+    private final javax.swing.JMenuItem reconnectServerMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton removeTaskFromQueueBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem removeTaskFromQueueMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem saveAsMenuItem = new javax.swing.JMenuItem();
@@ -1640,6 +1712,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JFormattedTextField serverPortFormattedTextField = new javax.swing.JFormattedTextField();
     private final javax.swing.JLabel serverPortLabel = new javax.swing.JLabel();
     private final javax.swing.JSplitPane serverSplitPane = new javax.swing.JSplitPane();
+    private final javax.swing.JPopupMenu serverTreeNodePopupMenu = new javax.swing.JPopupMenu();
     private final javax.swing.JScrollPane serverTreeScrollPane = new javax.swing.JScrollPane();
     private final javax.swing.JButton showOrHideTableColumnBtn = new javax.swing.JButton();
     private final javax.swing.JButton startQueueRunBtn = new javax.swing.JButton();
