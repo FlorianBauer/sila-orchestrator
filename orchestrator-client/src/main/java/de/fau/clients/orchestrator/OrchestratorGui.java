@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.cert.X509Certificate;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -57,6 +58,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
+import static sila_java.library.core.encryption.EncryptionUtils.readCertificate;
+import static sila_java.library.core.encryption.EncryptionUtils.writeCertificateToString;
 import sila_java.library.manager.ServerAdditionException;
 
 /**
@@ -78,6 +81,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final ServerFeatureTree serverFeatureTree = new ServerFeatureTree();
     private volatile boolean isQueueOnExecution = false;
     private boolean wasSaved = false;
+    private String certificateStr = null;
     private Path outFilePath = null;
     private Thread currentlyExecutedTaskThread = null;
 
@@ -136,7 +140,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         final UUID serverUuid;
         try {
-            serverUuid = connectionManager.addServer(addr, port);
+            if (certificateStr != null) {
+                serverUuid = connectionManager.addServer(addr, port, certificateStr);
+            } else {
+                serverUuid = connectionManager.addServer(addr, port);
+            }
         } catch (final Exception ex) {
             final String errMsg = ex.getMessage();
             final String warnStr = (errMsg == null || errMsg.isBlank()) ? "Unknown error." : errMsg;
@@ -176,12 +184,11 @@ public class OrchestratorGui extends javax.swing.JFrame {
         addServerDialog.setAlwaysOnTop(true);
         addServerDialog.setIconImage(ICON_IMG);
         addServerDialog.setModal(true);
-        addServerDialog.setPreferredSize(new java.awt.Dimension(400, 280));
-        addServerDialog.setResizable(false);
+        addServerDialog.setPreferredSize(new java.awt.Dimension(400, 400));
         addServerDialog.setLocationRelativeTo(null);
         java.awt.GridBagLayout addServerDialogLayout = new java.awt.GridBagLayout();
         addServerDialogLayout.columnWidths = new int[] {2};
-        addServerDialogLayout.rowHeights = new int[] {6};
+        addServerDialogLayout.rowHeights = new int[] {8};
         addServerDialogLayout.columnWeights = new double[] {0.5, 0.5};
         addServerDialog.getContentPane().setLayout(addServerDialogLayout);
 
@@ -190,13 +197,13 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
         addServerDialog.getContentPane().add(serverAddressLabel, gridBagConstraints);
 
-        serverAddressTextField.setToolTipText("e.g. localhost, 192.168.0.2");
-        serverAddressTextField.setPreferredSize(new java.awt.Dimension(64, 32));
+        serverAddressTextField.setToolTipText("e.g. 127.0.0.1, 192.168.0.2");
+        serverAddressTextField.setPreferredSize(new java.awt.Dimension(128, 32));
         serverAddressTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverAddressTextFieldActionPerformed(evt);
@@ -205,11 +212,12 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_START;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 10);
         addServerDialog.getContentPane().add(serverAddressTextField, gridBagConstraints);
+        serverAddressTextField.getAccessibleContext().setAccessibleDescription("e.g. localhost, 192.168.0.2");
         serverAddressTextField.getAccessibleContext().setAccessibleParent(this);
 
         serverPortLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -218,13 +226,13 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
         addServerDialog.getContentPane().add(serverPortLabel, gridBagConstraints);
 
         serverPortFormattedTextField.setToolTipText("e.g. 50052, 55001 ");
-        serverPortFormattedTextField.setPreferredSize(new java.awt.Dimension(64, 32));
+        serverPortFormattedTextField.setPreferredSize(new java.awt.Dimension(128, 32));
         final NumberFormatter formatter = new NumberFormatter(new DecimalFormat("#0"));
         formatter.setMinimum(1024);
         formatter.setMaximum(65535);
@@ -238,10 +246,43 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 10);
         addServerDialog.getContentPane().add(serverPortFormattedTextField, gridBagConstraints);
+
+        certificateLabel.setText("Certificate");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
+        addServerDialog.getContentPane().add(certificateLabel, gridBagConstraints);
+
+        certSerialNumberTextField.setText("<Serial Number>");
+        certSerialNumberTextField.setToolTipText("The serial number of the certificate.");
+        certSerialNumberTextField.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 5);
+        addServerDialog.getContentPane().add(certSerialNumberTextField, gridBagConstraints);
+
+        openCertFileBtn.setText("Open Certificate");
+        openCertFileBtn.setToolTipText("Choose a *.pem file containing the pulic key.");
+        openCertFileBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openCertFileBtnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 10);
+        addServerDialog.getContentPane().add(openCertFileBtn, gridBagConstraints);
 
         serverAddErrorScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         serverAddErrorScrollPane.setEnabled(false);
@@ -258,9 +299,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 10);
         addServerDialog.getContentPane().add(serverAddErrorScrollPane, gridBagConstraints);
 
@@ -274,7 +316,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 5, 5);
         addServerDialog.getContentPane().add(serverDialogConnectBtn, gridBagConstraints);
@@ -289,7 +331,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(10, 5, 5, 10);
         addServerDialog.getContentPane().add(serverDialogCancelBtn, gridBagConstraints);
@@ -306,7 +348,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         aboutDialog.setLocationRelativeTo(null);
         java.awt.GridBagLayout aboutDialogLayout = new java.awt.GridBagLayout();
         aboutDialogLayout.columnWidths = new int[] {1};
-        aboutDialogLayout.rowHeights = new int[] {3};
+        aboutDialogLayout.rowHeights = new int[] {4};
         aboutDialog.getContentPane().setLayout(aboutDialogLayout);
 
         aboutLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -317,6 +359,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(15, 15, 10, 15);
         aboutDialog.getContentPane().add(aboutLabel, gridBagConstraints);
@@ -329,9 +372,22 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(15, 15, 15, 15);
         aboutDialog.getContentPane().add(aboutInfoTextPane, gridBagConstraints);
+
+        viewLicenseBtn.setText("View License");
+        viewLicenseBtn.setToolTipText("Shows the complete License text.");
+        viewLicenseBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewLicenseBtnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        aboutDialog.getContentPane().add(viewLicenseBtn, gridBagConstraints);
 
         aboutDialogCloseBtn.setMnemonic('c');
         aboutDialogCloseBtn.setText("Close");
@@ -348,19 +404,30 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(10, 15, 15, 15);
         aboutDialog.getContentPane().add(aboutDialogCloseBtn, gridBagConstraints);
 
-        viewLicenseBtn.setText("View License");
-        viewLicenseBtn.setToolTipText("Shows the complete License text.");
-        viewLicenseBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                viewLicenseBtnActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        aboutDialog.getContentPane().add(viewLicenseBtn, gridBagConstraints);
-
         aboutDialog.getAccessibleContext().setAccessibleParent(this);
+
+        licenseDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        licenseDialog.setTitle("License");
+        licenseDialog.setAlwaysOnTop(true);
+        licenseDialog.setModal(true);
+        licenseDialog.setPreferredSize(new java.awt.Dimension(650, 600));
+
+        licenseTextArea.setEditable(false);
+        licenseTextArea.setText(LICENSE);
+        licenseScrollPane.setViewportView(licenseTextArea);
+
+        licenseDialog.getContentPane().add(licenseScrollPane, java.awt.BorderLayout.CENTER);
+
+        licenseDialog.getAccessibleContext().setAccessibleParent(aboutDialog);
+
+        saveAsFileChooser.setDialogType(javax.swing.JFileChooser.SAVE_DIALOG);
+        saveAsFileChooser.setDialogTitle("Save");
+        saveAsFileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
+
+        openFileChooser.setFileFilter(new SiloFileFilter());
+
+        certificateFileChooser.setDialogTitle("Open Certificate");
+        certificateFileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("*.pem", "pem"));
 
         taskQueuePopupMenu.setFocusable(false);
 
@@ -399,25 +466,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
             }
         });
         taskQueuePopupMenu.add(startQueueRunFromHereMenuItem);
-
-        fileSaveAsChooser.setDialogType(javax.swing.JFileChooser.SAVE_DIALOG);
-        fileSaveAsChooser.setDialogTitle("Save");
-        fileSaveAsChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
-
-        fileOpenChooser.setFileFilter(new SiloFileFilter());
-
-        licenseDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        licenseDialog.setTitle("License");
-        licenseDialog.setAlwaysOnTop(true);
-        licenseDialog.setLocationByPlatform(true);
-        licenseDialog.setModal(true);
-        licenseDialog.setPreferredSize(new java.awt.Dimension(530, 720));
-
-        licenseTextArea.setEditable(false);
-        licenseTextArea.setText(LICENSE);
-        licenseScrollPane.setViewportView(licenseTextArea);
-
-        licenseDialog.getContentPane().add(licenseScrollPane, java.awt.BorderLayout.CENTER);
 
         commandTreeNodePopupMenu.setFocusable(false);
 
@@ -1179,10 +1227,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
     private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
         final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu-MM-dd_HH.mm");
-        fileSaveAsChooser.setSelectedFile(new File(LocalDateTime.now().format(dtf) + ".silo"));
-        int retVal = fileSaveAsChooser.showSaveDialog(this);
+        saveAsFileChooser.setSelectedFile(new File(LocalDateTime.now().format(dtf) + ".silo"));
+        int retVal = saveAsFileChooser.showSaveDialog(this);
         if (retVal == JFileChooser.APPROVE_OPTION) {
-            final Path outPath = Paths.get(fileSaveAsChooser.getSelectedFile().getAbsolutePath());
+            final Path outPath = Paths.get(saveAsFileChooser.getSelectedFile().getAbsolutePath());
             outFilePath = outPath;
             int userDesition = JOptionPane.OK_OPTION;
             if (Files.exists(outPath)) {
@@ -1209,9 +1257,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_saveAsActionPerformed
 
     private void openFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileActionPerformed
-        int retVal = fileOpenChooser.showOpenDialog(this);
+        int retVal = openFileChooser.showOpenDialog(this);
         if (retVal == JFileChooser.APPROVE_OPTION) {
-            final File file = fileOpenChooser.getSelectedFile();
+            final File file = openFileChooser.getSelectedFile();
             final TaskQueueData tqd;
             try {
                 tqd = TaskQueueData.createFromFile(file.getAbsolutePath());
@@ -1282,10 +1330,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
     private void exportQueueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportQueueActionPerformed
         final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu-MM-dd_HH.mm");
-        fileSaveAsChooser.setSelectedFile(new File(LocalDateTime.now().format(dtf) + ".csv"));
-        int retVal = fileSaveAsChooser.showSaveDialog(this);
+        saveAsFileChooser.setSelectedFile(new File(LocalDateTime.now().format(dtf) + ".csv"));
+        int retVal = saveAsFileChooser.showSaveDialog(this);
         if (retVal == JFileChooser.APPROVE_OPTION) {
-            final Path outPath = Paths.get(fileSaveAsChooser.getSelectedFile().getAbsolutePath());
+            final Path outPath = Paths.get(saveAsFileChooser.getSelectedFile().getAbsolutePath());
             int userDesition = JOptionPane.OK_OPTION;
             if (Files.exists(outPath)) {
                 userDesition = JOptionPane.showConfirmDialog(this,
@@ -1439,9 +1487,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
     }//GEN-LAST:event_startQueueRunFromHereMenuItemActionPerformed
 
     private void openAndAppendFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openAndAppendFileActionPerformed
-        int retVal = fileOpenChooser.showOpenDialog(this);
+        int retVal = openFileChooser.showOpenDialog(this);
         if (retVal == JFileChooser.APPROVE_OPTION) {
-            final File file = fileOpenChooser.getSelectedFile();
+            final File file = openFileChooser.getSelectedFile();
             final TaskQueueData tqd;
             try {
                 tqd = TaskQueueData.createFromFile(file.getAbsolutePath());
@@ -1510,11 +1558,27 @@ public class OrchestratorGui extends javax.swing.JFrame {
                     connectionManager.reconnectServer(serverNode.getServerUuid());
                 } catch (ServerAdditionException ex) {
                     log.warn(ex.getMessage());
-                    return;
                 }
             }
         }
     }//GEN-LAST:event_reconnectServerMenuItemActionPerformed
+
+    private void openCertFileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openCertFileBtnActionPerformed
+        int retVal = certificateFileChooser.showOpenDialog(this);
+        if (retVal == JFileChooser.APPROVE_OPTION) {
+            final File file = certificateFileChooser.getSelectedFile();
+            final X509Certificate cert;
+            try {
+                cert = readCertificate(file);
+                certificateStr = writeCertificateToString(cert);
+            } catch (final Exception ex) {
+                serverAddErrorEditorPane.setText("Certificate import error: " + ex.getMessage());
+                certSerialNumberTextField.setText("<Serial Number>");
+                return;
+            }
+            certSerialNumberTextField.setText(cert.getSerialNumber().toString(16));
+        }
+    }//GEN-LAST:event_openCertFileBtnActionPerformed
 
     private void enableStartRunControls() {
         stopQueueRunBtn.setEnabled(false);
@@ -1664,6 +1728,9 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JButton addServerBtn = new javax.swing.JButton();
     private final javax.swing.JDialog addServerDialog = new javax.swing.JDialog();
     private final javax.swing.JMenuItem addServerMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JTextField certSerialNumberTextField = new javax.swing.JTextField();
+    private final javax.swing.JFileChooser certificateFileChooser = new javax.swing.JFileChooser();
+    private final javax.swing.JLabel certificateLabel = new javax.swing.JLabel();
     private final javax.swing.JButton clearQueueBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem clearQueueMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JPopupMenu commandTreeNodePopupMenu = new javax.swing.JPopupMenu();
@@ -1673,8 +1740,6 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JButton exportQueueBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem exportQueueMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JMenu fileMenu = new javax.swing.JMenu();
-    private final javax.swing.JFileChooser fileOpenChooser = new javax.swing.JFileChooser();
-    private final javax.swing.JFileChooser fileSaveAsChooser = new javax.swing.JFileChooser();
     private final javax.swing.Box.Filler filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 32767));
     private final javax.swing.Box.Filler filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 32767));
     private final javax.swing.Box.Filler filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 32767));
@@ -1690,12 +1755,15 @@ public class OrchestratorGui extends javax.swing.JFrame {
     private final javax.swing.JButton moveTaskUpBtn = new javax.swing.JButton();
     private final javax.swing.JButton openAndAppendFileBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem openAndAppendMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JButton openCertFileBtn = new javax.swing.JButton();
     private final javax.swing.JButton openFileBtn = new javax.swing.JButton();
+    private final javax.swing.JFileChooser openFileChooser = new javax.swing.JFileChooser();
     private final javax.swing.JMenuItem openMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JScrollPane presenterScrollPane = new javax.swing.JScrollPane();
     private final javax.swing.JMenuItem reconnectServerMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton removeTaskFromQueueBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem removeTaskFromQueueMenuItem = new javax.swing.JMenuItem();
+    private final javax.swing.JFileChooser saveAsFileChooser = new javax.swing.JFileChooser();
     private final javax.swing.JMenuItem saveAsMenuItem = new javax.swing.JMenuItem();
     private final javax.swing.JButton saveFileBtn = new javax.swing.JButton();
     private final javax.swing.JMenuItem saveMenuItem = new javax.swing.JMenuItem();

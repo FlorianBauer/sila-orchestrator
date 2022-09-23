@@ -30,8 +30,23 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
         return ConnectionManagerHolder.INSTANCE;
     }
 
+    @Deprecated
     public UUID addServer(final String host, int port) throws ServerAdditionException {
         serverManager.addServer(host, port);
+        for (final Server server : serverManager.getServers().values()) {
+            if (server.getHost().equals(host) && server.getPort() == port) {
+                final UUID serverUuid = server.getConfiguration().getUuid();
+                if (!serverMap.containsKey(serverUuid)) {
+                    addServerToContext(serverUuid, server);
+                }
+                return serverUuid;
+            }
+        }
+        return null;
+    }
+
+    public UUID addServer(final String host, int port, String cert) throws ServerAdditionException {
+        serverManager.addServer(host, port, cert);
         for (final Server server : serverManager.getServers().values()) {
             if (server.getHost().equals(host) && server.getPort() == port) {
                 final UUID serverUuid = server.getConfiguration().getUuid();
