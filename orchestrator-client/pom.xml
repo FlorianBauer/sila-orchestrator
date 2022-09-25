@@ -5,13 +5,13 @@
     <parent>
         <groupId>de.fau.clients.orchestrator</groupId>
         <artifactId>sila-orchestrator</artifactId>
-        <version>0.3.0</version>
+        <version>0.4.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.fau.clients.orchestrator</groupId>
     <artifactId>orchestrator-client</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.0</version>
     <packaging>jar</packaging>
 
     <name>orchestrator-client</name>
