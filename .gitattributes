@@ -1,0 +1,40 @@
+
+*            text=auto
+*.md         text diff=markdown
+*.java       text diff=java
+*.kt         text diff=kotlin
+
+AUTHORS      text
+LICENSE      text
+
+*.bmp        binary
+*.gif        binary
+*.ico        binary
+*.jpg        binary
+*.jpeg       binary
+*.pdf        binary
+*.png        binary
+*.svg        binary
+*.svgz       binary
+*.tif        binary
+*.tiff       binary
+
+*.css        text diff=css
+*.htm        text diff=html
+*.html       text diff=html
+*.xml        text
+*.xhtml      text diff=html
+
+*.class      binary
+*.dll        binary
+*.ear        binary
+*.exe        binary
+*.jar        binary
+*.so         binary
+*.war        binary
+*.jks        binary
+
+*.bat        text eol=crlf
+*.cmd        text eol=crlf
+*.ps1        text eol=crlf
+
