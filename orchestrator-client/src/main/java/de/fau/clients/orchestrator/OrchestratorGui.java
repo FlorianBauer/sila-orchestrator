@@ -344,9 +344,8 @@ public class OrchestratorGui extends javax.swing.JFrame {
         aboutDialog.setTitle("About");
         aboutDialog.setAlwaysOnTop(true);
         aboutDialog.setIconImage(ICON_IMG);
-        aboutDialog.setMinimumSize(new java.awt.Dimension(300, 256));
         aboutDialog.setModal(true);
-        aboutDialog.setResizable(false);
+        aboutDialog.setPreferredSize(new java.awt.Dimension(550, 510));
         aboutDialog.setLocationRelativeTo(null);
         java.awt.GridBagLayout aboutDialogLayout = new java.awt.GridBagLayout();
         aboutDialogLayout.columnWidths = new int[] {1};
@@ -363,20 +362,19 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(15, 15, 10, 15);
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 0);
         aboutDialog.getContentPane().add(aboutLabel, gridBagConstraints);
 
         aboutInfoTextPane.setEditable(false);
         aboutInfoTextPane.setContentType("text/html"); // NOI18N
         aboutInfoTextPane.setText(aboutInfo);
-        aboutInfoTextPane.setMargin(new java.awt.Insets(15, 15, 15, 15));
         aboutInfoTextPane.putClientProperty(javax.swing.JTextPane.HONOR_DISPLAY_PROPERTIES, true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(15, 15, 15, 15);
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 0);
         aboutDialog.getContentPane().add(aboutInfoTextPane, gridBagConstraints);
 
         viewLicenseBtn.setText("View License");
@@ -393,7 +391,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
         aboutDialogCloseBtn.setMnemonic('c');
         aboutDialogCloseBtn.setText("Close");
-        aboutDialogCloseBtn.setMargin(new java.awt.Insets(10, 15, 10, 15));
+        aboutDialogCloseBtn.setPreferredSize(new java.awt.Dimension(96, 48));
         aboutDialogCloseBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 aboutDialogCloseBtnActionPerformed(evt);
@@ -402,8 +400,10 @@ public class OrchestratorGui extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(10, 15, 15, 15);
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 0);
         aboutDialog.getContentPane().add(aboutDialogCloseBtn, gridBagConstraints);
 
         aboutDialog.getAccessibleContext().setAccessibleParent(this);
