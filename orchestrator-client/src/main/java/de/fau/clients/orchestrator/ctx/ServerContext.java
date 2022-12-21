@@ -30,7 +30,7 @@ public class ServerContext {
         for (final Feature feat : this.server.getFeatures()) {
             final boolean isCore = feat.getCategory().startsWith(CATEGORY_CORE);
             final FeatureContext featCtx = new FeatureContext(this, feat, isCore);
-            featureMap.put(feat.getIdentifier(), featCtx);
+            featureMap.put(featCtx.getFullyQualifiedIdentifier(), featCtx);
         }
     }
 
