@@ -83,6 +83,10 @@ public class FeatureContext implements FullyQualifiedIdentifieable, Comparable<F
         return commandMap.get(commandIdentifier);
     }
 
+    public PropertyContext getPropertyCtx(@NonNull final String propertyIdentifier) {
+        return propertyMap.get(propertyIdentifier);
+    }
+
     public DataTypeType getElement(@NonNull final String dataTypeTypeIdentifier) {
         return dataTypeTypeMap.get(dataTypeTypeIdentifier);
     }
