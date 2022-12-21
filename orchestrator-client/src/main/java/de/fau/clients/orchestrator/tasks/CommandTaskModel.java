@@ -7,7 +7,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.UUID;
-import lombok.NonNull;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -18,55 +21,35 @@ import lombok.extern.slf4j.Slf4j;
  * @see TaskModel
  */
 @Slf4j
+@Getter
+@ToString
 @JsonInclude(Include.NON_NULL)
-@JsonPropertyOrder({"serverUuid", "featureId", "commandId", "commandParams"})
+@JsonPropertyOrder({"serverUuid", "fullyQualifiedFeatureIdentifier", "commandId", "commandParams"})
 public class CommandTaskModel extends TaskModel {
 
-    private UUID serverUuid;
-    private final String featureId;
+    private final String fullyQualifiedFeatureIdentifier;
     private final String commandId;
+
+    @Setter
+    private UUID serverUuid;
+    @Setter
     private JsonNode commandParams = null;
 
+    /**
+     *
+     * @param serverUuid the Server UUID
+     * @param fullyQualifiedFeatureIdentifier the Fully Qualified Feature Identifier
+     * @param commandId the command identifier
+     */
     @JsonCreator
     public CommandTaskModel(
             @JsonProperty("serverUuid") final UUID serverUuid,
-            @JsonProperty("featureId") final String featureId,
+            @JsonProperty("fullyQualifiedFeatureIdentifier") final String fullyQualifiedFeatureIdentifier,
             @JsonProperty("commandId") final String commandId
     ) {
         this.serverUuid = serverUuid;
-        this.featureId = featureId;
+        this.fullyQualifiedFeatureIdentifier = fullyQualifiedFeatureIdentifier;
         this.commandId = commandId;
     }
 
-    public UUID getServerUuid() {
-        return serverUuid;
-    }
-
-    public void setServerUuid(@NonNull final UUID serverUuid) {
-        this.serverUuid = serverUuid;
-    }
-
-    public String getFeatureId() {
-        return featureId;
-    }
-
-    public String getCommandId() {
-        return commandId;
-    }
-
-    public JsonNode getCommandParams() {
-        return commandParams;
-    }
-
-    public void setCommandParams(@NonNull final JsonNode jsonNode) {
-        this.commandParams = jsonNode;
-    }
-
-    @Override
-    public String toString() {
-        return "(" + serverUuid + ", "
-                + featureId + ", "
-                + commandId + ", "
-                + commandParams + ")";
-    }
 }

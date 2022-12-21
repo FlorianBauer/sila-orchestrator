@@ -58,9 +58,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
+import sila_java.library.manager.server_management.ServerConnectionException;
+
 import static sila_java.library.core.encryption.EncryptionUtils.readCertificate;
 import static sila_java.library.core.encryption.EncryptionUtils.writeCertificateToString;
-import sila_java.library.manager.ServerAdditionException;
+
 
 /**
  * The main GUI window and execution entry point of the client. It is advised to use the NetBeans
@@ -1556,7 +1558,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
 
                 try {
                     connectionManager.reconnectServer(serverNode.getServerUuid());
-                } catch (ServerAdditionException ex) {
+                } catch (ServerConnectionException ex) {
                     log.warn(ex.getMessage());
                 }
             }

@@ -62,6 +62,11 @@ public class FeatureContext implements FullyQualifiedIdentifieable, Comparable<F
         return feature;
     }
 
+    /**
+     * Get feature identifier. This method should only be used for informational/display purposes.
+     * Use {@link FeatureContext#getFullyQualifiedIdentifier()} for identification/internal use.
+     * @return the feature identifier
+     */
     public String getFeatureId() {
         return feature.getIdentifier();
     }

@@ -50,8 +50,8 @@ public class ServerContext {
         return (server.getConnectionType() == Server.ConnectionType.SERVER_INITIATED);
     }
 
-    public FeatureContext getFeatureCtx(@NonNull final String featureIdentifier) {
-        return featureMap.get(featureIdentifier);
+    public FeatureContext getFeatureCtx(@NonNull final String fullyQualifiedFeatureIdentifier) {
+        return featureMap.get(fullyQualifiedFeatureIdentifier);
     }
 
     public Collection<FeatureContext> getFeatureCtxList() {

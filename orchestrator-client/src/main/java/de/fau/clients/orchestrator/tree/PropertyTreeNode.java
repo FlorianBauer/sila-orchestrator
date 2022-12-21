@@ -102,7 +102,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
                 : SiLACall.Type.UNOBSERVABLE_PROPERTY;
         final SiLACall.Builder callBuilder = new SiLACall.Builder(
                 featCtx.getServerUuid(),
-                featCtx.getFeatureId(),
+                featCtx.getFullyQualifiedIdentifier(),
                 property.getIdentifier(),
                 callType
         );

@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import lombok.NonNull;
-import sila_java.library.manager.ServerAdditionException;
+import sila_java.library.manager.server_management.ServerConnectionException;
 import sila_java.library.manager.models.Server;
 
 /**
@@ -97,7 +97,7 @@ public final class CommandlineControls {
             try {
                 hp = HostAndPort.fromString(hostPortStr);
                 conManager.addServer(hp.getHost(), hp.getPort());
-            } catch (ServerAdditionException ex) {
+            } catch (ServerConnectionException ex) {
                 System.err.println("Could not connect to '" + hostPortStr + "': " + ex.getMessage());
             } catch (IllegalArgumentException ex) {
                 System.err.println(ex.getMessage());

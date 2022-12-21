@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.NonNull;
-import sila_java.library.manager.ServerAdditionException;
+import sila_java.library.manager.server_management.ServerConnectionException;
 import sila_java.library.manager.ServerListener;
 import sila_java.library.manager.ServerManager;
 import sila_java.library.manager.models.Server;
@@ -31,7 +31,7 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
     }
 
     @Deprecated
-    public UUID addServer(final String host, int port) throws ServerAdditionException {
+    public UUID addServer(final String host, int port) throws ServerConnectionException {
         serverManager.addServer(host, port);
         for (final Server server : serverManager.getServers().values()) {
             if (server.getHost().equals(host) && server.getPort() == port) {
@@ -45,7 +45,7 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
         return null;
     }
 
-    public UUID addServer(final String host, int port, String cert) throws ServerAdditionException {
+    public UUID addServer(final String host, int port, String cert) throws ServerConnectionException {
         serverManager.addServer(host, port, cert);
         for (final Server server : serverManager.getServers().values()) {
             if (server.getHost().equals(host) && server.getPort() == port) {
@@ -65,7 +65,7 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
         connectionListenerList.forEach(listener -> listener.onServerConnectionAdded(serverCtx));
     }
 
-    public void reconnectServer(@NonNull final UUID serverUuid) throws ServerAdditionException {
+    public void reconnectServer(@NonNull final UUID serverUuid) throws ServerConnectionException {
         final ServerContext serverCtx = serverMap.get(serverUuid);
         if (serverCtx != null) {
             final Server server = serverCtx.getServer();

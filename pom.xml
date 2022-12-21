@@ -9,7 +9,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>extern/sila_java/library</module>
         <module>orchestrator-client</module>
     </modules>
 </project>
