@@ -22,6 +22,15 @@ public enum FullyQualifiedIdentifier {
         this.sectionCount = sections;
     }
 
+    public static FullyQualifiedIdentifier fromString(final String identifier) {
+        for (FullyQualifiedIdentifier b : FullyQualifiedIdentifier.values()) {
+            if (b.identifier.equalsIgnoreCase(identifier)) {
+                return b;
+            }
+        }
+        throw new RuntimeException("Invalid enum identifier " + identifier);
+    }
+
     /**
      * Gets the number of sections in the Fully Qualified Identifier URI string.
      *
