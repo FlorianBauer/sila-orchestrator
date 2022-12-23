@@ -36,7 +36,7 @@ public class TaskQueueData {
      * Save-file version identifier to allow managing compatibility with potential older or future
      * releases.
      */
-    public static final VersionNumber SILO_FILE_VERSION = new VersionNumber(1, 1, 0);
+    public static final VersionNumber SILO_FILE_VERSION = new VersionNumber(2, 0, 0);
     private static final ObjectMapper mapper = new ObjectMapper();
     private VersionNumber loadedFile = null;
     private ArrayList<TaskEntry> tasks = null;
