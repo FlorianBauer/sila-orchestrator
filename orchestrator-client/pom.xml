@@ -19,7 +19,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <sila.version>0.6.0</sila.version>
+        <sila.version>0.10.0</sila.version>
         <protobuf.version>3.19.4</protobuf.version>
         <grpc.version>1.43.2</grpc.version>
         <logback.version>1.2.9</logback.version>
@@ -48,13 +48,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.sila-standard</groupId>
-                <artifactId>sila_java</artifactId>
-                <version>${sila.version}</version>
-                <type>pom</type>
-                <scope>compile</scope>
-            </dependency>
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
@@ -107,13 +100,9 @@
     <dependencies>
         <dependency>
             <groupId>org.sila-standard.sila_java.library</groupId>
-            <artifactId>core</artifactId>
-            <version>${sila.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sila-standard.sila_java.library</groupId>
             <artifactId>manager</artifactId>
             <version>${sila.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

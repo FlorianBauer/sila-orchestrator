@@ -578,12 +578,12 @@ class ConstraintBasicNodeFactory {
                 validator = () -> (strField.getText().length() == len);
                 conditionDesc = "= " + len;
             } else if (constraints.getFullyQualifiedIdentifier() != null) {
-                final String fqiType = constraints.getFullyQualifiedIdentifier();
+                final FullyQualifiedIdentifier fqiType = FullyQualifiedIdentifier.fromString(constraints.getFullyQualifiedIdentifier());
                 validator = () -> (ValidatorUtils.isFullyQualifiedIdentifierValid(
                         fqiType,
                         strField.getText(),
                         featCtx));
-                conditionDesc = fqiType;
+                conditionDesc = fqiType.toString();
             } else {
                 final BigInteger min = constraints.getMinimalLength();
                 final BigInteger max = constraints.getMaximalLength();

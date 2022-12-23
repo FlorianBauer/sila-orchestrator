@@ -30,7 +30,7 @@ public class ServerContext {
         for (final Feature feat : this.server.getFeatures()) {
             final boolean isCore = feat.getCategory().startsWith(CATEGORY_CORE);
             final FeatureContext featCtx = new FeatureContext(this, feat, isCore);
-            featureMap.put(feat.getIdentifier(), featCtx);
+            featureMap.put(featCtx.getFullyQualifiedIdentifier(), featCtx);
         }
     }
 
@@ -50,8 +50,8 @@ public class ServerContext {
         return (server.getConnectionType() == Server.ConnectionType.SERVER_INITIATED);
     }
 
-    public FeatureContext getFeatureCtx(@NonNull final String featureIdentifier) {
-        return featureMap.get(featureIdentifier);
+    public FeatureContext getFeatureCtx(@NonNull final String fullyQualifiedFeatureIdentifier) {
+        return featureMap.get(fullyQualifiedFeatureIdentifier);
     }
 
     public Collection<FeatureContext> getFeatureCtxList() {

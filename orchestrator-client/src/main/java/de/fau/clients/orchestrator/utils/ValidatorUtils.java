@@ -3,6 +3,8 @@ package de.fau.clients.orchestrator.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fau.clients.orchestrator.ctx.CommandContext;
 import de.fau.clients.orchestrator.ctx.FeatureContext;
+import de.fau.clients.orchestrator.ctx.PropertyContext;
+import de.fau.clients.orchestrator.ctx.ServerContext;
 import de.fau.clients.orchestrator.nodes.FullyQualifiedIdentifier;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +12,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
+import java.util.Map;
+import java.util.regex.Pattern;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -20,13 +23,24 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import org.xml.sax.SAXException;
-import sila_java.library.core.models.Feature;
-import sila_java.library.core.models.SiLAElement;
+import sila_java.library.core.sila.utils.FullyQualifiedIdentifierUtils;
 
 /**
  * Utility class for various validation checks.
  */
 public final class ValidatorUtils {
+
+    private static final Map<FullyQualifiedIdentifier,Pattern> StandardMapFqis = Map.of(
+            FullyQualifiedIdentifier.FEATURE_IDENTIFIER, FullyQualifiedIdentifierUtils.FullyQualifiedFeatureIdentifierPattern,
+            FullyQualifiedIdentifier.COMMAND_IDENTIFIER, FullyQualifiedIdentifierUtils.FullyQualifiedCommandIdentifierPattern,
+            FullyQualifiedIdentifier.COMMAND_PARAMETER_IDENTIFIER, FullyQualifiedIdentifierUtils.FullyQualifiedCommandParameterIdentifierPattern,
+            FullyQualifiedIdentifier.COMMAND_RESPONSE_IDENTIFIER, FullyQualifiedIdentifierUtils.FullyQualifiedCommandResponseIdentifierPattern,
+            FullyQualifiedIdentifier.INTERMEDIATE_COMMAND_RESPONSEIDENTIFIER, FullyQualifiedIdentifierUtils.FullyQualifiedIntermediateCommandResponseIdentifierPattern,
+            FullyQualifiedIdentifier.DEFINED_EXECUTION_ERROR_IDENTIFIER, FullyQualifiedIdentifierUtils.FullyQualifiedDefinedExecutionErrorIdentifierPattern,
+            FullyQualifiedIdentifier.PROPERTY_IDENTIFIER, FullyQualifiedIdentifierUtils.FullyQualifiedPropertyIdentifierPattern,
+            FullyQualifiedIdentifier.TYPE_IDENTIFIER, FullyQualifiedIdentifierUtils.FullyQualifiedCustomDataTypeIdentifierPattern,
+            FullyQualifiedIdentifier.METADATA_IDENTIFIER, FullyQualifiedIdentifierUtils.FullyQualifiedMetadataIdentifierPattern
+    );
 
     private ValidatorUtils() {
         throw new UnsupportedOperationException("Instantiation not allowed.");
@@ -40,141 +54,85 @@ public final class ValidatorUtils {
      * <code>FeatureIdentifier</code>).
      * @param fqiUri The FQI string to validate (e.g.
      * <code>org.silastandard/core/SiLAService/v1</code>).
-     * @param featureCtx The feature context holding all type definitions.
+     * @param constrainedFeatureCtx The feature context holding all type definitions.
      * @return <code>true</code> if valid, otherwise <code>false</code>.
      */
     public static boolean isFullyQualifiedIdentifierValid(
-            final String fqiType,
+            final FullyQualifiedIdentifier fqiType,
             final String fqiUri,
-            final FeatureContext featureCtx
+            final FeatureContext constrainedFeatureCtx
     ) {
-        final Collection<FeatureContext> featList = featureCtx.getServerCtx().getFeatureCtxList();
+        final boolean isValidFqi = StandardMapFqis.get(fqiType).matcher(fqiUri).matches();
+        if (!isValidFqi) {
+            return false;
+        }
         final String[] sections = fqiUri.split("/");
-        if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.FEATURE_IDENTIFIER.toString())) {
-            if (sections.length < FullyQualifiedIdentifier.FEATURE_IDENTIFIER.getSectionCount()) {
-                return false;
-            }
-            for (final FeatureContext featCtx : featList) {
-                if (featCtx.getFullyQualifiedIdentifier().equalsIgnoreCase(fqiUri)) {
-                    return true;
-                }
-            }
-        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.COMMAND_IDENTIFIER.toString())) {
-            if (sections.length < FullyQualifiedIdentifier.COMMAND_IDENTIFIER.getSectionCount()) {
-                return false;
-            }
-            for (final FeatureContext featCtx : featList) {
-                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
-                    for (final CommandContext cmd : featCtx.getCommandCtxList()) {
-                        if (cmd.getCommand().getIdentifier().equalsIgnoreCase(sections[5])) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.COMMAND_PARAMETER_IDENTIFIER.toString())) {
-            if (sections.length < FullyQualifiedIdentifier.COMMAND_PARAMETER_IDENTIFIER.getSectionCount()) {
-                return false;
-            }
-            for (final FeatureContext featCtx : featList) {
-                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
-                    for (final CommandContext cmd : featCtx.getCommandCtxList()) {
-                        if (cmd.getCommand().getIdentifier().equalsIgnoreCase(sections[5])) {
-                            for (final SiLAElement param : cmd.getCommand().getParameter()) {
-                                if (param.getIdentifier().equalsIgnoreCase(sections[7])) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.COMMAND_RESPONSE_IDENTIFIER.toString())) {
-            if (sections.length < FullyQualifiedIdentifier.COMMAND_RESPONSE_IDENTIFIER.getSectionCount()) {
-                return false;
-            }
-            for (final FeatureContext featCtx : featList) {
-                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
-                    for (final CommandContext cmd : featCtx.getCommandCtxList()) {
-                        if (cmd.getCommand().getIdentifier().equalsIgnoreCase(sections[5])) {
-                            for (final SiLAElement resp : cmd.getCommand().getResponse()) {
-                                if (resp.getIdentifier().equalsIgnoreCase(sections[7])) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.INTERMEDIATE_COMMAND_RESPONSEIDENTIFIER.toString())) {
-            if (sections.length < FullyQualifiedIdentifier.INTERMEDIATE_COMMAND_RESPONSEIDENTIFIER.getSectionCount()) {
-                return false;
-            }
-            for (final FeatureContext featCtx : featList) {
-                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
-                    for (final CommandContext cmd : featCtx.getCommandCtxList()) {
-                        if (cmd.getCommand().getIdentifier().equalsIgnoreCase(sections[5])) {
-                            for (final SiLAElement interResp : cmd.getCommand().getIntermediateResponse()) {
-                                if (interResp.getIdentifier().equalsIgnoreCase(sections[7])) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.DEFINED_EXECUTION_ERROR_IDENTIFIER.toString())) {
-            if (sections.length < FullyQualifiedIdentifier.DEFINED_EXECUTION_ERROR_IDENTIFIER.getSectionCount()) {
-                return false;
-            }
-            for (final FeatureContext featCtx : featList) {
-                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
-                    for (final Feature.DefinedExecutionError err : featCtx.getFeature().getDefinedExecutionError()) {
-                        if (err.getIdentifier().equalsIgnoreCase(sections[5])) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.PROPERTY_IDENTIFIER.toString())) {
-            if (sections.length < FullyQualifiedIdentifier.PROPERTY_IDENTIFIER.getSectionCount()) {
-                return false;
-            }
-            for (final FeatureContext featCtx : featList) {
-                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
-                    for (final Feature.Property prop : featCtx.getFeature().getProperty()) {
-                        if (prop.getIdentifier().equalsIgnoreCase(sections[5])) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.TYPE_IDENTIFIER.toString())) {
-            if (sections.length < FullyQualifiedIdentifier.TYPE_IDENTIFIER.getSectionCount()) {
-                return false;
-            }
-            for (final FeatureContext featCtx : featList) {
-                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
-                    for (final SiLAElement dataTypeDef : featCtx.getFeature().getDataTypeDefinition()) {
-                        if (dataTypeDef.getIdentifier().equalsIgnoreCase(sections[5])) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        } else if (fqiType.equalsIgnoreCase(FullyQualifiedIdentifier.METADATA_IDENTIFIER.toString())) {
-            if (sections.length < FullyQualifiedIdentifier.METADATA_IDENTIFIER.getSectionCount()) {
-                return false;
-            }
-            for (final FeatureContext featCtx : featList) {
-                if (featCtx.getFeatureId().equalsIgnoreCase(sections[2])) {
-                    for (final Feature.Metadata meta : featCtx.getFeature().getMetadata()) {
-                        if (meta.getIdentifier().equalsIgnoreCase(sections[5])) {
-                            return true;
-                        }
-                    }
-                }
-            }
+        final String fullyQualifiedFeatureIdentifier = String.join("/", sections[0], sections[1], sections[2], sections[3]);
+        final String callId = (sections.length > 5) ? sections[5] : null;
+        final String param = (sections.length > 7) ? sections[7] : null;
+        final ServerContext serverCxt = constrainedFeatureCtx.getServerCtx();
+        if (serverCxt == null) {
+            return false;
+        }
+        final FeatureContext featureCtx = serverCxt.getFeatureCtx(fullyQualifiedFeatureIdentifier);
+        if (featureCtx == null) {
+            return false;
+        }
+        final CommandContext commandCtx = (callId != null) ? featureCtx.getCommandCtx(callId) : null;
+        final PropertyContext propertyCtx = (callId != null) ? featureCtx.getPropertyCtx(callId) : null;
+        if (fqiType.equals(FullyQualifiedIdentifier.FEATURE_IDENTIFIER)) {
+            return featureCtx.getFullyQualifiedIdentifier().equals(fqiUri);
+        }
+        if (fqiType.equals(FullyQualifiedIdentifier.COMMAND_IDENTIFIER)) {
+            return commandCtx != null;
+        }
+        if (fqiType.equals(FullyQualifiedIdentifier.COMMAND_PARAMETER_IDENTIFIER)) {
+            return (
+                    commandCtx != null &&
+                    commandCtx.getCommand().getParameter()
+                            .stream()
+                            .anyMatch(p -> p.getIdentifier().equalsIgnoreCase(param))
+            );
+        }
+        if (fqiType.equals(FullyQualifiedIdentifier.COMMAND_RESPONSE_IDENTIFIER)) {
+            return (
+                    commandCtx != null &&
+                            commandCtx.getCommand().getResponse()
+                                    .stream()
+                                    .anyMatch(r -> r.getIdentifier().equalsIgnoreCase(param))
+            );
+        }
+        if (fqiType.equals(FullyQualifiedIdentifier.INTERMEDIATE_COMMAND_RESPONSEIDENTIFIER)) {
+            return (
+                    commandCtx != null &&
+                            commandCtx.getCommand().getIntermediateResponse()
+                                    .stream()
+                                    .anyMatch(i -> i.getIdentifier().equalsIgnoreCase(param))
+            );
+        }
+        if (fqiType.equals(FullyQualifiedIdentifier.DEFINED_EXECUTION_ERROR_IDENTIFIER)) {
+            return (
+                    featureCtx.getFeature().getDefinedExecutionError()
+                            .stream()
+                            .anyMatch(d -> d.getIdentifier().equalsIgnoreCase(callId))
+            );
+        }
+        if (fqiType.equals(FullyQualifiedIdentifier.PROPERTY_IDENTIFIER)) {
+            return propertyCtx != null;
+        }
+        if (fqiType.equals(FullyQualifiedIdentifier.TYPE_IDENTIFIER)) {
+            return (
+                    featureCtx.getFeature().getDataTypeDefinition()
+                            .stream()
+                            .anyMatch(t -> t.getIdentifier().equalsIgnoreCase(callId))
+            );
+        }
+        if (fqiType.equals(FullyQualifiedIdentifier.METADATA_IDENTIFIER)) {
+            return (
+                    featureCtx.getFeature().getMetadata()
+                            .stream()
+                            .anyMatch(m -> m.getIdentifier().equalsIgnoreCase(callId))
+            );
         }
         return false;
     }

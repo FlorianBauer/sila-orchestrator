@@ -77,7 +77,7 @@ public class CommandTask extends QueueTask {
         final FeatureContext featCtx = commandCtx.getFeatureCtx();
         this.commandModel = new CommandTaskModel(
                 featCtx.getServerUuid(),
-                featCtx.getFeatureId(),
+                featCtx.getFullyQualifiedIdentifier(),
                 this.cmdCtx.getCommand().getIdentifier());
 
         if (featCtx.getServerCtx().isOnline()) {
@@ -101,7 +101,7 @@ public class CommandTask extends QueueTask {
             return false;
         }
 
-        final FeatureContext featCtx = serverCtx.getFeatureCtx(commandModel.getFeatureId());
+        final FeatureContext featCtx = serverCtx.getFeatureCtx(commandModel.getFullyQualifiedFeatureIdentifier());
         if (featCtx != null) {
             final CommandContext tmpCmdCtx = featCtx.getCommandCtx(commandModel.getCommandId());
             if (tmpCmdCtx != null) {
@@ -109,7 +109,7 @@ public class CommandTask extends QueueTask {
                 return true;
             }
         }
-        log.warn("Feature " + commandModel.getFeatureId() + " for " + commandModel.getCommandId()
+        log.warn("Feature " + commandModel.getFullyQualifiedFeatureIdentifier() + " for " + commandModel.getCommandId()
                 + " not found on server.");
         return false;
     }
@@ -326,7 +326,7 @@ public class CommandTask extends QueueTask {
                 : SiLACall.Type.UNOBSERVABLE_COMMAND;
         final SiLACall.Builder callBuilder = new SiLACall.Builder(
                 commandModel.getServerUuid(),
-                commandModel.getFeatureId(),
+                commandModel.getFullyQualifiedFeatureIdentifier(),
                 commandModel.getCommandId(),
                 callType
         );

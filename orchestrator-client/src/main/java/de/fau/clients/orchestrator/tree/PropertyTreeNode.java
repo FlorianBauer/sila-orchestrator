@@ -102,7 +102,7 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
                 : SiLACall.Type.UNOBSERVABLE_PROPERTY;
         final SiLACall.Builder callBuilder = new SiLACall.Builder(
                 featCtx.getServerUuid(),
-                featCtx.getFeatureId(),
+                featCtx.getFullyQualifiedIdentifier(),
                 property.getIdentifier(),
                 callType
         );
@@ -111,10 +111,11 @@ public class PropertyTreeNode extends DefaultMutableTreeNode implements Presenta
         try {
             final ExecutableServerCall executableServerCall = ExecutableServerCall.newBuilder(callBuilder.build()).build();
             final Future<String> futureCallResult = ServerManager.getInstance().getServerCallManager().runAsync(executableServerCall);
+            // todo fixme 3 seconds is most likely not enough for most observable commands
             lastResult = futureCallResult.get(MAX_SERVER_RESPONSE_TIME_IN_SEC, TimeUnit.SECONDS);
             wasSuccessful = true;
         } catch (final TimeoutException ex) {
-            final String msg = "Timeout: Server did not responde within " + MAX_SERVER_RESPONSE_TIME_IN_SEC + " sec.";
+            final String msg = "Timeout: Task did not finish within " + MAX_SERVER_RESPONSE_TIME_IN_SEC + " sec.";
             log.error(msg);
             lastResult = msg;
         } catch (final ExecutionException ex) {
