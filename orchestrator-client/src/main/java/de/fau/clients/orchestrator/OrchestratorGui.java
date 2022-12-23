@@ -1049,7 +1049,7 @@ public class OrchestratorGui extends javax.swing.JFrame {
             public void mouseClicked(MouseEvent me) {
                 final int button = me.getButton();
                 if (button != MouseEvent.BUTTON1 && button != MouseEvent.BUTTON3) {
-                    // Anything besides the left and rigth mouse button is invalid.
+                    // Anything besides the left and right mouse button is invalid.
                     return;
                 }
                 final TreePath path = serverFeatureTree.getPathForLocation(me.getX(), me.getY());

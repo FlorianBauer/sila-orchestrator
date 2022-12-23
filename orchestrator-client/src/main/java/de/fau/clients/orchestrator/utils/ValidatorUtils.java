@@ -70,11 +70,11 @@ public final class ValidatorUtils {
         final String fullyQualifiedFeatureIdentifier = String.join("/", sections[0], sections[1], sections[2], sections[3]);
         final String callId = (sections.length > 5) ? sections[5] : null;
         final String param = (sections.length > 7) ? sections[7] : null;
-        final ServerContext serverCxt = constrainedFeatureCtx.getServerCtx();
-        if (serverCxt == null) {
+        final ServerContext serverCtx = constrainedFeatureCtx.getServerCtx();
+        if (serverCtx == null) {
             return false;
         }
-        final FeatureContext featureCtx = serverCxt.getFeatureCtx(fullyQualifiedFeatureIdentifier);
+        final FeatureContext featureCtx = serverCtx.getFeatureCtx(fullyQualifiedFeatureIdentifier);
         if (featureCtx == null) {
             return false;
         }
