@@ -41,7 +41,7 @@ import sila_java.library.manager.models.SiLACall;
 @Slf4j
 public class CommandTask extends QueueTask {
 
-    private static final int MAX_SERVER_RESPONSE_TIME_IN_SEC = 3;
+    private static final int MAX_SERVER_RESPONSE_TIME_IN_HOURS = 3;
     private static final ConnectionManager manager = ConnectionManager.getInstance();
     private static final ObjectMapper jsonMapper = new ObjectMapper();
     private final CommandTaskModel commandModel;
@@ -341,10 +341,10 @@ public class CommandTask extends QueueTask {
         try {
             final ExecutableServerCall executableServerCall = ExecutableServerCall.newBuilder(callBuilder.build()).build();
             final Future<String> futureCallResult = manager.getServerManager().getServerCallManager().runAsync(executableServerCall);
-            lastExecResult = futureCallResult.get(MAX_SERVER_RESPONSE_TIME_IN_SEC, TimeUnit.SECONDS);
+            lastExecResult = futureCallResult.get(MAX_SERVER_RESPONSE_TIME_IN_HOURS, TimeUnit.HOURS);
             taskState = TaskState.FINISHED_SUCCESS;
         } catch (final TimeoutException ex) {
-            final String msg = "Timeout: Server did not responde within " + MAX_SERVER_RESPONSE_TIME_IN_SEC + " sec.";
+            final String msg = "Timeout: Task did not finish within " + MAX_SERVER_RESPONSE_TIME_IN_HOURS + " hours.";
             log.error(msg);
             lastExecResult = msg;
         } catch (final ExecutionException ex) {
