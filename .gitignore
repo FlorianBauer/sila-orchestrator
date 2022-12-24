@@ -6,8 +6,8 @@ build/
 *.class
 *.jar
 [Cc]onfig.java
-/orchestrator-client/src/main/resources/AUTHORS
-/orchestrator-client/src/main/resources/LICENSE
+/src/main/resources/AUTHORS
+/src/main/resources/LICENSE
 
 # Temporary and core files
 ~*
