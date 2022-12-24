@@ -105,12 +105,14 @@ public class TaskQueueData {
         boolean isMinorHigher = false;
         final VersionNumber loadedFile = VersionNumber.parseVersionString(loadedVersionStr);
         log.info("Silo-file version: " + loadedFile.toString());
-        if (loadedFile.getMajorNumber() > SILO_FILE_VERSION.getMajorNumber()) {
-            final String errMsg = "The opened file with its format version "
+
+        final int majorNumber = loadedFile.getMajorNumber();
+        final boolean isMajorLower = (majorNumber < SILO_FILE_VERSION.getMajorNumber());
+        if (majorNumber > SILO_FILE_VERSION.getMajorNumber()) {
+            throw new IllegalArgumentException("The opened file with its format version "
                     + loadedFile.toString() + " is not compatible with this Sowftware."
                     + "\nOnly file formats up to version " + SILO_FILE_VERSION.toString()
-                    + " are supported!";
-            throw new IllegalArgumentException(errMsg);
+                    + " are supported!");
         } else if (loadedFile.getMinorNumber() > SILO_FILE_VERSION.getMinorNumber()) {
             // minor number is higher, import may fail
             isMinorHigher = true;
@@ -120,12 +122,18 @@ public class TaskQueueData {
         try {
             tqd = mapper.readValue(Files.newInputStream(filePath), TaskQueueData.class);
         } catch (final IOException ex) {
+            if (isMajorLower) {
+                throw new IllegalArgumentException("The opened file with its format version "
+                        + loadedFile.toString() + " is not compatible with this Sowftware."
+                        + "\nOnly file formats since version " + SILO_FILE_VERSION.toString()
+                        + " are supported!");
+            }
+
             if (isMinorHigher) {
-                final String errMsg = "The opened file with its format version "
+                throw new IllegalArgumentException("The opened file with its format version "
                         + loadedFile.toString() + " is not compatible with this Sowftware."
                         + "\nOnly file formats up to version " + SILO_FILE_VERSION.toString()
-                        + " are supported!";
-                throw new IllegalArgumentException(errMsg);
+                        + " are supported!");
             } else {
                 throw ex;
             }
