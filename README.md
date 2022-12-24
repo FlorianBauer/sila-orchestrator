@@ -27,7 +27,7 @@ To use the client in command-line mode (e.g. within a script), take a look into 
 
 First, clone the repository.
 ```bash
-git clone --recurse-submodules https://github.com/FlorianBauer/sila-orchestrator.git
+git clone https://github.com/FlorianBauer/sila-orchestrator.git
 ```
 
 To build this project, a [JDK](https://jdk.java.net/) or [OpenJDK](https://adoptopenjdk.net/) in version >= 11, as well as a moderately current Maven installation is required. Enter the project directory and use the following command to start the build process:
