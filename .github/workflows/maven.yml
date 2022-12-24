@@ -41,4 +41,4 @@ jobs:
     - name: Build with Maven
       run: mvn clean install -V
     - name: Run sila-orchestrator in CLI mode
-      run: java -jar ./orchestrator-client/target/sila-orchestrator.jar -hvl --info
+      run: java -jar ./target/sila-orchestrator.jar -hvl --info
