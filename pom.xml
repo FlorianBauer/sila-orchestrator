@@ -15,7 +15,7 @@
         <java.version>11</java.version>
         <sila.version>0.10.0</sila.version>
         <logback.version>1.2.9</logback.version>
-        <fasterxml.version>2.12.7</fasterxml.version>
+        <fasterxml.version>2.14.1</fasterxml.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
