@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+
 # Resolve the location of the sila-orchestrator installation.
 # This includes resolving any symlinks.
 PRG=$0
@@ -37,7 +37,7 @@ Type=Application
 Categories=Development
 Terminal=false
 StartupWMClass=sila-orchestator
-Exec=java -jar "$ORCHESTRATOR_DIR/orchestrator-client/target/sila-orchestrator.jar"
+Exec=java -jar "$ORCHESTRATOR_DIR/target/sila-orchestrator.jar"
 MimeType=x-scheme-handler/sila-orchestrator;
 Icon=$ORCHESTRATOR_DIR/doc/pictures/$ICON_NAME.svg
 EOF
