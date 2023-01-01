@@ -72,7 +72,7 @@ import static sila_java.library.core.encryption.EncryptionUtils.writeCertificate
 @SuppressWarnings("serial")
 public class OrchestratorGui extends javax.swing.JFrame {
 
-    public static final String COPYRIGHT_NOTICE = "Copyright © 2020–2022 The sila-orchestrator Authors";
+    public static final String COPYRIGHT_NOTICE = "Copyright © 2020–2023 The sila-orchestrator Authors";
     private static final Image ICON_IMG = IconProvider.SILA_ORCHESTRATOR_16PX.getIcon().getImage();
     private static final String NO_ERROR_STR = "<No Error>";
     private static final String AUTHORS;
