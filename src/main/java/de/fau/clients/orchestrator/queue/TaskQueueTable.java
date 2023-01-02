@@ -466,9 +466,18 @@ public final class TaskQueueTable extends JTable implements ConnectionListener {
         }
     }
 
+    /**
+     * Listener function which gets invoked when a server gets added.
+     *
+     * @param serverCtx The added server context.
+     */
     @Override
     public void onServerConnectionAdded(final ServerContext serverCtx) {
         addUuidToSelectionSet(serverCtx.getServerUuid());
+        if (!isEmpty()) {
+            // Update the loaded task queue in case a preset server showed up.
+            updateConnectionStateOfQueueEntries(serverCtx);
+        }
     }
 
     /**
