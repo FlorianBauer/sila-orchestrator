@@ -31,16 +31,18 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
     }
 
     /**
-     * Connect to a server using a trusted certificate or through an unsecure connection
-     * if {@link ServerManager#setAllowUnsecureConnection(boolean)} has been set to true.
-     * Note that setting this to true is deprecated and not allowed by the SiLA Standard and should only be used for
-     * test purposes.
+     * Connect to a server using a trusted certificate or through an unsecure connection if
+     * {@link ServerManager#setAllowUnsecureConnection(boolean)} has been set to true. Note that
+     * setting this to true is deprecated and not allowed by the SiLA Standard and should only be
+     * used for test purposes.
+     *
      * @param host the server host
      * @param port the server host
      * @return the server UUID if connection is successful
-     * @throws ServerConnectionException if unable to connect to the server or is not a valid SiLA Server
+     * @throws ServerConnectionException if unable to connect to the server or is not a valid SiLA
+     * Server
      */
-    public UUID addServer(final String host, int port) throws ServerConnectionException {
+    public UUID addServer(final String host, int port) throws Exception {
         // method is marked as deprecated but is not, sila_java 0.11.0 will fix this problem
         serverManager.addServer(host, port);
         for (final Server server : serverManager.getServers().values()) {
@@ -52,21 +54,23 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
                 return serverUuid;
             }
         }
-        return null;
+        throw new Exception("Adding server failed for unknown reason (01).");
     }
 
     /**
-     * Connect to a server using a untrusted (self-signed) certificate or through an unsecure connection
-     * if {@link ServerManager#setAllowUnsecureConnection(boolean)} has been set to true.
-     * Note that setting this to true is deprecated and not allowed by the SiLA Standard and should only be used for
-     * test purposes.
+     * Connect to a server using a untrusted (self-signed) certificate or through an unsecure
+     * connection if {@link ServerManager#setAllowUnsecureConnection(boolean)} has been set to true.
+     * Note that setting this to true is deprecated and not allowed by the SiLA Standard and should
+     * only be used for test purposes.
+     *
      * @param host the server host
      * @param port the server host
      * @param cert the server untrusted (self-signed) certificate
      * @return the server UUID if connection is successful
-     * @throws ServerConnectionException if unable to connect to the server or is not a valid SiLA Server
+     * @throws ServerConnectionException if unable to connect to the server or is not a valid SiLA
+     * Server
      */
-    public UUID addServer(final String host, int port, String cert) throws ServerConnectionException {
+    public UUID addServer(final String host, int port, String cert) throws Exception {
         serverManager.addServer(host, port, cert);
         for (final Server server : serverManager.getServers().values()) {
             if (server.getHost().equals(host) && server.getPort() == port) {
@@ -77,7 +81,7 @@ public class ConnectionManager implements AutoCloseable, ServerListener {
                 return serverUuid;
             }
         }
-        return null;
+        throw new Exception("Adding server failed for unknown reason (02).");
     }
 
     private void addServerToContext(final UUID serverUuid, final Server server) {

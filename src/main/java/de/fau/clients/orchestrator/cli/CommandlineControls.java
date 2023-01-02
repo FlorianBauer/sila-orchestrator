@@ -97,9 +97,9 @@ public final class CommandlineControls {
             try {
                 hp = HostAndPort.fromString(hostPortStr);
                 conManager.addServer(hp.getHost(), hp.getPort());
-            } catch (ServerConnectionException ex) {
+            } catch (final ServerConnectionException ex) {
                 System.err.println("Could not connect to '" + hostPortStr + "': " + ex.getMessage());
-            } catch (IllegalArgumentException ex) {
+            } catch (final Exception ex) {
                 System.err.println(ex.getMessage());
             }
         }
